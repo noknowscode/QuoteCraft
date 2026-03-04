@@ -1,0 +1,175 @@
+<Page x:Class="QuoteCraft.Presentation.MainPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:local="using:QuoteCraft.Presentation"
+      xmlns:uen="using:Uno.Extensions.Navigation.UI"
+      xmlns:utu="using:Uno.Toolkit.UI"
+      xmlns:um="using:Uno.Material"
+      Background="{ThemeResource BackgroundBrush}">
+
+  <Grid uen:Region.Attached="True">
+    <Grid.RowDefinitions>
+      <RowDefinition />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="Auto" />
+      <ColumnDefinition Width="*" />
+    </Grid.ColumnDefinitions>
+
+    <!-- Content region -->
+    <Grid x:Name="NavigationGrid"
+          Grid.Row="0"
+          Grid.Column="1"
+          uen:Region.Attached="True"
+          uen:Region.Navigator="Visibility" />
+
+    <!-- Bottom TabBar (narrow/normal screens) -->
+    <utu:TabBar x:Name="BottomTabs"
+                Grid.Row="1"
+                Grid.Column="1"
+                Height="48"
+                Visibility="{utu:Responsive Normal=Visible, Wide=Collapsed}"
+                uen:Region.Attached="True"
+                Style="{StaticResource BottomTabBarStyle}">
+      <utu:TabBarItem uen:Region.Name="Dashboard"
+                      Content="Quotes"
+                      IsSelectable="True"
+                      Style="{StaticResource MaterialBottomTabBarItemStyle}">
+        <utu:TabBarItem.Icon>
+          <FontIcon Glyph="&#xE8A5;" />
+        </utu:TabBarItem.Icon>
+      </utu:TabBarItem>
+
+      <utu:TabBarItem uen:Region.Name="Clients"
+                      Content="Clients"
+                      IsSelectable="True"
+                      Style="{StaticResource MaterialBottomTabBarItemStyle}">
+        <utu:TabBarItem.Icon>
+          <FontIcon Glyph="&#xE77B;" />
+        </utu:TabBarItem.Icon>
+      </utu:TabBarItem>
+
+      <utu:TabBarItem uen:Region.Name="Catalog"
+                      Content="Catalog"
+                      IsSelectable="True"
+                      Style="{StaticResource MaterialBottomTabBarItemStyle}">
+        <utu:TabBarItem.Icon>
+          <FontIcon Glyph="&#xE7BF;" />
+        </utu:TabBarItem.Icon>
+      </utu:TabBarItem>
+
+      <utu:TabBarItem uen:Region.Name="Settings"
+                      Content="Settings"
+                      IsSelectable="True"
+                      Style="{StaticResource MaterialBottomTabBarItemStyle}">
+        <utu:TabBarItem.Icon>
+          <FontIcon Glyph="&#xE115;" />
+        </utu:TabBarItem.Icon>
+      </utu:TabBarItem>
+    </utu:TabBar>
+
+    <!-- Side rail (wide/desktop screens) -->
+    <Grid ColumnDefinitions="*" Grid.RowSpan="2"
+          BorderBrush="{ThemeResource OutlineVariantBrush}"
+          BorderThickness="0,0,1,0"
+          Visibility="{utu:Responsive Normal=Collapsed, Wide=Visible}"
+          Width="156">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+
+      <!-- Brand Header -->
+      <Border Background="{StaticResource AppBarBackgroundBrush}"
+              Height="61" HorizontalAlignment="Stretch">
+        <StackPanel Orientation="Horizontal" Spacing="8"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+          <TextBlock Text="QC"
+                     Foreground="White"
+                     FontWeight="Bold"
+                     FontSize="18" />
+          <TextBlock Text="QuoteCraft"
+                     Foreground="White"
+                     FontWeight="Medium"
+                     FontSize="13"
+                     VerticalAlignment="Center"
+                     Opacity="0.85" />
+        </StackPanel>
+      </Border>
+
+      <!-- 3px Amber accent bar -->
+      <Border Grid.Row="1" Height="3"
+              Background="{StaticResource AppBarAccentBrush}" />
+
+      <!-- Tab items - horizontal icon + label, stacked vertically -->
+      <utu:TabBar HorizontalAlignment="Left" Grid.Row="2"
+                  VerticalAlignment="Top"
+                  Margin="0,8,0,0"
+                  uen:Region.Attached="True"
+                  Style="{StaticResource VerticalTabBarStyle}">
+        <utu:TabBar.ItemsPanel>
+          <ItemsPanelTemplate>
+            <StackPanel Orientation="Vertical" Spacing="2" />
+          </ItemsPanelTemplate>
+        </utu:TabBar.ItemsPanel>
+
+        <utu:TabBarItem uen:Region.Name="Dashboard"
+                        Content="Quotes"
+                        IsSelectable="True"
+                        Style="{StaticResource SideNavTabBarItemStyle}">
+          <utu:TabBarItem.Icon>
+            <FontIcon Glyph="&#xE8A5;" FontSize="18" />
+          </utu:TabBarItem.Icon>
+        </utu:TabBarItem>
+
+        <utu:TabBarItem uen:Region.Name="Clients"
+                        Content="Clients"
+                        IsSelectable="True"
+                        Style="{StaticResource SideNavTabBarItemStyle}">
+          <utu:TabBarItem.Icon>
+            <FontIcon Glyph="&#xE77B;" FontSize="18" />
+          </utu:TabBarItem.Icon>
+        </utu:TabBarItem>
+
+        <utu:TabBarItem uen:Region.Name="Catalog"
+                        Content="Catalog"
+                        IsSelectable="True"
+                        Style="{StaticResource SideNavTabBarItemStyle}">
+          <utu:TabBarItem.Icon>
+            <FontIcon Glyph="&#xE7BF;" FontSize="18" />
+          </utu:TabBarItem.Icon>
+        </utu:TabBarItem>
+
+        <utu:TabBarItem uen:Region.Name="Settings"
+                        Content="Settings"
+                        IsSelectable="True"
+                        Style="{StaticResource SideNavTabBarItemStyle}">
+          <utu:TabBarItem.Icon>
+            <FontIcon Glyph="&#xE115;" FontSize="18" />
+          </utu:TabBarItem.Icon>
+        </utu:TabBarItem>
+      </utu:TabBar>
+
+      <!-- Theme toggle -->
+      <StackPanel Grid.Row="3" Spacing="0">
+        <Border Height="1" Background="{ThemeResource OutlineVariantBrush}" Margin="12,0" />
+        <Button x:Name="ThemeToggle"
+                Margin="12,8,12,16"
+                HorizontalAlignment="Stretch"
+                Click="ThemeToggle_Click"
+                Style="{StaticResource MaterialTextButtonStyle}"
+                AutomationProperties.Name="Toggle dark mode">
+          <StackPanel Orientation="Horizontal" Spacing="8"
+                      HorizontalAlignment="Center">
+            <FontIcon x:Name="ThemeIcon" Glyph="&#xE708;" FontSize="16" />
+            <TextBlock x:Name="ThemeLabel" Text="Dark Mode" Style="{StaticResource BodySmall}" />
+          </StackPanel>
+        </Button>
+      </StackPanel>
+    </Grid>
+  </Grid>
+</Page>
