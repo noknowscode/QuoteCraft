@@ -42,11 +42,12 @@ QuoteCraft helps service professionals create, manage, and send quotes to client
 ## Project Structure
 
 ```
-src/
 ├── QuoteCraft.sln
 ├── global.json
 ├── Directory.Build.props
 ├── Directory.Packages.props
+├── docs/                                # PRD, architecture, design and revenue-model briefs
+├── QuoteCraft.Tests/                    # xUnit tests (quote numbering, feature gates, quote entity)
 └── QuoteCraft/
     ├── QuoteCraft.csproj
     ├── App.xaml / App.xaml.cs          # App shell, DI, routing, styles
@@ -85,7 +86,7 @@ src/
 1. **Clone the repository**
    ```bash
    git clone https://github.com/mtmattei/QuoteCraft.git
-   cd QuoteCraft/src
+   cd QuoteCraft
    ```
 
 2. **Restore and build**
@@ -96,6 +97,11 @@ src/
 3. **Run the app**
    ```bash
    dotnet run --project QuoteCraft/QuoteCraft.csproj -f net10.0-desktop
+   ```
+
+4. **Run the tests**
+   ```bash
+   dotnet test QuoteCraft.Tests/QuoteCraft.Tests.csproj
    ```
 
 ### Target Frameworks

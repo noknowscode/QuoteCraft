@@ -20,8 +20,7 @@ public class ClientRepository : IClientRepository
 
     public async Task<List<ClientEntity>> GetAllAsync()
     {
-        await _db.InitializeAsync();
-        using var conn = await _db.CreateConnectionAsync();
+        var conn = await _db.GetConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT * FROM clients WHERE is_deleted = 0 ORDER BY name";
@@ -37,8 +36,7 @@ public class ClientRepository : IClientRepository
 
     public async Task<ClientEntity?> GetByIdAsync(string id)
     {
-        await _db.InitializeAsync();
-        using var conn = await _db.CreateConnectionAsync();
+        var conn = await _db.GetConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT * FROM clients WHERE id = @id AND is_deleted = 0";
@@ -54,20 +52,20 @@ public class ClientRepository : IClientRepository
 
     public async Task SaveAsync(ClientEntity client)
     {
-        await _db.InitializeAsync();
-        using var conn = await _db.CreateConnectionAsync();
+        var conn = await _db.GetConnectionAsync();
 
         client.UpdatedAt = DateTimeOffset.UtcNow;
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = """
             INSERT INTO clients
-            (id, name, email, phone, address, updated_at, is_deleted)
+            (id, name, email, phone, address, updated_at, synced_at, is_deleted)
             VALUES
-            (@id, @name, @email, @phone, @address, @updated_at, @is_deleted)
+            (@id, @name, @email, @phone, @address, @updated_at, @synced_at, @is_deleted)
             ON CONFLICT(id) DO UPDATE SET
                 name=excluded.name, email=excluded.email, phone=excluded.phone,
-                address=excluded.address, updated_at=excluded.updated_at, is_deleted=excluded.is_deleted
+                address=excluded.address, updated_at=excluded.updated_at,
+                synced_at=excluded.synced_at, is_deleted=excluded.is_deleted
             """;
         cmd.Parameters.AddWithValue("@id", client.Id);
         cmd.Parameters.AddWithValue("@name", client.Name);
@@ -75,14 +73,14 @@ public class ClientRepository : IClientRepository
         cmd.Parameters.AddWithValue("@phone", (object?)client.Phone ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@address", (object?)client.Address ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@updated_at", client.UpdatedAt.ToString("O"));
+        cmd.Parameters.AddWithValue("@synced_at", (object?)client.SyncedAt?.ToString("O") ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@is_deleted", client.IsDeleted ? 1 : 0);
         await cmd.ExecuteNonQueryAsync();
     }
 
     public async Task DeleteAsync(string id)
     {
-        await _db.InitializeAsync();
-        using var conn = await _db.CreateConnectionAsync();
+        var conn = await _db.GetConnectionAsync();
 
         using var tx = conn.BeginTransaction();
         try
@@ -116,8 +114,7 @@ public class ClientRepository : IClientRepository
 
     public async Task<int> CountActiveAsync()
     {
-        await _db.InitializeAsync();
-        using var conn = await _db.CreateConnectionAsync();
+        var conn = await _db.GetConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT COUNT(*) FROM clients WHERE is_deleted = 0";

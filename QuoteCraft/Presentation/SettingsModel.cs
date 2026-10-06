@@ -6,6 +6,8 @@ public partial record SettingsModel
     private readonly IBusinessProfileRepository _profileRepo;
     private readonly ICatalogItemRepository _catalogRepo;
     private readonly Services.IFeatureGateService _featureGate;
+    private readonly Services.ISubscriptionService _subscriptionService;
+    private readonly Services.IAuthService _authService;
     private readonly ILogger<SettingsModel> _logger;
 
     public SettingsModel(
@@ -13,12 +15,16 @@ public partial record SettingsModel
         IBusinessProfileRepository profileRepo,
         ICatalogItemRepository catalogRepo,
         Services.IFeatureGateService featureGate,
+        Services.ISubscriptionService subscriptionService,
+        Services.IAuthService authService,
         ILogger<SettingsModel> logger)
     {
         _navigator = navigator;
         _profileRepo = profileRepo;
         _catalogRepo = catalogRepo;
         _featureGate = featureGate;
+        _subscriptionService = subscriptionService;
+        _authService = authService;
         _logger = logger;
         _ = InitializeAsync();
     }
@@ -66,6 +72,8 @@ public partial record SettingsModel
     public IState<string> Phone => State<string>.Value(this, () => string.Empty);
     public IState<string> Email => State<string>.Value(this, () => string.Empty);
     public IState<string> Address => State<string>.Value(this, () => string.Empty);
+    public IState<string> Website => State<string>.Value(this, () => string.Empty);
+    public IState<string> BusinessNumber => State<string>.Value(this, () => string.Empty);
     public IState<string> DefaultTaxRate => State<string>.Value(this, () => "13.0");
     public IState<string> DefaultMarkup => State<string>.Value(this, () => "0");
     public IState<string> CurrencyCode => State<string>.Value(this, () => "USD");
@@ -81,6 +89,8 @@ public partial record SettingsModel
         await Phone.UpdateAsync(_ => profile.Phone ?? string.Empty, ct);
         await Email.UpdateAsync(_ => profile.Email ?? string.Empty, ct);
         await Address.UpdateAsync(_ => profile.Address ?? string.Empty, ct);
+        await Website.UpdateAsync(_ => profile.Website ?? string.Empty, ct);
+        await BusinessNumber.UpdateAsync(_ => profile.BusinessNumber ?? string.Empty, ct);
         await DefaultTaxRate.UpdateAsync(_ => profile.DefaultTaxRate.ToString("F1"), ct);
         await DefaultMarkup.UpdateAsync(_ => profile.DefaultMarkup.ToString("F1"), ct);
         await CurrencyCode.UpdateAsync(_ => profile.CurrencyCode, ct);
@@ -98,6 +108,8 @@ public partial record SettingsModel
         profile.Phone = await Phone;
         profile.Email = await Email;
         profile.Address = await Address;
+        profile.Website = await Website;
+        profile.BusinessNumber = await BusinessNumber;
         profile.CustomFooter = await CustomFooter;
         profile.LogoPath = await LogoPath;
         profile.QuoteNumberPrefix = await QuoteNumberPrefix ?? "QC-";
@@ -134,4 +146,60 @@ public partial record SettingsModel
             File.Delete(currentPath);
         await LogoPath.UpdateAsync(_ => string.Empty, ct);
     }
+
+    public async ValueTask UpgradeToPro(CancellationToken ct)
+    {
+        try
+        {
+            var url = await _subscriptionService.GetCheckoutUrlAsync("pro", "monthly");
+            if (!string.IsNullOrEmpty(url))
+            {
+                await Windows.System.Launcher.LaunchUriAsync(new Uri(url));
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to open checkout");
+        }
+    }
+
+    public async ValueTask UpgradeToProAnnual(CancellationToken ct)
+    {
+        try
+        {
+            var url = await _subscriptionService.GetCheckoutUrlAsync("pro", "annual");
+            if (!string.IsNullOrEmpty(url))
+            {
+                await Windows.System.Launcher.LaunchUriAsync(new Uri(url));
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to open checkout");
+        }
+    }
+
+    public async ValueTask ManageSubscription(CancellationToken ct)
+    {
+        try
+        {
+            var url = await _subscriptionService.GetCustomerPortalUrlAsync();
+            if (!string.IsNullOrEmpty(url))
+            {
+                await Windows.System.Launcher.LaunchUriAsync(new Uri(url));
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to open customer portal");
+        }
+    }
+
+    public async ValueTask SignOut(CancellationToken ct)
+    {
+        await _authService.SignOutAsync();
+        await _navigator.NavigateRouteAsync(this, "Auth", qualifier: Qualifiers.ClearBackStack);
+    }
+
+    public bool IsAuthenticated => _authService.CurrentState.IsAuthenticated;
 }

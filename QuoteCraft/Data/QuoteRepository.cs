@@ -15,6 +15,7 @@ public interface IQuoteRepository
     Task DeleteLineItemAsync(string id);
     Task<List<LineItemEntity>> GetLineItemsAsync(string quoteId);
     Task<int> CountCreatedSinceAsync(DateTimeOffset since);
+    Task<List<QuoteEntity>> GetExpirableAsync(DateTimeOffset now);
 }
 
 public class QuoteRepository : IQuoteRepository
@@ -30,8 +31,7 @@ public class QuoteRepository : IQuoteRepository
 
     public async Task<List<QuoteEntity>> GetAllAsync()
     {
-        await _db.InitializeAsync();
-        using var conn = await _db.CreateConnectionAsync();
+        var conn = await _db.GetConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT * FROM quotes WHERE is_deleted = 0 ORDER BY created_at DESC";
@@ -71,8 +71,7 @@ public class QuoteRepository : IQuoteRepository
 
     public async Task<QuoteEntity?> GetByIdAsync(string id)
     {
-        await _db.InitializeAsync();
-        using var conn = await _db.CreateConnectionAsync();
+        var conn = await _db.GetConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT * FROM quotes WHERE id = @id AND is_deleted = 0";
@@ -90,23 +89,23 @@ public class QuoteRepository : IQuoteRepository
 
     public async Task SaveAsync(QuoteEntity quote)
     {
-        await _db.InitializeAsync();
-        using var conn = await _db.CreateConnectionAsync();
+        var conn = await _db.GetConnectionAsync();
 
         quote.UpdatedAt = DateTimeOffset.UtcNow;
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = """
             INSERT INTO quotes
-            (id, title, client_id, client_name, notes, tax_rate, status, quote_number, created_at, sent_at, valid_until, updated_at, is_deleted)
+            (id, title, client_id, client_name, notes, tax_rate, status, quote_number, created_at, sent_at, valid_until, updated_at, synced_at, share_token, is_deleted)
             VALUES
-            (@id, @title, @client_id, @client_name, @notes, @tax_rate, @status, @quote_number, @created_at, @sent_at, @valid_until, @updated_at, @is_deleted)
+            (@id, @title, @client_id, @client_name, @notes, @tax_rate, @status, @quote_number, @created_at, @sent_at, @valid_until, @updated_at, @synced_at, @share_token, @is_deleted)
             ON CONFLICT(id) DO UPDATE SET
                 title=excluded.title, client_id=excluded.client_id, client_name=excluded.client_name,
                 notes=excluded.notes, tax_rate=excluded.tax_rate, status=excluded.status,
                 quote_number=excluded.quote_number, created_at=excluded.created_at,
                 sent_at=excluded.sent_at, valid_until=excluded.valid_until,
-                updated_at=excluded.updated_at, is_deleted=excluded.is_deleted
+                updated_at=excluded.updated_at, synced_at=excluded.synced_at,
+                share_token=excluded.share_token, is_deleted=excluded.is_deleted
             """;
         cmd.Parameters.AddWithValue("@id", quote.Id);
         cmd.Parameters.AddWithValue("@title", quote.Title);
@@ -120,14 +119,15 @@ public class QuoteRepository : IQuoteRepository
         cmd.Parameters.AddWithValue("@sent_at", (object?)quote.SentAt?.ToString("O") ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@valid_until", (object?)quote.ValidUntil?.ToString("O") ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@updated_at", quote.UpdatedAt.ToString("O"));
+        cmd.Parameters.AddWithValue("@synced_at", (object?)quote.SyncedAt?.ToString("O") ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@share_token", (object?)quote.ShareToken ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@is_deleted", quote.IsDeleted ? 1 : 0);
         await cmd.ExecuteNonQueryAsync();
     }
 
     public async Task DeleteAsync(string id)
     {
-        await _db.InitializeAsync();
-        using var conn = await _db.CreateConnectionAsync();
+        var conn = await _db.GetConnectionAsync();
 
         // Soft-delete the quote
         var cmd = conn.CreateCommand();
@@ -149,8 +149,7 @@ public class QuoteRepository : IQuoteRepository
 
     public async Task<int> GetQuoteCountAsync()
     {
-        await _db.InitializeAsync();
-        using var conn = await _db.CreateConnectionAsync();
+        var conn = await _db.GetConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT COUNT(*) FROM quotes WHERE is_deleted = 0";
@@ -160,8 +159,7 @@ public class QuoteRepository : IQuoteRepository
 
     public async Task SaveLineItemAsync(LineItemEntity item)
     {
-        await _db.InitializeAsync();
-        using var conn = await _db.CreateConnectionAsync();
+        var conn = await _db.GetConnectionAsync();
 
         item.UpdatedAt = DateTimeOffset.UtcNow;
 
@@ -188,8 +186,7 @@ public class QuoteRepository : IQuoteRepository
 
     public async Task SaveLineItemsBatchAsync(params LineItemEntity[] items)
     {
-        await _db.InitializeAsync();
-        using var conn = await _db.CreateConnectionAsync();
+        var conn = await _db.GetConnectionAsync();
 
         using var transaction = conn.BeginTransaction();
         try
@@ -225,8 +222,7 @@ public class QuoteRepository : IQuoteRepository
 
     public async Task DeleteLineItemAsync(string id)
     {
-        await _db.InitializeAsync();
-        using var conn = await _db.CreateConnectionAsync();
+        var conn = await _db.GetConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "DELETE FROM line_items WHERE id = @id";
@@ -236,8 +232,7 @@ public class QuoteRepository : IQuoteRepository
 
     public async Task<List<LineItemEntity>> GetLineItemsAsync(string quoteId)
     {
-        await _db.InitializeAsync();
-        using var conn = await _db.CreateConnectionAsync();
+        var conn = await _db.GetConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT * FROM line_items WHERE quote_id = @quote_id ORDER BY sort_order";
@@ -254,13 +249,35 @@ public class QuoteRepository : IQuoteRepository
 
     public async Task<int> CountCreatedSinceAsync(DateTimeOffset since)
     {
-        await _db.InitializeAsync();
-        using var conn = await _db.CreateConnectionAsync();
+        var conn = await _db.GetConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT COUNT(*) FROM quotes WHERE is_deleted = 0 AND created_at >= @since";
         cmd.Parameters.AddWithValue("@since", since.ToString("O"));
         return Convert.ToInt32(await cmd.ExecuteScalarAsync());
+    }
+
+    public async Task<List<QuoteEntity>> GetExpirableAsync(DateTimeOffset now)
+    {
+        var conn = await _db.GetConnectionAsync();
+
+        var cmd = conn.CreateCommand();
+        cmd.CommandText = """
+            SELECT * FROM quotes
+            WHERE is_deleted = 0
+              AND status IN ('Draft', 'Sent', 'Viewed')
+              AND valid_until IS NOT NULL
+              AND valid_until < @now
+            """;
+        cmd.Parameters.AddWithValue("@now", now.ToString("O"));
+
+        var quotes = new List<QuoteEntity>();
+        using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            quotes.Add(ReadQuote(reader));
+        }
+        return quotes;
     }
 
     private static LineItemEntity ReadLineItem(SqliteDataReader reader)
@@ -279,6 +296,9 @@ public class QuoteRepository : IQuoteRepository
 
     private static QuoteEntity ReadQuote(SqliteDataReader reader)
     {
+        var syncedAtOrd = TryGetOrdinal(reader, "synced_at");
+        var shareTokenOrd = TryGetOrdinal(reader, "share_token");
+
         return new QuoteEntity
         {
             Id = reader.GetString(reader.GetOrdinal("id")),
@@ -293,7 +313,14 @@ public class QuoteRepository : IQuoteRepository
             SentAt = reader.IsDBNull(reader.GetOrdinal("sent_at")) ? null : DateTimeOffset.Parse(reader.GetString(reader.GetOrdinal("sent_at"))),
             ValidUntil = reader.IsDBNull(reader.GetOrdinal("valid_until")) ? null : DateTimeOffset.Parse(reader.GetString(reader.GetOrdinal("valid_until"))),
             UpdatedAt = DateTimeOffset.Parse(reader.GetString(reader.GetOrdinal("updated_at"))),
+            SyncedAt = syncedAtOrd >= 0 && !reader.IsDBNull(syncedAtOrd) ? DateTimeOffset.Parse(reader.GetString(syncedAtOrd)) : null,
+            ShareToken = shareTokenOrd >= 0 && !reader.IsDBNull(shareTokenOrd) ? reader.GetString(shareTokenOrd) : null,
             IsDeleted = reader.GetInt32(reader.GetOrdinal("is_deleted")) == 1
         };
+    }
+
+    private static int TryGetOrdinal(SqliteDataReader reader, string name)
+    {
+        try { return reader.GetOrdinal(name); } catch { return -1; }
     }
 }

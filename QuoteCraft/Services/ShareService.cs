@@ -7,6 +7,9 @@ public interface IShareService
     Task ShareQuotePdfAsync(QuoteEntity quote);
     Task GenerateAndDownloadPdfAsync(QuoteEntity quote);
     Task MarkAsSentAsync(QuoteEntity quote);
+    Task<string> GenerateShareLinkAsync(QuoteEntity quote);
+    Task CopyShareLinkAsync(QuoteEntity quote);
+    Task ShareViaSmsAsync(QuoteEntity quote, string phoneNumber);
 }
 
 public class ShareService : IShareService
@@ -57,6 +60,51 @@ public class ShareService : IShareService
                 await _quoteRepo.SaveAsync(fresh);
             }
         }
+    }
+
+    public async Task<string> GenerateShareLinkAsync(QuoteEntity quote)
+    {
+        var fresh = await _quoteRepo.GetByIdAsync(quote.Id) ?? quote;
+
+        // Generate share token if not already present
+        if (string.IsNullOrEmpty(fresh.ShareToken))
+        {
+            fresh.ShareToken = GenerateShareToken();
+            fresh.UpdatedAt = DateTimeOffset.UtcNow;
+            await _quoteRepo.SaveAsync(fresh);
+        }
+
+        // Construct the client-facing URL
+        return $"{Data.Remote.SupabaseConfig.Url}/functions/v1/quote-view?token={fresh.ShareToken}";
+    }
+
+    public async Task CopyShareLinkAsync(QuoteEntity quote)
+    {
+        var link = await GenerateShareLinkAsync(quote);
+
+        // Copy to clipboard using platform-specific approach
+        var dataPackage = new Windows.ApplicationModel.DataTransfer.DataPackage();
+        dataPackage.SetText(link);
+        Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(dataPackage);
+    }
+
+    public async Task ShareViaSmsAsync(QuoteEntity quote, string phoneNumber)
+    {
+        var link = await GenerateShareLinkAsync(quote);
+        var message = $"Here's your quote #{quote.QuoteNumber}: {link}";
+
+        // Use the system SMS launcher
+        var uri = new Uri($"sms:{phoneNumber}?body={Uri.EscapeDataString(message)}");
+        await Windows.System.Launcher.LaunchUriAsync(uri);
+
+        await MarkAsSentAsync(quote);
+    }
+
+    private static string GenerateShareToken()
+    {
+        var bytes = new byte[16];
+        System.Security.Cryptography.RandomNumberGenerator.Fill(bytes);
+        return Convert.ToHexString(bytes).ToLowerInvariant();
     }
 
 #if !__BROWSERWASM__

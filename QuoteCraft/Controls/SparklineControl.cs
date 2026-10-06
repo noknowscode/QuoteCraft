@@ -19,6 +19,8 @@ public sealed class SparklineControl : Grid
         Opacity = 0.15,
     };
 
+    private DispatcherTimer? _debounceTimer;
+
     public static readonly DependencyProperty ValuesProperty =
         DependencyProperty.Register(nameof(Values), typeof(double[]), typeof(SparklineControl),
             new PropertyMetadata(null, OnValuesChanged));
@@ -43,7 +45,19 @@ public sealed class SparklineControl : Grid
     {
         Children.Add(_fill);
         Children.Add(_line);
-        SizeChanged += (_, _) => Redraw();
+        SizeChanged += (_, _) => DebouncedRedraw();
+    }
+
+    private void DebouncedRedraw()
+    {
+        _debounceTimer?.Stop();
+        _debounceTimer ??= new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
+        _debounceTimer.Tick += (_, _) =>
+        {
+            _debounceTimer.Stop();
+            Redraw();
+        };
+        _debounceTimer.Start();
     }
 
     private static void OnValuesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -70,7 +84,7 @@ public sealed class SparklineControl : Grid
         var min = data.Min();
         var max = data.Max();
         var range = max - min;
-        if (range == 0) range = 1; // avoid division by zero
+        if (range == 0) range = 1;
 
         var padding = 4.0;
         var plotH = h - padding * 2;
@@ -87,7 +101,6 @@ public sealed class SparklineControl : Grid
             fillPoints.Add(new Windows.Foundation.Point(x, y));
         }
 
-        // Close the fill polygon along the bottom
         fillPoints.Add(new Windows.Foundation.Point(w, h));
         fillPoints.Add(new Windows.Foundation.Point(0, h));
 

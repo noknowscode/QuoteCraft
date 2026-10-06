@@ -29,6 +29,12 @@
       <Color x:Key="StatusDeclinedForegroundColor">#B91C1C</Color>
       <SolidColorBrush x:Key="StatusDeclinedForegroundBrush" Color="{StaticResource StatusDeclinedForegroundColor}" />
 
+      <!-- Expired -->
+      <Color x:Key="StatusExpiredBackgroundColor">#F3F4F6</Color>
+      <SolidColorBrush x:Key="StatusExpiredBackgroundBrush" Color="{StaticResource StatusExpiredBackgroundColor}" />
+      <Color x:Key="StatusExpiredForegroundColor">#9CA3AF</Color>
+      <SolidColorBrush x:Key="StatusExpiredForegroundBrush" Color="{StaticResource StatusExpiredForegroundColor}" />
+
       <!-- Surface variant / outline for XAML pages -->
       <Color x:Key="SurfaceVariantColor">#F3F4F6</Color>
       <SolidColorBrush x:Key="SurfaceVariantBrush" Color="{StaticResource SurfaceVariantColor}" />
@@ -62,6 +68,12 @@
       <SolidColorBrush x:Key="StatusDeclinedBackgroundBrush" Color="{StaticResource StatusDeclinedBackgroundColor}" />
       <Color x:Key="StatusDeclinedForegroundColor">#FCA5A5</Color>
       <SolidColorBrush x:Key="StatusDeclinedForegroundBrush" Color="{StaticResource StatusDeclinedForegroundColor}" />
+
+      <!-- Expired -->
+      <Color x:Key="StatusExpiredBackgroundColor">#374151</Color>
+      <SolidColorBrush x:Key="StatusExpiredBackgroundBrush" Color="{StaticResource StatusExpiredBackgroundColor}" />
+      <Color x:Key="StatusExpiredForegroundColor">#6B7280</Color>
+      <SolidColorBrush x:Key="StatusExpiredForegroundBrush" Color="{StaticResource StatusExpiredForegroundColor}" />
 
       <!-- Surface variant / outline for XAML pages -->
       <Color x:Key="SurfaceVariantColor">#374151</Color>

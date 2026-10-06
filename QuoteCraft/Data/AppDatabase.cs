@@ -6,6 +6,7 @@ public class AppDatabase
 {
     private readonly string _connectionString;
     private readonly SemaphoreSlim _initLock = new(1, 1);
+    private SqliteConnection? _sharedConnection;
     private bool _initialized;
 
     public AppDatabase()
@@ -50,17 +51,38 @@ public class AppDatabase
     }
 #endif
 
-    public async Task InitializeAsync()
+    /// <summary>
+    /// Returns the shared persistent connection. Opens and initializes on first call.
+    /// Do NOT dispose the returned connection — it is shared across the app lifetime.
+    /// </summary>
+    public async Task<SqliteConnection> GetConnectionAsync()
     {
-        if (_initialized) return;
+        if (_initialized && _sharedConnection is { State: System.Data.ConnectionState.Open })
+            return _sharedConnection;
 
         await _initLock.WaitAsync();
         try
         {
-            if (_initialized) return;
+            if (_initialized && _sharedConnection is { State: System.Data.ConnectionState.Open })
+                return _sharedConnection;
 
-            await InitializeCoreAsync();
-            _initialized = true;
+            // Open persistent connection
+            _sharedConnection?.Dispose();
+            _sharedConnection = new SqliteConnection(_connectionString);
+            await _sharedConnection.OpenAsync();
+
+            // PRAGMAs — set once on the persistent connection
+            var pragmaCmd = _sharedConnection.CreateCommand();
+            pragmaCmd.CommandText = "PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;";
+            await pragmaCmd.ExecuteNonQueryAsync();
+
+            if (!_initialized)
+            {
+                await InitializeCoreAsync(_sharedConnection);
+                _initialized = true;
+            }
+
+            return _sharedConnection;
         }
         finally
         {
@@ -68,10 +90,29 @@ public class AppDatabase
         }
     }
 
-    private async Task InitializeCoreAsync()
+    // Keep for backward compat during init — creates a temporary connection
+    [Obsolete("Use GetConnectionAsync() instead")]
+    public async Task InitializeAsync()
     {
-        using var connection = await CreateConnectionAsync();
+        await GetConnectionAsync();
+    }
 
+    // Keep for backward compat — but callers should migrate to GetConnectionAsync()
+    [Obsolete("Use GetConnectionAsync() instead")]
+    public async Task<SqliteConnection> CreateConnectionAsync()
+    {
+        var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync();
+
+        var fkCmd = connection.CreateCommand();
+        fkCmd.CommandText = "PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;";
+        await fkCmd.ExecuteNonQueryAsync();
+
+        return connection;
+    }
+
+    private static async Task InitializeCoreAsync(SqliteConnection connection)
+    {
         // Enable WAL mode for better concurrent read performance
         var walCmd = connection.CreateCommand();
         walCmd.CommandText = "PRAGMA journal_mode=WAL;";
@@ -169,16 +210,56 @@ public class AppDatabase
         versionCmd.CommandText = "SELECT COALESCE(MAX(version), 0) FROM schema_version";
         var currentVersion = Convert.ToInt32(await versionCmd.ExecuteScalarAsync());
 
-        // Define migrations: version -> SQL to execute
-        // Add new migrations here as the schema evolves:
-        //   { 2, "ALTER TABLE quotes ADD COLUMN discount REAL NOT NULL DEFAULT 0;" },
-        //   { 3, "CREATE INDEX idx_quotes_client_id ON quotes(client_id);" },
         var migrations = new SortedDictionary<int, string>
         {
-            // Version 1 is the initial schema (tables created above)
-            // Migration 2 was: ADD COLUMN default_markup, but it already exists in the initial CREATE TABLE.
-            // Kept as empty string so the version is still recorded for databases that already ran it.
             { 2, "" },
+
+            { 3, """
+                ALTER TABLE quotes ADD COLUMN synced_at TEXT;
+                ALTER TABLE quotes ADD COLUMN share_token TEXT;
+                ALTER TABLE clients ADD COLUMN synced_at TEXT;
+                ALTER TABLE line_items ADD COLUMN synced_at TEXT;
+                ALTER TABLE business_profile ADD COLUMN synced_at TEXT;
+                ALTER TABLE catalog_items ADD COLUMN synced_at TEXT;
+
+                CREATE TABLE IF NOT EXISTS status_history (
+                    id TEXT PRIMARY KEY,
+                    quote_id TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    changed_at TEXT NOT NULL,
+                    changed_by TEXT,
+                    FOREIGN KEY (quote_id) REFERENCES quotes(id)
+                );
+
+                CREATE TABLE IF NOT EXISTS notifications (
+                    id TEXT PRIMARY KEY,
+                    type TEXT NOT NULL,
+                    title TEXT NOT NULL,
+                    message TEXT NOT NULL,
+                    quote_id TEXT,
+                    is_read INTEGER NOT NULL DEFAULT 0,
+                    created_at TEXT NOT NULL,
+                    synced_at TEXT
+                );
+
+                CREATE INDEX IF NOT EXISTS idx_status_history_quote_id ON status_history(quote_id);
+                CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications(is_read);
+                CREATE INDEX IF NOT EXISTS idx_quotes_share_token ON quotes(share_token);
+                """ },
+
+            { 4, """
+                ALTER TABLE business_profile ADD COLUMN website TEXT;
+                ALTER TABLE business_profile ADD COLUMN business_number TEXT;
+                """ },
+
+            { 5, $$"""
+                UPDATE quotes SET status='Sent',     valid_until='{{DateTimeOffset.UtcNow.AddDays(14):O}}', updated_at='{{DateTimeOffset.UtcNow:O}}' WHERE title='Drain Cleaning Service';
+                UPDATE quotes SET status='Viewed',   valid_until='{{DateTimeOffset.UtcNow.AddDays(14):O}}', updated_at='{{DateTimeOffset.UtcNow:O}}' WHERE title='Office Plumbing Fit-out';
+                UPDATE quotes SET status='Draft',    valid_until='{{DateTimeOffset.UtcNow.AddDays(14):O}}', updated_at='{{DateTimeOffset.UtcNow:O}}' WHERE title='Emergency Pipe Repair';
+                UPDATE quotes SET status='Sent',     valid_until='{{DateTimeOffset.UtcNow.AddDays(14):O}}', updated_at='{{DateTimeOffset.UtcNow:O}}' WHERE title='Bathroom Remodel';
+                UPDATE quotes SET valid_until='{{DateTimeOffset.UtcNow.AddDays(14):O}}', updated_at='{{DateTimeOffset.UtcNow:O}}' WHERE title='Kitchen Renovation';
+                UPDATE quotes SET valid_until='{{DateTimeOffset.UtcNow.AddDays(14):O}}', updated_at='{{DateTimeOffset.UtcNow:O}}' WHERE title='Water Heater Install';
+                """ },
         };
 
         foreach (var (version, sql) in migrations)
@@ -322,18 +403,5 @@ public class AppDatabase
             cmd.Parameters.AddWithValue("@updated_at", now);
             await cmd.ExecuteNonQueryAsync();
         }
-    }
-
-    public async Task<SqliteConnection> CreateConnectionAsync()
-    {
-        var connection = new SqliteConnection(_connectionString);
-        await connection.OpenAsync();
-
-        // PRAGMA foreign_keys must be set per-connection (not persisted across connections)
-        var fkCmd = connection.CreateCommand();
-        fkCmd.CommandText = "PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;";
-        await fkCmd.ExecuteNonQueryAsync();
-
-        return connection;
     }
 }

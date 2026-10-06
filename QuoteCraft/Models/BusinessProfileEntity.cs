@@ -7,6 +7,8 @@ public class BusinessProfileEntity
     public string? Phone { get; set; }
     public string? Email { get; set; }
     public string? Address { get; set; }
+    public string? Website { get; set; }
+    public string? BusinessNumber { get; set; }
     public string? LogoPath { get; set; }
     public decimal DefaultTaxRate { get; set; }
     public decimal DefaultMarkup { get; set; }
@@ -15,4 +17,5 @@ public class BusinessProfileEntity
     public string QuoteNumberPrefix { get; set; } = "QC-";
     public string? CustomFooter { get; set; }
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset? SyncedAt { get; set; }
 }

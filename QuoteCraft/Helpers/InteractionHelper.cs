@@ -1,6 +1,7 @@
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using Microsoft.UI.Xaml.Input;
+using Windows.System;
 
 namespace QuoteCraft.Helpers;
 
@@ -34,6 +35,23 @@ public static class InteractionHelper
         public bool IsFocused;
     }
 
+    // ── Attached Property: Command ───────────────────────────────────
+    // Optional ICommand invoked on keyboard Enter/Space activation.
+    // Usage: <Border helpers:InteractionHelper.Command="{Binding SomeCommand}" ... />
+
+    public static readonly DependencyProperty CommandProperty =
+        DependencyProperty.RegisterAttached(
+            "Command",
+            typeof(System.Windows.Input.ICommand),
+            typeof(InteractionHelper),
+            new PropertyMetadata(null));
+
+    public static System.Windows.Input.ICommand? GetCommand(DependencyObject obj) =>
+        (System.Windows.Input.ICommand?)obj.GetValue(CommandProperty);
+
+    public static void SetCommand(DependencyObject obj, System.Windows.Input.ICommand? value) =>
+        obj.SetValue(CommandProperty, value);
+
     // ── Attached Property: IsInteractive ─────────────────────────────
     // Usage: <Border helpers:InteractionHelper.IsInteractive="True" ... />
 
@@ -63,6 +81,7 @@ public static class InteractionHelper
             border.PointerCanceled += Border_PointerCanceled;
             border.GotFocus += Border_GotFocus;
             border.LostFocus += Border_LostFocus;
+            border.KeyDown += Border_KeyDown;
             border.IsTabStop = true;
         }
         else
@@ -74,6 +93,7 @@ public static class InteractionHelper
             border.PointerCanceled -= Border_PointerCanceled;
             border.GotFocus -= Border_GotFocus;
             border.LostFocus -= Border_LostFocus;
+            border.KeyDown -= Border_KeyDown;
         }
     }
 
@@ -117,6 +137,29 @@ public static class InteractionHelper
         if (sender is not Border border) return;
         var state = GetState(border);
         state.IsHovered = false;
+        state.IsPressed = false;
+        ApplyVisualState(border, state);
+    }
+
+    private static void Border_KeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (sender is not Border border) return;
+        if (e.Key is not (VirtualKey.Enter or VirtualKey.Space)) return;
+
+        e.Handled = true;
+
+        // Press visual feedback
+        var state = GetState(border);
+        state.IsPressed = true;
+        ApplyVisualState(border, state);
+
+        // Invoke the attached Command if set, passing DataContext as parameter
+        var command = GetCommand(border);
+        var parameter = (border as FrameworkElement)?.DataContext;
+        if (command is not null && command.CanExecute(parameter))
+            command.Execute(parameter);
+
+        // Reset visual
         state.IsPressed = false;
         ApplyVisualState(border, state);
     }

@@ -168,12 +168,13 @@
         </Setter>
       </Style>
 
-      <!-- Inline TextBox Style (compact, no Material chrome) -->
+      <!-- Inline TextBox Style (compact, no Material chrome, with focus states) -->
       <Style x:Key="InlineTextBoxStyle" TargetType="TextBox">
         <Setter Property="MinHeight" Value="0" />
         <Setter Property="MinWidth" Value="0" />
         <Setter Property="Padding" Value="8,4" />
-        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{ThemeResource OnSurfaceBrush}" />
         <Setter Property="FontSize" Value="14" />
@@ -181,11 +182,45 @@
         <Setter Property="Template">
           <Setter.Value>
             <ControlTemplate TargetType="TextBox">
-              <Border Background="{TemplateBinding Background}"
+              <Border x:Name="RootBorder"
+                      Background="{TemplateBinding Background}"
                       BorderBrush="{TemplateBinding BorderBrush}"
                       BorderThickness="{TemplateBinding BorderThickness}"
                       Padding="{TemplateBinding Padding}"
                       CornerRadius="4">
+                <VisualStateManager.VisualStateGroups>
+                  <VisualStateGroup x:Name="CommonStates">
+                    <VisualState x:Name="Normal" />
+                    <VisualState x:Name="PointerOver">
+                      <Storyboard>
+                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootBorder"
+                                                       Storyboard.TargetProperty="BorderBrush">
+                          <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource OnSurfaceVariantBrush}" />
+                        </ObjectAnimationUsingKeyFrames>
+                      </Storyboard>
+                    </VisualState>
+                    <VisualState x:Name="Focused">
+                      <Storyboard>
+                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootBorder"
+                                                       Storyboard.TargetProperty="BorderBrush">
+                          <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource PrimaryBrush}" />
+                        </ObjectAnimationUsingKeyFrames>
+                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootBorder"
+                                                       Storyboard.TargetProperty="BorderThickness">
+                          <DiscreteObjectKeyFrame KeyTime="0" Value="0,0,0,2" />
+                        </ObjectAnimationUsingKeyFrames>
+                      </Storyboard>
+                    </VisualState>
+                    <VisualState x:Name="Disabled">
+                      <Storyboard>
+                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootBorder"
+                                                       Storyboard.TargetProperty="Opacity">
+                          <DiscreteObjectKeyFrame KeyTime="0" Value="0.4" />
+                        </ObjectAnimationUsingKeyFrames>
+                      </Storyboard>
+                    </VisualState>
+                  </VisualStateGroup>
+                </VisualStateManager.VisualStateGroups>
                 <ScrollViewer x:Name="ContentElement"
                               HorizontalScrollBarVisibility="Hidden"
                               VerticalScrollBarVisibility="Hidden"
@@ -265,12 +300,20 @@
         </Setter>
       </Style>
 
+      <!-- Vertical TabBar Style (no background, no chrome) -->
+      <Style x:Key="VerticalTabBarStyle" TargetType="utu:TabBar">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+      </Style>
+
       <!-- Side Nav TabBarItem Style (horizontal icon + label) -->
       <Style x:Key="SideNavTabBarItemStyle" TargetType="utu:TabBarItem">
         <Setter Property="Height" Value="40" />
         <Setter Property="MinWidth" Value="0" />
         <Setter Property="MinHeight" Value="0" />
         <Setter Property="Padding" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
         <Setter Property="Template">
           <Setter.Value>
             <ControlTemplate TargetType="utu:TabBarItem">

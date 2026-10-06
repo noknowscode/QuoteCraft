@@ -22,7 +22,7 @@
           <Border.Shadow>
             <ThemeShadow />
           </Border.Shadow>
-          <TextBlock Text="QC" Foreground="White"
+          <TextBlock Text="QC" Foreground="{StaticResource AppBarForegroundBrush}"
                      Style="{StaticResource HeadlineMediumBold}"
                      HorizontalAlignment="Center" VerticalAlignment="Center" />
         </Border>

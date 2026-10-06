@@ -29,45 +29,50 @@ public class FeatureGateService : IFeatureGateService
 {
     private readonly IQuoteRepository _quoteRepo;
     private readonly IClientRepository _clientRepo;
+    private readonly ISubscriptionService _subscriptionService;
 
-    // In the future, this will come from Stripe/Supabase user profile
-    private SubscriptionTier _currentTier = SubscriptionTier.Free;
-
-    public FeatureGateService(IQuoteRepository quoteRepo, IClientRepository clientRepo)
+    public FeatureGateService(
+        IQuoteRepository quoteRepo,
+        IClientRepository clientRepo,
+        ISubscriptionService subscriptionService)
     {
         _quoteRepo = quoteRepo;
         _clientRepo = clientRepo;
+        _subscriptionService = subscriptionService;
+
+        // Listen for tier changes from subscription service
+        _subscriptionService.TierChanged += tier => { /* tier is now live */ };
     }
 
-    public SubscriptionTier CurrentTier => _currentTier;
+    public SubscriptionTier CurrentTier => _subscriptionService.CurrentTier;
 
-    public int MaxQuotesPerMonth => _currentTier switch
+    public int MaxQuotesPerMonth => CurrentTier switch
     {
         SubscriptionTier.Free => 5,
         _ => int.MaxValue // Unlimited
     };
 
-    public int MaxClients => _currentTier switch
+    public int MaxClients => CurrentTier switch
     {
         SubscriptionTier.Free => 10,
         _ => int.MaxValue
     };
 
-    public bool HasPdfWatermark => _currentTier == SubscriptionTier.Free;
+    public bool HasPdfWatermark => CurrentTier == SubscriptionTier.Free;
 
-    public bool HasCloudSync => _currentTier >= SubscriptionTier.Pro;
+    public bool HasCloudSync => CurrentTier >= SubscriptionTier.Pro;
 
-    public bool HasAllCatalogs => _currentTier >= SubscriptionTier.Pro;
+    public bool HasAllCatalogs => CurrentTier >= SubscriptionTier.Pro;
 
-    public bool HasBranding => _currentTier >= SubscriptionTier.Pro;
+    public bool HasBranding => CurrentTier >= SubscriptionTier.Pro;
 
-    public bool HasNotifications => _currentTier >= SubscriptionTier.Pro;
+    public bool HasNotifications => CurrentTier >= SubscriptionTier.Pro;
 
-    public bool HasAdvancedStatuses => _currentTier >= SubscriptionTier.Pro;
+    public bool HasAdvancedStatuses => CurrentTier >= SubscriptionTier.Pro;
 
     public async Task<bool> CanCreateQuoteAsync()
     {
-        if (_currentTier >= SubscriptionTier.Pro)
+        if (CurrentTier >= SubscriptionTier.Pro)
             return true;
 
         var usedThisMonth = await GetQuotesUsedThisMonthAsync();
@@ -76,7 +81,7 @@ public class FeatureGateService : IFeatureGateService
 
     public async Task<bool> CanAddClientAsync()
     {
-        if (_currentTier >= SubscriptionTier.Pro)
+        if (CurrentTier >= SubscriptionTier.Pro)
             return true;
 
         var count = await GetClientCountAsync();

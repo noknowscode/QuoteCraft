@@ -16,13 +16,17 @@ public interface ICatalogItemRepository
 public class CatalogItemRepository : ICatalogItemRepository
 {
     private readonly AppDatabase _db;
+    private List<CatalogItemEntity>? _cache;
 
     public CatalogItemRepository(AppDatabase db) => _db = db;
 
+    private void InvalidateCache() => _cache = null;
+
     public async Task<List<CatalogItemEntity>> GetAllAsync()
     {
-        await _db.InitializeAsync();
-        using var conn = await _db.CreateConnectionAsync();
+        if (_cache is not null) return _cache;
+
+        var conn = await _db.GetConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT * FROM catalog_items WHERE is_deleted = 0 ORDER BY category, sort_order, description";
@@ -33,13 +37,13 @@ public class CatalogItemRepository : ICatalogItemRepository
         {
             items.Add(ReadItem(reader));
         }
+        _cache = items;
         return items;
     }
 
     public async Task<CatalogItemEntity?> GetByIdAsync(string id)
     {
-        await _db.InitializeAsync();
-        using var conn = await _db.CreateConnectionAsync();
+        var conn = await _db.GetConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT * FROM catalog_items WHERE id = @id AND is_deleted = 0";
@@ -55,8 +59,8 @@ public class CatalogItemRepository : ICatalogItemRepository
 
     public async Task SaveAsync(CatalogItemEntity item)
     {
-        await _db.InitializeAsync();
-        using var conn = await _db.CreateConnectionAsync();
+        InvalidateCache();
+        var conn = await _db.GetConnectionAsync();
 
         item.UpdatedAt = DateTimeOffset.UtcNow;
 
@@ -83,8 +87,8 @@ public class CatalogItemRepository : ICatalogItemRepository
 
     public async Task DeleteAsync(string id)
     {
-        await _db.InitializeAsync();
-        using var conn = await _db.CreateConnectionAsync();
+        InvalidateCache();
+        var conn = await _db.GetConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "UPDATE catalog_items SET is_deleted = 1, updated_at = @updated_at WHERE id = @id";
@@ -95,30 +99,14 @@ public class CatalogItemRepository : ICatalogItemRepository
 
     public async Task<List<string>> GetCategoriesAsync()
     {
-        await _db.InitializeAsync();
-        using var conn = await _db.CreateConnectionAsync();
-
-        var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT DISTINCT category FROM catalog_items WHERE is_deleted = 0 ORDER BY category";
-
-        var categories = new List<string>();
-        using var reader = await cmd.ExecuteReaderAsync();
-        while (await reader.ReadAsync())
-        {
-            categories.Add(reader.GetString(0));
-        }
-        return categories;
+        var all = await GetAllAsync();
+        return all.Select(i => i.Category).Distinct().OrderBy(c => c).ToList();
     }
 
     public async Task<int> GetItemCountAsync()
     {
-        await _db.InitializeAsync();
-        using var conn = await _db.CreateConnectionAsync();
-
-        var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT COUNT(*) FROM catalog_items WHERE is_deleted = 0";
-        var result = await cmd.ExecuteScalarAsync();
-        return Convert.ToInt32(result);
+        var all = await GetAllAsync();
+        return all.Count;
     }
 
     private static CatalogItemEntity ReadItem(SqliteDataReader reader)

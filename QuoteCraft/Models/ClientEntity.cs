@@ -8,5 +8,6 @@ public class ClientEntity
     public string? Phone { get; set; }
     public string? Address { get; set; }
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset? SyncedAt { get; set; }
     public bool IsDeleted { get; set; }
 }

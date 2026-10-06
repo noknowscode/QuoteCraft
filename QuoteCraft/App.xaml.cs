@@ -93,6 +93,20 @@ public partial class App : Application
                     services.AddSingleton<Services.IEmailLauncherService, Services.EmailLauncherService>();
                     services.AddSingleton<Services.IOnboardingService, Services.OnboardingService>();
                     services.AddSingleton<Services.IPhotoService, Services.PhotoService>();
+
+                    services.AddSingleton<IStatusHistoryRepository, StatusHistoryRepository>();
+
+                    // Shared HttpClient for auth, sync, and cloud services
+                    services.AddSingleton<HttpClient>();
+
+                    // Auth, sync, and cloud services
+                    services.AddSingleton<Services.IAuthService, Services.AuthService>();
+                    services.AddSingleton<Data.Remote.SupabaseClient>();
+                    services.AddSingleton<Services.ISyncService, Services.SyncService>();
+                    services.AddSingleton<Services.ISubscriptionService, Services.SubscriptionService>();
+                    services.AddSingleton<Services.INotificationService, Services.NotificationService>();
+                    services.AddSingleton<Helpers.ConnectivityHelper>();
+                    services.AddSingleton<Services.QuoteExpiryService>();
                 })
                 .UseNavigation(ReactiveViewModelMappings.ViewModelMappings, RegisterRoutes)
             );
@@ -119,11 +133,13 @@ public partial class App : Application
         views.Register(
             new ViewMap(ViewModel: typeof(ShellModel)),
             new ViewMap<OnboardingPage, OnboardingModel>(),
+            new ViewMap<AuthPage, AuthModel>(),
             new ViewMap<MainPage, MainModel>(),
             new ViewMap<DashboardPage, DashboardModel>(),
             new ViewMap<ClientsPage, ClientsModel>(),
             new ViewMap<CatalogPage, CatalogModel>(),
             new ViewMap<SettingsPage, SettingsModel>(),
+            // NotificationsPage is now an overlay panel in MainPage (not a routed page)
             new DataViewMap<ClientEditorPage, ClientEditorModel, ClientEntity>(),
             new DataViewMap<QuoteEditorPage, QuoteEditorModel, QuoteEntity>(),
             new DataViewMap<CatalogEditorPage, CatalogEditorModel, CatalogItemEntity>()
@@ -134,6 +150,7 @@ public partial class App : Application
                 Nested:
                 [
                     new ("Onboarding", View: views.FindByViewModel<OnboardingModel>()),
+                    new ("Auth", View: views.FindByViewModel<AuthModel>()),
                     new ("Main", View: views.FindByViewModel<MainModel>(), IsDefault: true,
                         Nested:
                         [

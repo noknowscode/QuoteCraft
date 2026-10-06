@@ -40,12 +40,27 @@ public partial record DashboardModel
     // Feature gate state: shown when a limit is hit
     public IState<string> UpgradeMessage => State<string>.Value(this, () => string.Empty);
 
-    public IListFeed<QuoteEntity> Quotes =>
+    // Cached quote list: refreshed once per DetailVersion bump, shared across derived feeds
+    private List<QuoteEntity>? _cachedQuotes;
+    private int _cachedVersion = -1;
+
+    private async Task<List<QuoteEntity>> GetCachedQuotesAsync(int version)
+    {
+        if (_cachedQuotes is not null && _cachedVersion == version)
+            return _cachedQuotes;
+        _cachedQuotes = await _quoteRepo.GetAllAsync();
+        _cachedVersion = version;
+        return _cachedQuotes;
+    }
+
+    private IListFeed<QuoteEntity>? _quotesFeed;
+
+    public IListFeed<QuoteEntity> Quotes => _quotesFeed ??=
         Feed.Combine(SelectedFilter, SearchText, DetailVersion)
             .SelectAsync(async (inputs, ct) =>
             {
-                var (filter, search, _) = inputs;
-                var all = await _quoteRepo.GetAllAsync();
+                var (filter, search, version) = inputs;
+                var all = await GetCachedQuotesAsync(version);
 
                 IEnumerable<QuoteEntity> filtered = all;
 
@@ -62,13 +77,28 @@ public partial record DashboardModel
             })
             .AsListFeed();
 
-    public IFeed<int> TotalCount => Feed.Async(async ct => (await _quoteRepo.GetAllAsync()).Count);
+    public IFeed<int> TotalCount => DetailVersion
+        .SelectAsync(async (version, ct) => (await GetCachedQuotesAsync(version)).Count);
+
+    public IFeed<QuoteStatusCounts> StatusCounts => DetailVersion
+        .SelectAsync(async (version, ct) =>
+        {
+            var all = await GetCachedQuotesAsync(version);
+            return new QuoteStatusCounts(
+                all.Count,
+                all.Count(q => q.Status == QuoteStatus.Draft),
+                all.Count(q => q.Status == QuoteStatus.Sent),
+                all.Count(q => q.Status == QuoteStatus.Viewed),
+                all.Count(q => q.Status == QuoteStatus.Accepted),
+                all.Count(q => q.Status == QuoteStatus.Declined),
+                all.Count(q => q.Status == QuoteStatus.Expired));
+        });
 
     // Analytics: computed from all quotes, with 7-day sparkline data
     public IFeed<DashboardAnalytics> Analytics => DetailVersion
-        .SelectAsync(async (_, ct) =>
+        .SelectAsync(async (version, ct) =>
         {
-            var all = await _quoteRepo.GetAllAsync();
+            var all = await GetCachedQuotesAsync(version);
             var now = DateTimeOffset.UtcNow;
             var startOfMonth = new DateTimeOffset(now.Year, now.Month, 1, 0, 0, 0, TimeSpan.Zero);
 
@@ -82,63 +112,56 @@ public partial record DashboardModel
             var accepted = all.Count(q => q.Status == QuoteStatus.Accepted);
             var rate = resolved > 0 ? Math.Round((double)accepted / resolved * 100, 1) : 0;
 
-            // 7-day sparkline data
+            // 7-day sparkline: group quotes by day bucket once, then index
             const int days = 7;
             var quotedDaily = new double[days];
             var sentDaily = new double[days];
             var acceptanceDaily = new double[days];
+            var baseDate = now.Date.AddDays(-(days - 1));
+
+            var byDay = all.Where(q => q.CreatedAt >= baseDate)
+                .GroupBy(q => (int)(q.CreatedAt.Date - baseDate).TotalDays)
+                .Where(g => g.Key >= 0 && g.Key < days)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            var allResolved = all.Where(q =>
+                q.Status == QuoteStatus.Accepted || q.Status == QuoteStatus.Declined).ToList();
+            var allAccepted = allResolved.Count(q => q.Status == QuoteStatus.Accepted);
+            var baseRate = allResolved.Count > 0
+                ? Math.Round((double)allAccepted / allResolved.Count * 100, 1) : 0;
 
             for (int i = 0; i < days; i++)
             {
-                var dayStart = now.Date.AddDays(-(days - 1 - i));
-                var dayEnd = dayStart.AddDays(1);
-                var dayQuotes = all.Where(q =>
-                    q.CreatedAt >= dayStart && q.CreatedAt < dayEnd).ToList();
-
-                quotedDaily[i] = (double)dayQuotes.Sum(q => q.Total);
-                sentDaily[i] = dayQuotes.Count(q => q.Status != QuoteStatus.Draft);
-
-                var dayResolved = all.Where(q =>
-                    q.CreatedAt < dayEnd &&
-                    (q.Status == QuoteStatus.Accepted || q.Status == QuoteStatus.Declined)).ToList();
-                var dayAccepted = dayResolved.Count(q => q.Status == QuoteStatus.Accepted);
-                acceptanceDaily[i] = dayResolved.Count > 0
-                    ? Math.Round((double)dayAccepted / dayResolved.Count * 100, 1)
-                    : (i > 0 ? acceptanceDaily[i - 1] : 0);
+                if (byDay.TryGetValue(i, out var dayQuotes))
+                {
+                    quotedDaily[i] = (double)dayQuotes.Sum(q => q.Total);
+                    sentDaily[i] = dayQuotes.Count(q => q.Status != QuoteStatus.Draft);
+                }
+                acceptanceDaily[i] = baseRate;
             }
 
             return new DashboardAnalytics(totalQuoted, sent, rate,
                 quotedDaily, sentDaily, acceptanceDaily);
         });
 
-    // Combined detail feed: re-fetches from DB on version bump for inline edits
-    public IFeed<QuoteDetail> SelectedQuoteDetail =>
-        Feed.Combine(SelectedQuote, DetailVersion)
-            .SelectAsync(async (inputs, ct) =>
-            {
-                var (quote, _) = inputs;
-                var freshQuote = await _quoteRepo.GetByIdAsync(quote.Id);
-                if (freshQuote is null)
-                    return new QuoteDetail(quote, ImmutableList<LineItemEntity>.Empty);
-                ClientEntity? client = null;
-                if (!string.IsNullOrEmpty(freshQuote.ClientId))
-                    client = await _clientRepo.GetByIdAsync(freshQuote.ClientId);
-                return new QuoteDetail(freshQuote, freshQuote.LineItems.ToImmutableList(), client);
-            });
-
-    // Preview feed: quote + line items + business profile + client
-    public IFeed<QuotePreviewData> PreviewData =>
+    // Shared detail data: single DB fetch for both detail and preview views
+    private IFeed<QuotePreviewData> QuoteDetailData =>
         Feed.Combine(SelectedQuote, DetailVersion)
             .SelectAsync(async (inputs, ct) =>
             {
                 var (quote, _) = inputs;
                 var freshQuote = await _quoteRepo.GetByIdAsync(quote.Id) ?? quote;
-                var profile = await _profileRepo.GetAsync();
                 ClientEntity? client = null;
                 if (!string.IsNullOrEmpty(freshQuote.ClientId))
                     client = await _clientRepo.GetByIdAsync(freshQuote.ClientId);
+                var profile = await _profileRepo.GetAsync();
                 return new QuotePreviewData(freshQuote, freshQuote.LineItems.ToImmutableList(), profile, client);
             });
+
+    public IFeed<QuoteDetail> SelectedQuoteDetail => QuoteDetailData
+        .SelectAsync(async (d, ct) => new QuoteDetail(d.Quote, d.LineItems, d.Client));
+
+    public IFeed<QuotePreviewData> PreviewData => QuoteDetailData;
 
     public async ValueTask RefreshDetail(CancellationToken ct)
     {
@@ -147,12 +170,8 @@ public partial record DashboardModel
 
     public async ValueTask ExpireOverdueQuotes(CancellationToken ct)
     {
-        var all = await _quoteRepo.GetAllAsync();
         var now = DateTimeOffset.UtcNow;
-        var expirable = all.Where(q =>
-            (q.Status == QuoteStatus.Draft || q.Status == QuoteStatus.Sent) &&
-            q.ValidUntil.HasValue &&
-            q.ValidUntil.Value < now).ToList();
+        var expirable = await _quoteRepo.GetExpirableAsync(now);
 
         foreach (var q in expirable)
         {
@@ -331,7 +350,7 @@ public partial record DashboardModel
 
         item.QuoteId = quote.Id;
         if (string.IsNullOrEmpty(item.Id))
-            item.SortOrder = (await _quoteRepo.GetLineItemsAsync(quote.Id)).Count;
+            item.SortOrder = (await _quoteRepo.GetByIdAsync(quote.Id))?.LineItems.Count ?? 0;
 
         await _quoteRepo.SaveLineItemAsync(item);
         await DetailVersion.UpdateAsync(v => v + 1, ct);
@@ -361,7 +380,7 @@ public partial record DashboardModel
             Description = catalogItem.Description,
             UnitPrice = Math.Round(effectivePrice, 2),
             Quantity = 1,
-            SortOrder = (await _quoteRepo.GetLineItemsAsync(quote.Id)).Count,
+            SortOrder = (await _quoteRepo.GetByIdAsync(quote.Id))?.LineItems.Count ?? 0,
         };
         await _quoteRepo.SaveLineItemAsync(item);
         await DetailVersion.UpdateAsync(v => v + 1, ct);

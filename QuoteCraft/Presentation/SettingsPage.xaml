@@ -34,7 +34,7 @@
       </Grid.ColumnDefinitions>
 
       <!-- Left Column: Settings Form -->
-      <ScrollViewer Grid.Column="0">
+      <ScrollViewer Grid.Column="0" Padding="0,0,24,0">
         <StackPanel Spacing="28">
 
         <!-- Upgrade Banner -->
@@ -49,15 +49,17 @@
             <StackPanel Spacing="4">
               <TextBlock Text="Unlock QuoteCraft Pro"
                          Style="{StaticResource TitleMedium}"
-                         Foreground="White" FontWeight="Bold" />
+                         Foreground="{StaticResource AppBarForegroundBrush}" FontWeight="Bold" />
               <TextBlock Text="Unlimited quotes, custom branding, and priority support"
                          Style="{StaticResource BodySmall}"
                          Foreground="{StaticResource UpgradeBannerSubtitleBrush}"
                          TextWrapping="Wrap" />
             </StackPanel>
             <Button Style="{StaticResource AccentButtonStyle}"
-                    HorizontalAlignment="Left">
-              <TextBlock Text="Upgrade — $15/mo" Foreground="White"
+                    Command="{Binding UpgradeToPro}"
+                    HorizontalAlignment="Left"
+                    AutomationProperties.Name="Upgrade to Pro">
+              <TextBlock Text="Upgrade — $15/mo" Foreground="{StaticResource AppBarBackgroundBrush}"
                          Style="{StaticResource LabelLargeSemiBold}" />
             </Button>
           </StackPanel>
@@ -74,7 +76,7 @@
                   BorderBrush="{ThemeResource OutlineVariantBrush}"
                   BorderThickness="1" CornerRadius="12">
             <StackPanel>
-              <Grid Padding="20,0" MinHeight="52">
+              <Grid Padding="20,0" MinHeight="40">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="140" />
                   <ColumnDefinition Width="*" />
@@ -90,7 +92,7 @@
               </Grid>
               <Border Height="1" Background="{ThemeResource OutlineVariantBrush}" Margin="20,0" />
 
-              <Grid Padding="20,0" MinHeight="52">
+              <Grid Padding="20,0" MinHeight="40">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="140" />
                   <ColumnDefinition Width="*" />
@@ -107,7 +109,7 @@
               </Grid>
               <Border Height="1" Background="{ThemeResource OutlineVariantBrush}" Margin="20,0" />
 
-              <Grid Padding="20,0" MinHeight="52">
+              <Grid Padding="20,0" MinHeight="40">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="140" />
                   <ColumnDefinition Width="*" />
@@ -124,7 +126,7 @@
               </Grid>
               <Border Height="1" Background="{ThemeResource OutlineVariantBrush}" Margin="20,0" />
 
-              <Grid Padding="20,0" MinHeight="52">
+              <Grid Padding="20,0" MinHeight="40">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="140" />
                   <ColumnDefinition Width="*" />
@@ -140,7 +142,40 @@
               </Grid>
               <Border Height="1" Background="{ThemeResource OutlineVariantBrush}" Margin="20,0" />
 
-              <Grid Padding="20,0" MinHeight="52">
+              <Grid Padding="20,0" MinHeight="40">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="140" />
+                  <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Website" Style="{StaticResource BodyMedium}"
+                           FontWeight="Medium" VerticalAlignment="Center" />
+                <TextBox Grid.Column="1"
+                         Text="{Binding Website, Mode=TwoWay}"
+                         PlaceholderText="www.yourcompany.com"
+                         AutomationProperties.Name="Website"
+                         InputScope="Url"
+                         Style="{StaticResource InlineTextBoxStyle}"
+                         HorizontalAlignment="Stretch" TextAlignment="Right" />
+              </Grid>
+              <Border Height="1" Background="{ThemeResource OutlineVariantBrush}" Margin="20,0" />
+
+              <Grid Padding="20,0" MinHeight="40">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="140" />
+                  <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Business #" Style="{StaticResource BodyMedium}"
+                           FontWeight="Medium" VerticalAlignment="Center" />
+                <TextBox Grid.Column="1"
+                         Text="{Binding BusinessNumber, Mode=TwoWay}"
+                         PlaceholderText="e.g. BN123456789"
+                         AutomationProperties.Name="Business number"
+                         Style="{StaticResource InlineTextBoxStyle}"
+                         HorizontalAlignment="Stretch" TextAlignment="Right" />
+              </Grid>
+              <Border Height="1" Background="{ThemeResource OutlineVariantBrush}" Margin="20,0" />
+
+              <Grid Padding="20,0" MinHeight="40">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="140" />
                   <ColumnDefinition Width="*" />
@@ -149,19 +184,17 @@
                            FontWeight="Medium" VerticalAlignment="Center" />
                 <StackPanel Grid.Column="1" Orientation="Horizontal"
                             HorizontalAlignment="Right" Spacing="8" VerticalAlignment="Center">
-                  <mvux:FeedView Source="{Binding LogoPath}">
-                    <DataTemplate>
-                      <Border Width="32" Height="32" CornerRadius="4"
-                              BorderBrush="{ThemeResource OutlineVariantBrush}" BorderThickness="1"
-                              Visibility="{Binding Data, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert}">
-                        <Image Stretch="UniformToFill">
-                          <Image.Source>
-                            <BitmapImage UriSource="{Binding Data}" />
-                          </Image.Source>
-                        </Image>
-                      </Border>
-                    </DataTemplate>
-                  </mvux:FeedView>
+                  <Border x:Name="LogoThumbnailBorder" Width="32" Height="32" CornerRadius="4"
+                          BorderBrush="{ThemeResource OutlineVariantBrush}" BorderThickness="1"
+                          Visibility="Collapsed">
+                    <Image x:Name="LogoThumbnailImage" Stretch="UniformToFill" />
+                  </Border>
+                  <TextBlock x:Name="LogoFileName"
+                             Style="{StaticResource BodySmall}"
+                             Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                             VerticalAlignment="Center"
+                             MaxWidth="120" TextTrimming="CharacterEllipsis"
+                             Visibility="Collapsed" />
                   <Button Click="UploadLogo_Click"
                           AutomationProperties.Name="Upload logo"
                           Background="Transparent" BorderThickness="0"
@@ -190,7 +223,7 @@
                   BorderBrush="{ThemeResource OutlineVariantBrush}"
                   BorderThickness="1" CornerRadius="12">
             <StackPanel>
-              <Grid Padding="20,0" MinHeight="52">
+              <Grid Padding="20,0" MinHeight="40">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="*" />
                   <ColumnDefinition Width="Auto" />
@@ -214,7 +247,7 @@
               </Grid>
               <Border Height="1" Background="{ThemeResource OutlineVariantBrush}" Margin="20,0" />
 
-              <Grid Padding="20,0" MinHeight="52">
+              <Grid Padding="20,0" MinHeight="40">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="*" />
                   <ColumnDefinition Width="Auto" />
@@ -238,14 +271,19 @@
               </Grid>
               <Border Height="1" Background="{ThemeResource OutlineVariantBrush}" Margin="20,0" />
 
-              <Grid Padding="20,0" MinHeight="52">
+              <Grid Padding="20,0" MinHeight="40">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="*" />
                   <ColumnDefinition Width="Auto" />
                   <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="Valid For" Style="{StaticResource BodyMedium}"
-                           FontWeight="Medium" VerticalAlignment="Center" />
+                <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                  <TextBlock Text="Valid For" Style="{StaticResource BodyMedium}"
+                             FontWeight="Medium" />
+                  <TextBlock Text="(days)" Style="{StaticResource BodySmall}"
+                             Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                             VerticalAlignment="Center" />
+                </StackPanel>
                 <TextBox Grid.Column="1"
                          Text="{Binding QuoteValidDays, Mode=TwoWay}"
                          PlaceholderText="14" InputScope="Number"
@@ -255,14 +293,12 @@
                          BorderThickness="1" CornerRadius="6"
                          Background="Transparent" TextAlignment="Right"
                          VerticalAlignment="Center" />
-                <TextBlock Grid.Column="2" Text="days" Style="{StaticResource BodyMedium}"
-                           Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                           VerticalAlignment="Center" Margin="8,0,0,0"
-                           Width="36" TextAlignment="Left" />
+                <TextBlock Grid.Column="2" Text="" Style="{StaticResource BodyMedium}"
+                           Width="24" />
               </Grid>
               <Border Height="1" Background="{ThemeResource OutlineVariantBrush}" Margin="20,0" />
 
-              <Grid Padding="20,0" MinHeight="52">
+              <Grid Padding="20,0" MinHeight="40">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="*" />
                   <ColumnDefinition Width="Auto" />
@@ -283,7 +319,7 @@
               </Grid>
               <Border Height="1" Background="{ThemeResource OutlineVariantBrush}" Margin="20,0" />
 
-              <Grid Padding="20,0" MinHeight="52">
+              <Grid Padding="20,0" MinHeight="40">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="*" />
                   <ColumnDefinition Width="Auto" />
@@ -305,7 +341,7 @@
               </Grid>
               <Border Height="1" Background="{ThemeResource OutlineVariantBrush}" Margin="20,0" />
 
-              <Grid Padding="20,0" MinHeight="52">
+              <Grid Padding="20,0" MinHeight="40">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="140" />
                   <ColumnDefinition Width="*" />
@@ -334,7 +370,7 @@
                   BorderBrush="{ThemeResource OutlineVariantBrush}"
                   BorderThickness="1" CornerRadius="12">
             <StackPanel>
-              <Grid Padding="20,0" MinHeight="52">
+              <Grid Padding="20,0" MinHeight="40">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="Auto" />
                   <ColumnDefinition Width="*" />
@@ -359,7 +395,7 @@
               </Grid>
               <Border Height="1" Background="{ThemeResource OutlineVariantBrush}" Margin="20,0" />
 
-              <Grid Padding="20,0" MinHeight="52">
+              <Grid Padding="20,0" MinHeight="40">
                 <TextBlock Text="+ Add Catalog" Style="{StaticResource BodyMedium}"
                            Foreground="{ThemeResource PrimaryBrush}"
                            VerticalAlignment="Center" />
@@ -379,7 +415,7 @@
                   BorderBrush="{ThemeResource OutlineVariantBrush}"
                   BorderThickness="1" CornerRadius="12">
             <StackPanel>
-              <Grid Padding="20,0" MinHeight="52">
+              <Grid Padding="20,0" MinHeight="40">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="Auto" />
                   <ColumnDefinition Width="*" />
@@ -393,7 +429,7 @@
               </Grid>
               <Border Height="1" Background="{ThemeResource OutlineVariantBrush}" Margin="20,0" />
 
-              <Grid Padding="20,0" MinHeight="52">
+              <Grid Padding="20,0" MinHeight="40">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="Auto" />
                   <ColumnDefinition Width="*" />
@@ -405,7 +441,51 @@
                            Foreground="{ThemeResource OnSurfaceVariantBrush}"
                            HorizontalAlignment="Right" VerticalAlignment="Center" />
               </Grid>
+              <Border Height="1" Background="{ThemeResource OutlineVariantBrush}" Margin="20,0" />
+
+              <!-- Manage Subscription -->
+              <Grid Padding="20,0" MinHeight="40">
+                <Button Command="{Binding ManageSubscription}"
+                        HorizontalAlignment="Stretch"
+                        Style="{StaticResource MaterialTextButtonStyle}"
+                        AutomationProperties.Name="Manage subscription">
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon Glyph="&#xE8A7;" FontSize="16"
+                              Foreground="{ThemeResource PrimaryBrush}" />
+                    <TextBlock Text="Manage Subscription"
+                               Style="{StaticResource BodyMedium}"
+                               Foreground="{ThemeResource PrimaryBrush}" />
+                  </StackPanel>
+                </Button>
+              </Grid>
             </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <!-- ACCOUNT -->
+        <StackPanel Spacing="8">
+          <TextBlock Text="ACCOUNT"
+                     Style="{StaticResource LabelSmall}"
+                     Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                     FontWeight="Bold" Margin="4,0,0,0" />
+
+          <Border Background="{ThemeResource SurfaceBrush}"
+                  BorderBrush="{ThemeResource OutlineVariantBrush}"
+                  BorderThickness="1" CornerRadius="12">
+            <Grid Padding="20,0" MinHeight="40">
+              <Button Command="{Binding SignOut}"
+                      HorizontalAlignment="Stretch"
+                      Style="{StaticResource MaterialTextButtonStyle}"
+                      AutomationProperties.Name="Sign out">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <FontIcon Glyph="&#xE7E8;" FontSize="16"
+                            Foreground="{ThemeResource ErrorBrush}" />
+                  <TextBlock Text="Sign Out"
+                             Style="{StaticResource BodyMedium}"
+                             Foreground="{ThemeResource ErrorBrush}" />
+                </StackPanel>
+              </Button>
+            </Grid>
           </Border>
         </StackPanel>
 
@@ -423,7 +503,7 @@
       <!-- Right Column: Live Quote Preview (wide screens only) -->
         <ScrollViewer Grid.Column="2"
                       Visibility="{utu:Responsive Normal=Collapsed, Wide=Visible}">
-          <Border Background="White"
+          <Border Background="{ThemeResource SurfaceBrush}"
                   BorderBrush="{ThemeResource OutlineVariantBrush}"
                   BorderThickness="1" CornerRadius="8"
                   Padding="32,28"
@@ -441,31 +521,16 @@
                   </Grid.ColumnDefinitions>
 
                   <!-- Logo placeholder -->
-                  <mvux:FeedView Source="{Binding LogoPath}">
-                    <DataTemplate>
-                      <Border Width="56" Height="56" CornerRadius="8"
-                              Background="{ThemeResource SurfaceVariantBrush}" Margin="0,0,16,0"
-                              VerticalAlignment="Top"
-                              Visibility="{Binding Data, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert}">
-                        <Image Stretch="UniformToFill">
-                          <Image.Source>
-                            <BitmapImage UriSource="{Binding Data}" />
-                          </Image.Source>
-                        </Image>
-                      </Border>
-                    </DataTemplate>
-                    <mvux:FeedView.NoneTemplate>
-                      <DataTemplate>
-                        <Border Width="56" Height="56" CornerRadius="8"
-                                Background="{ThemeResource SurfaceVariantBrush}" Margin="0,0,16,0"
-                                VerticalAlignment="Top">
-                          <FontIcon Glyph="&#xE91B;" FontSize="24"
-                                    Foreground="{ThemeResource OutlineBrush}"
-                                    HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Border>
-                      </DataTemplate>
-                    </mvux:FeedView.NoneTemplate>
-                  </mvux:FeedView>
+                  <Border x:Name="PreviewLogoBorder" Width="56" Height="56" CornerRadius="8"
+                          Background="{ThemeResource SurfaceVariantBrush}" Margin="0,0,16,0"
+                          VerticalAlignment="Top">
+                    <Grid>
+                      <FontIcon x:Name="PreviewLogoPlaceholder" Glyph="&#xE91B;" FontSize="24"
+                                Foreground="{ThemeResource OutlineBrush}"
+                                HorizontalAlignment="Center" VerticalAlignment="Center" />
+                      <Image x:Name="PreviewLogoImage" Stretch="UniformToFill" Visibility="Collapsed" />
+                    </Grid>
+                  </Border>
 
                   <!-- Business details -->
                   <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Top">
@@ -518,6 +583,23 @@
                         <TextBlock Text="{Binding Data}" Style="{StaticResource BodySmall}"
                                    Foreground="{ThemeResource OnSurfaceVariantBrush}"
                                    TextTrimming="CharacterEllipsis" MaxLines="1" />
+                      </DataTemplate>
+                    </mvux:FeedView>
+
+                    <mvux:FeedView Source="{Binding Website}">
+                      <DataTemplate>
+                        <TextBlock Text="{Binding Data}" Style="{StaticResource BodySmall}"
+                                   Foreground="{ThemeResource PrimaryBrush}"
+                                   TextTrimming="CharacterEllipsis" MaxLines="1" />
+                      </DataTemplate>
+                    </mvux:FeedView>
+
+                    <mvux:FeedView Source="{Binding BusinessNumber}">
+                      <DataTemplate>
+                        <TextBlock Style="{StaticResource BodySmall}"
+                                   Foreground="{ThemeResource OnSurfaceVariantBrush}">
+                          <Run Text="Bus# " /><Run Text="{Binding Data}" />
+                        </TextBlock>
                       </DataTemplate>
                     </mvux:FeedView>
                   </StackPanel>
@@ -696,8 +778,21 @@
                              Foreground="{StaticResource AppBarBackgroundBrush}" TextAlignment="Right" />
                 </Grid>
 
+                <!-- Notes -->
+                <Border Background="{ThemeResource SurfaceVariantBrush}" CornerRadius="6"
+                        Padding="16,12" Margin="0,24,0,0">
+                  <StackPanel Spacing="6">
+                    <TextBlock Text="NOTES" Style="{StaticResource LabelSmall}"
+                               FontWeight="Bold" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                    <TextBlock Text="Please review the scope of work above. This quote includes all materials and labor as described. Payment terms: 50% deposit upon acceptance, balance due on completion. Work scheduled within 5 business days of acceptance."
+                               Style="{StaticResource BodySmall}"
+                               Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                               TextWrapping="Wrap" />
+                  </StackPanel>
+                </Border>
+
                 <!-- Valid until + currency -->
-                <StackPanel Margin="0,24,0,0" Spacing="4">
+                <StackPanel Margin="0,16,0,0" Spacing="4">
                   <mvux:FeedView Source="{Binding QuoteValidDays}">
                     <DataTemplate>
                       <TextBlock Style="{StaticResource BodySmall}"

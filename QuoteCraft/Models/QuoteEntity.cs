@@ -14,6 +14,8 @@ public class QuoteEntity
     public DateTimeOffset? SentAt { get; set; }
     public DateTimeOffset? ValidUntil { get; set; }
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset? SyncedAt { get; set; }
+    public string? ShareToken { get; set; }
     public bool IsDeleted { get; set; }
 
     // Populated by joins/queries, not stored directly

@@ -9,6 +9,7 @@ public class LineItemEntity
     public int Quantity { get; set; } = 1;
     public int SortOrder { get; set; }
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset? SyncedAt { get; set; }
 
     public decimal LineTotal => UnitPrice * Quantity;
 }

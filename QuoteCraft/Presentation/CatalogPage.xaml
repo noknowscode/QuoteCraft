@@ -46,6 +46,37 @@
         </DataTemplate>
       </mvux:FeedView>
 
+      <!-- Search Bar (in header) -->
+      <Border Grid.Column="2"
+              Background="{ThemeResource SurfaceVariantBrush}"
+              CornerRadius="8"
+              Padding="12,0"
+              Height="36"
+              MaxWidth="360"
+              HorizontalAlignment="Right"
+              VerticalAlignment="Center"
+              Margin="16,0">
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <FontIcon Glyph="&#xE721;" FontSize="14"
+                    Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                    VerticalAlignment="Center" Margin="0,0,8,0" />
+          <TextBox Grid.Column="1"
+                   x:Uid="CatalogPage.TextBox.Search"
+                   Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                   PlaceholderText="Search catalog..."
+                   AutomationProperties.Name="Search catalog"
+                   BorderThickness="0" Background="Transparent"
+                   Padding="0"
+                   MinHeight="0"
+                   VerticalAlignment="Center"
+                   VerticalContentAlignment="Center" />
+        </Grid>
+      </Border>
+
       <Button Grid.Column="3"
               x:Uid="CatalogPage.Button.AddItem"
               Click="AddItem_Click"
@@ -70,37 +101,11 @@
             BorderThickness="{utu:Responsive Normal='0', Wide='0,0,1,0'}">
         <Grid.RowDefinitions>
           <RowDefinition Height="Auto" />
-          <RowDefinition Height="Auto" />
           <RowDefinition />
         </Grid.RowDefinitions>
 
-        <!-- Search -->
-        <Border Margin="16,12,16,8"
-                Background="{ThemeResource SurfaceVariantBrush}"
-                CornerRadius="8" Padding="12,0"
-                Height="36">
-          <Grid>
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="Auto" />
-              <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <FontIcon Glyph="&#xE721;" FontSize="14"
-                      Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                      VerticalAlignment="Center" Margin="0,0,8,0" />
-            <TextBox Grid.Column="1"
-                     x:Uid="CatalogPage.TextBox.Search"
-                     Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                     PlaceholderText="Search catalog..."
-                     AutomationProperties.Name="Search catalog"
-                     BorderThickness="0" Background="Transparent"
-                     Padding="0,4"
-                     MinHeight="0"
-                     VerticalAlignment="Center" />
-          </Grid>
-        </Border>
-
         <!-- Instruction text -->
-        <TextBlock Grid.Row="1"
+        <TextBlock
                    x:Uid="CatalogPage.Label.Instruction"
                    Text="Select a category to view and manage items"
                    Style="{StaticResource BodySmall}"
@@ -108,7 +113,7 @@
                    Margin="16,0,16,8" />
 
         <!-- Category Cards -->
-        <mvux:FeedView Grid.Row="2" Source="{Binding CategoryCards}">
+        <mvux:FeedView Grid.Row="1" Source="{Binding CategoryCards}">
           <DataTemplate>
             <ScrollViewer Padding="12,4,12,16">
               <muxc:ItemsRepeater ItemsSource="{Binding Data}">
@@ -171,14 +176,6 @@
                            HorizontalAlignment="Center"
                            Foreground="{ThemeResource OnSurfaceVariantBrush}"
                            TextAlignment="Center" TextWrapping="Wrap" MaxWidth="280" />
-                <Button Click="AddItem_Click"
-                        Style="{StaticResource AccentButtonStyle}"
-                        HorizontalAlignment="Center" Margin="0,8,0,0">
-                  <StackPanel Orientation="Horizontal" Spacing="8">
-                    <FontIcon Glyph="&#xE710;" FontSize="12" Foreground="{StaticResource AppBarBackgroundBrush}" />
-                    <TextBlock Text="Add Item" Foreground="{StaticResource AppBarBackgroundBrush}" FontWeight="SemiBold" />
-                  </StackPanel>
-                </Button>
               </StackPanel>
             </DataTemplate>
           </mvux:FeedView.NoneTemplate>

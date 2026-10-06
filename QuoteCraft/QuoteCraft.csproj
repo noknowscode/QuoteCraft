@@ -38,6 +38,7 @@
     <PackageReference Include="Microsoft.Data.Sqlite.Core" />
     <PackageReference Include="SQLitePCLRaw.bundle_e_sqlcipher" />
     <PackageReference Include="QuestPDF" />
+    <PackageReference Include="SkiaSharp" />
   </ItemGroup>
 
 </Project>

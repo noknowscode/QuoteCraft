@@ -9,10 +9,12 @@
       xmlns:mvux="using:Uno.Extensions.Reactive.UI"
       xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
       xmlns:helpers="using:QuoteCraft.Helpers"
+      xmlns:ctrl="using:QuoteCraft.Controls"
       Background="{ThemeResource BackgroundBrush}">
 
   <Grid utu:SafeArea.Insets="Top">
     <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
       <RowDefinition />
     </Grid.RowDefinitions>
@@ -46,6 +48,37 @@
         </DataTemplate>
       </mvux:FeedView>
 
+      <!-- Search Bar (in header) -->
+      <Border Grid.Column="2"
+              Background="{ThemeResource SurfaceVariantBrush}"
+              CornerRadius="8"
+              Padding="12,0"
+              Height="36"
+              MaxWidth="360"
+              HorizontalAlignment="Right"
+              VerticalAlignment="Center"
+              Margin="16,0">
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <FontIcon Glyph="&#xE721;" FontSize="14"
+                    Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                    VerticalAlignment="Center" Margin="0,0,8,0" />
+          <TextBox Grid.Column="1"
+                   x:Uid="ClientsPage.TextBox.Search"
+                   Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                   PlaceholderText="Search clients..."
+                   AutomationProperties.Name="Search clients"
+                   BorderThickness="0" Background="Transparent"
+                   Padding="0"
+                   MinHeight="0"
+                   VerticalAlignment="Center"
+                   VerticalContentAlignment="Center" />
+        </Grid>
+      </Border>
+
       <Button Grid.Column="3"
               x:Uid="ClientsPage.Button.AddClient"
               Click="AddClient_Click"
@@ -58,8 +91,72 @@
       </Button>
     </Grid>
 
+    <!-- Analytics Cards -->
+    <mvux:FeedView Grid.Row="1" Source="{Binding Analytics}">
+      <DataTemplate>
+        <Grid Padding="32,12" ColumnSpacing="16">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+
+          <!-- Total Clients -->
+          <Border Background="{ThemeResource SurfaceBrush}"
+                  BorderBrush="{ThemeResource OutlineVariantBrush}"
+                  BorderThickness="1" CornerRadius="12" Padding="16,12">
+            <StackPanel Spacing="4" VerticalAlignment="Center">
+              <TextBlock Text="TOTAL CLIENTS" Style="{StaticResource LabelSmall}"
+                         Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold" />
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <TextBlock Text="{Binding Data.TotalClients}"
+                           Style="{StaticResource HeadlineSmallBold}" />
+                <TextBlock Text="contacts" Style="{StaticResource BodyMedium}"
+                           Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                           VerticalAlignment="Bottom" Margin="0,0,0,2" />
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <!-- Total Revenue -->
+          <Border Grid.Column="1"
+                  Background="{ThemeResource SurfaceBrush}"
+                  BorderBrush="{ThemeResource OutlineVariantBrush}"
+                  BorderThickness="1" CornerRadius="12" Padding="16,12">
+            <StackPanel Spacing="4" VerticalAlignment="Center">
+              <TextBlock Text="ACCEPTED REVENUE" Style="{StaticResource LabelSmall}"
+                         Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold" />
+              <TextBlock Text="{Binding Data.TotalRevenue, Converter={StaticResource CurrencyFormatConverter}}"
+                         Style="{StaticResource HeadlineSmallBold}"
+                         FontFamily="{StaticResource MonospaceFontFamily}" />
+            </StackPanel>
+          </Border>
+
+          <!-- Avg per Client -->
+          <Border Grid.Column="2"
+                  Background="{ThemeResource SurfaceBrush}"
+                  BorderBrush="{ThemeResource OutlineVariantBrush}"
+                  BorderThickness="1" CornerRadius="12" Padding="16,12">
+            <StackPanel Spacing="4" VerticalAlignment="Center">
+              <TextBlock Text="AVG PER CLIENT" Style="{StaticResource LabelSmall}"
+                         Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold" />
+              <TextBlock Text="{Binding Data.AvgPerClient, Converter={StaticResource CurrencyFormatConverter}}"
+                         Style="{StaticResource HeadlineSmallBold}"
+                         FontFamily="{StaticResource MonospaceFontFamily}" />
+            </StackPanel>
+          </Border>
+        </Grid>
+      </DataTemplate>
+
+      <mvux:FeedView.NoneTemplate>
+        <DataTemplate>
+          <Border Height="0" />
+        </DataTemplate>
+      </mvux:FeedView.NoneTemplate>
+    </mvux:FeedView>
+
     <!-- Master-Detail -->
-    <Grid Grid.Row="1">
+    <Grid Grid.Row="2">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="380" />
         <ColumnDefinition Width="*" />
@@ -68,41 +165,12 @@
       <!-- Left: Client List -->
       <Grid BorderBrush="{ThemeResource OutlineVariantBrush}"
             BorderThickness="{utu:Responsive Normal='0', Wide='0,0,1,0'}">
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto" />
-          <RowDefinition />
-        </Grid.RowDefinitions>
-
-        <!-- Search -->
-        <Border Margin="16,12,16,8"
-                Background="{ThemeResource SurfaceVariantBrush}"
-                CornerRadius="8" Padding="12,0"
-                Height="36">
-          <Grid>
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="Auto" />
-              <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <FontIcon Glyph="&#xE721;" FontSize="14"
-                      Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                      VerticalAlignment="Center" Margin="0,0,8,0" />
-            <TextBox Grid.Column="1"
-                     x:Uid="ClientsPage.TextBox.Search"
-                     Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                     PlaceholderText="Search clients..."
-                     AutomationProperties.Name="Search clients"
-                     BorderThickness="0" Background="Transparent"
-                     Padding="0,4"
-                     MinHeight="0"
-                     VerticalAlignment="Center" />
-          </Grid>
-        </Border>
-
         <!-- Client Cards -->
-        <mvux:FeedView Grid.Row="1" Source="{Binding Clients}">
+        <mvux:FeedView Source="{Binding Clients}">
           <DataTemplate>
             <ScrollViewer Padding="12,8,12,16">
-              <muxc:ItemsRepeater ItemsSource="{Binding Data}">
+              <muxc:ItemsRepeater ItemsSource="{Binding Data}"
+                                  utu:CommandExtensions.Command="{Binding Parent.SelectClient}">
                 <muxc:ItemsRepeater.Layout>
                   <muxc:StackLayout Spacing="4" />
                 </muxc:ItemsRepeater.Layout>
@@ -112,7 +180,7 @@
                             BorderBrush="{ThemeResource OutlineVariantBrush}"
                             BorderThickness="1" CornerRadius="8" Padding="12"
                             Translation="0,0,0"
-                            Tapped="ClientCard_Tapped"
+                            AutomationProperties.Name="{Binding Name}"
                             helpers:InteractionHelper.IsInteractive="True">
                       <Grid>
                         <Grid.ColumnDefinitions>

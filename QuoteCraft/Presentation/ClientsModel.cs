@@ -39,9 +39,14 @@ public partial record ClientsModel
             var clients = await _clientRepo.GetAllAsync();
             var quotes = await _quoteRepo.GetAllAsync();
 
+            // Pre-group quotes by ClientId: O(N+M) instead of O(N*M)
+            var quotesByClient = quotes
+                .GroupBy(q => q.ClientId ?? "")
+                .ToDictionary(g => g.Key, g => g.ToList());
+
             var items = clients.Select(c =>
             {
-                var clientQuotes = quotes.Where(q => q.ClientId == c.Id).ToList();
+                var clientQuotes = quotesByClient.GetValueOrDefault(c.Id, []);
                 var initials = GetInitials(c.Name);
                 var city = ParseCity(c.Address);
                 var totalValue = clientQuotes.Sum(q => q.Total);
@@ -60,7 +65,25 @@ public partial record ClientsModel
         })
         .AsListFeed();
 
-    public IFeed<int> ClientCount => Feed.Async(async ct => (await _clientRepo.GetAllAsync()).Count);
+    public IFeed<int> ClientCount => Version
+        .SelectAsync(async (_, ct) => (await _clientRepo.GetAllAsync()).Count);
+
+    public IFeed<ClientsAnalytics> Analytics => Version
+        .SelectAsync(async (_, ct) =>
+        {
+            var clients = await _clientRepo.GetAllAsync();
+            var quotes = await _quoteRepo.GetAllAsync();
+
+            var totalClients = clients.Count;
+            var totalRevenue = quotes
+                .Where(q => q.Status == QuoteStatus.Accepted)
+                .Sum(q => q.Total);
+            var avgPerClient = totalClients > 0 ? totalRevenue / totalClients : 0m;
+            var newThisMonth = clients
+                .Count(c => c.UpdatedAt >= new DateTimeOffset(DateTime.Now.Year, DateTime.Now.Month, 1, 0, 0, 0, TimeSpan.Zero));
+
+            return new ClientsAnalytics(totalClients, (double)totalRevenue, (double)avgPerClient, newThisMonth);
+        });
 
     // Combined detail feed: client + quotes (avoids nested FeedView with ElementName)
     public IFeed<ClientDetail> SelectedClientDetail => SelectedClient

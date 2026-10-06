@@ -70,13 +70,13 @@ public sealed partial class DashboardPage : Page
 
     // -- Quote Card Selection ---------------------------------------------------
 
-    private async void QuoteCard_Tapped(object sender, TappedRoutedEventArgs e)
+    private void QuoteCard_Tapped(object sender, TappedRoutedEventArgs e)
     {
-        if (sender is Border tappedCard && tappedCard.DataContext is QuoteEntity quote)
+        if (sender is Border tappedCard)
         {
             IsEditMode = false;
 
-            // Clear previous selection
+            // Clear previous selection visual
             if (_selectedQuoteCard is not null)
             {
                 _selectedQuoteCard.Background = (SolidColorBrush)Application.Current.Resources["SurfaceBrush"];
@@ -88,10 +88,7 @@ public sealed partial class DashboardPage : Page
             tappedCard.BorderBrush = (SolidColorBrush)Application.Current.Resources["PrimaryBrush"];
             _selectedQuoteCard = tappedCard;
 
-            // Invoke model command
-            var model = Model;
-            if (model is not null)
-                await model.OpenQuote(quote, CancellationToken.None);
+            // Model command is invoked via CommandExtensions.Command on the ItemsRepeater
         }
     }
 
