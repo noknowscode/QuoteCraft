@@ -10,11 +10,22 @@
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
         <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
-        <utum:MaterialToolkitTheme
-          FontOverrideSource="ms-appx:///Styles/FontOverride.xaml">
+        <utum:MaterialToolkitTheme>
+          <!-- Uno Themes 9: colour overrides live on Colors (ColorOverrideSource is deprecated). -->
           <utum:MaterialToolkitTheme.Colors>
             <ut:ThemeColors OverrideSource="ms-appx:///Styles/ColorPaletteOverride.xaml" />
           </utum:MaterialToolkitTheme.Colors>
+          <!-- Uno Themes 9: the type ramp (BodyMedium, TitleLarge, ...) reads DefaultFontFamily, which stayed Roboto;
+               the Material*FontFamily keys still feed Material control styles. Weights resolve through
+               Assets/Fonts/DMSans-Regular.ttf.manifest. -->
+          <utum:MaterialToolkitTheme.FontOverrideDictionary>
+            <ResourceDictionary>
+              <FontFamily x:Key="DefaultFontFamily">ms-appx:///Assets/Fonts/DMSans-Regular.ttf#DM Sans</FontFamily>
+              <FontFamily x:Key="MaterialLightFontFamily">ms-appx:///Assets/Fonts/DMSans-Regular.ttf#DM Sans</FontFamily>
+              <FontFamily x:Key="MaterialRegularFontFamily">ms-appx:///Assets/Fonts/DMSans-Regular.ttf#DM Sans</FontFamily>
+              <FontFamily x:Key="MaterialMediumFontFamily">ms-appx:///Assets/Fonts/DMSans-Medium.ttf#DM Sans Medium</FontFamily>
+            </ResourceDictionary>
+          </utum:MaterialToolkitTheme.FontOverrideDictionary>
         </utum:MaterialToolkitTheme>
         <ResourceDictionary Source="ms-appx:///Styles/StatusColors.xaml" />
       </ResourceDictionary.MergedDictionaries>
