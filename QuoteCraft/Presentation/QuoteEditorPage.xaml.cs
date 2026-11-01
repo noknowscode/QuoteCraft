@@ -140,7 +140,7 @@ public sealed partial class QuoteEditorPage : Page
         {
             var model = Model;
             if (model is not null)
-                await model.AddPhotoFromPath(file.Path, CancellationToken.None);
+                await model.AddPhotoFromFile(file, CancellationToken.None);
         }
     }
 

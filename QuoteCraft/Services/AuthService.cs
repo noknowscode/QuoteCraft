@@ -12,9 +12,7 @@ public class AuthService : IAuthService
     private readonly string _supabaseUrl;
     private readonly string _supabaseAnonKey;
     private AuthState _currentState;
-    private static readonly string _tokenFilePath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "QuoteCraft", ".auth_token");
+    private static readonly string _tokenFilePath = AppStorage.Combine(".auth_token");
 
     public event Action<AuthState>? AuthStateChanged;
 

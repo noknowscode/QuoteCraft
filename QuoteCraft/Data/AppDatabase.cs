@@ -13,19 +13,13 @@ public class AppDatabase
     {
         SQLitePCL.Batteries_V2.Init();
 
-        var dbPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "QuoteCraft",
-            "quotecraft.db");
+        var dir = AppStorage.Root;
+        Directory.CreateDirectory(dir);
+        var dbPath = Path.Combine(dir, "quotecraft.db");
 
-        var dir = Path.GetDirectoryName(dbPath)!;
-        if (!Directory.Exists(dir))
-        {
-            Directory.CreateDirectory(dir);
-        }
-
-#if __BROWSERWASM__
-        // WASM: browser storage is sandboxed, no encryption needed
+#if __WASM__
+        // WebAssembly: the database lives in the browser's IndexedDB storage for this site, where a key would have to
+        // sit next to it, so SQLCipher runs without one (docs/DECISIONS-production-readiness.md, D1).
         _connectionString = $"Data Source={dbPath}";
 #else
         var key = GetOrCreateEncryptionKey(dir);
@@ -33,7 +27,7 @@ public class AppDatabase
 #endif
     }
 
-#if !__BROWSERWASM__
+#if !__WASM__
     private static string GetOrCreateEncryptionKey(string appDir)
     {
         var keyFile = Path.Combine(appDir, ".dbkey");

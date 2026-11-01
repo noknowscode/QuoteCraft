@@ -70,9 +70,13 @@ public partial record QuoteEditorModel
             (IImmutableList<string>)_photoService.GetPhotos(_quoteId).ToImmutableList())
         .AsListFeed();
 
-    public async ValueTask AddPhotoFromPath(string filePath, CancellationToken ct)
+    public async ValueTask AddPhotoFromFile(Windows.Storage.StorageFile file, CancellationToken ct)
     {
-        var result = await _photoService.AddPhotoAsync(_quoteId, filePath);
+        string? result;
+        using (var source = await file.OpenStreamForReadAsync())
+        {
+            result = await _photoService.AddPhotoAsync(_quoteId, source, file.FileType);
+        }
         if (result is not null)
             await PhotosVersion.UpdateAsync(v => v + 1, ct);
     }

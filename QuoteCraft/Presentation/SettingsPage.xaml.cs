@@ -48,15 +48,17 @@ public sealed partial class SettingsPage : Page
         if (file is null) return;
 
         // Copy to local data directory
-        var logoDir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "QuoteCraft", "logo");
+        var logoDir = AppStorage.Combine("logo");
         Directory.CreateDirectory(logoDir);
 
+        // Read through the StorageFile: a picked file's Path is not readable on every head (WebAssembly, Android, iOS).
         var ext = Path.GetExtension(file.Name);
         var destPath = Path.Combine(logoDir, $"logo{ext}");
-        var sourceBytes = await File.ReadAllBytesAsync(file.Path);
-        await File.WriteAllBytesAsync(destPath, sourceBytes);
+        await using (var source = await file.OpenStreamForReadAsync())
+        await using (var destination = File.Create(destPath))
+        {
+            await source.CopyToAsync(destination);
+        }
 
         // Update model
         var model = Model;

@@ -27,9 +27,7 @@ public class PdfGenerator : IPdfGenerator
         var currencySymbol = Helpers.CurrencyFormatConverter.GetCurrencySymbol(profile.CurrencyCode);
         var currencyCode = profile.CurrencyCode;
         var photos = _photoService.GetPhotos(quote.Id);
-        var dir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "QuoteCraft", "exports");
+        var dir = AppStorage.Combine("exports");
         Directory.CreateDirectory(dir);
 
         var filePath = Path.Combine(dir, $"{quote.QuoteNumber}.pdf");

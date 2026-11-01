@@ -4,7 +4,7 @@ public interface IPhotoService
 {
     string GetPhotoDirectory(string quoteId);
     List<string> GetPhotos(string quoteId);
-    Task<string?> AddPhotoAsync(string quoteId, string sourceFilePath);
+    Task<string?> AddPhotoAsync(string quoteId, Stream source, string extension);
     void DeletePhoto(string photoPath);
     void DeletePhotosForQuote(string quoteId);
     int MaxPhotos => 5;
@@ -12,9 +12,7 @@ public interface IPhotoService
 
 public class PhotoService : IPhotoService
 {
-    private static readonly string BaseDir = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "QuoteCraft", "photos");
+    private static readonly string BaseDir = AppStorage.Combine("photos");
 
     public int MaxPhotos => 5;
 
@@ -39,20 +37,27 @@ public class PhotoService : IPhotoService
 
     private const long MaxFileSizeBytes = 1_048_576; // 1 MB
 
-    public async Task<string?> AddPhotoAsync(string quoteId, string sourceFilePath)
+    /// <summary>
+    /// Copies a picked image into the quote's photo folder. Takes a stream because a picked file's path is not a
+    /// readable file system path on every head (WebAssembly, Android, iOS).
+    /// </summary>
+    public async Task<string?> AddPhotoAsync(string quoteId, Stream source, string extension)
     {
         var existing = GetPhotos(quoteId);
         if (existing.Count >= MaxPhotos)
             return null;
 
         var dir = GetPhotoDirectory(quoteId);
-        var ext = Path.GetExtension(sourceFilePath).ToLowerInvariant();
+        var ext = extension.ToLowerInvariant();
         if (string.IsNullOrEmpty(ext)) ext = ".jpg";
 
         var fileName = $"{Guid.NewGuid():N}{ext}";
         var destPath = Path.Combine(dir, fileName);
 
-        await Task.Run(() => File.Copy(sourceFilePath, destPath, overwrite: true));
+        await using (var destination = File.Create(destPath))
+        {
+            await source.CopyToAsync(destination);
+        }
 
         // Compress if file exceeds 1 MB
         await CompressIfNeededAsync(destPath);

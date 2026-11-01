@@ -115,7 +115,11 @@ public partial class App : Application
 #if DEBUG && !NO_UNO_STUDIO
         MainWindow.UseStudio();
 #endif
-                MainWindow.SetWindowIcon();
+        MainWindow.SetWindowIcon();
+
+        // The database, photos and flag files are read as soon as the shell loads; on WebAssembly the browser file
+        // system has to be restored first.
+        await AppStorage.EnsureReadyAsync();
 
         Host = await builder.NavigateAsync<Shell>();
         }
