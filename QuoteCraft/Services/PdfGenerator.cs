@@ -1,9 +1,14 @@
+#if QUESTPDF
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 
 namespace QuoteCraft.Services;
 
+/// <summary>
+/// QuestPDF renderer. QuestPDF ships native libraries for Windows, Linux and macOS only, so this generator exists on the
+/// desktop and WinAppSDK heads (QUESTPDF is defined in QuoteCraft.csproj).
+/// </summary>
 public class PdfGenerator : IPdfGenerator
 {
     private readonly IBusinessProfileRepository _profileRepo;
@@ -16,6 +21,8 @@ public class PdfGenerator : IPdfGenerator
         _featureGate = featureGate;
         _photoService = photoService;
     }
+
+    public bool IsSupported => true;
 
     public async Task<string> GenerateQuotePdfAsync(QuoteEntity quote)
     {
@@ -219,3 +226,4 @@ public class PdfGenerator : IPdfGenerator
         }
     }
 }
+#endif

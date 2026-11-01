@@ -1,9 +1,14 @@
+#if QUESTPDF
 using System.Diagnostics;
+#endif
 
 namespace QuoteCraft.Services;
 
 public interface IShareService
 {
+    /// <summary>False on the heads without a PDF engine (Android, iOS, WebAssembly).</summary>
+    bool CanExportPdf { get; }
+
     Task ShareQuotePdfAsync(QuoteEntity quote);
     Task GenerateAndDownloadPdfAsync(QuoteEntity quote);
     Task MarkAsSentAsync(QuoteEntity quote);
@@ -25,6 +30,8 @@ public class ShareService : IShareService
         _logger = logger;
     }
 
+    public bool CanExportPdf => _pdfGenerator.IsSupported;
+
     public async Task ShareQuotePdfAsync(QuoteEntity quote)
     {
         await GenerateAndDownloadPdfAsync(quote);
@@ -37,14 +44,14 @@ public class ShareService : IShareService
         if (quote.LineItems.Count == 0)
             quote.LineItems = await _quoteRepo.GetLineItemsAsync(quote.Id);
 
+#if QUESTPDF
         var filePath = await _pdfGenerator.GenerateQuotePdfAsync(quote);
 
-#if __BROWSERWASM__
-        // WASM: trigger a browser download
-        await DownloadFileInBrowserAsync(filePath, $"{quote.QuoteNumber}.pdf");
-#else
-        // Desktop/Mobile: open the PDF with the system's default application
+        // Desktop and Windows (the heads with a PDF engine): open the PDF with the system's default application.
         OpenFileWithDefaultApp(filePath);
+#else
+        // The pages offer no PDF export on this head (CanExportPdf is false).
+        throw new PlatformNotSupportedException(UnsupportedPdfGenerator.UnavailableMessage);
 #endif
     }
 
@@ -107,7 +114,7 @@ public class ShareService : IShareService
         return Convert.ToHexString(bytes).ToLowerInvariant();
     }
 
-#if !__BROWSERWASM__
+#if QUESTPDF
     private void OpenFileWithDefaultApp(string filePath)
     {
         try
@@ -141,36 +148,6 @@ public class ShareService : IShareService
                 _logger.LogError(fallbackEx, "All file open methods failed for {FilePath}", filePath);
             }
         }
-    }
-#endif
-
-#if __BROWSERWASM__
-    private static async Task DownloadFileInBrowserAsync(string filePath, string fileName)
-    {
-        var bytes = await System.IO.File.ReadAllBytesAsync(filePath);
-        var base64 = Convert.ToBase64String(bytes);
-
-        // Use JS interop to trigger browser download
-        var js = $@"
-            (function() {{
-                var byteChars = atob('{base64}');
-                var byteArray = new Uint8Array(byteChars.length);
-                for (var i = 0; i < byteChars.length; i++) {{
-                    byteArray[i] = byteChars.charCodeAt(i);
-                }}
-                var blob = new Blob([byteArray], {{ type: 'application/pdf' }});
-                var url = URL.createObjectURL(blob);
-                var a = document.createElement('a');
-                a.href = url;
-                a.download = '{fileName}';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }})();
-        ";
-
-        await Uno.Foundation.WebAssemblyRuntime.InvokeAsync(js);
     }
 #endif
 }

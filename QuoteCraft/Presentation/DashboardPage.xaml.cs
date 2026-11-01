@@ -325,6 +325,9 @@ public sealed partial class DashboardPage : Page
         var profile = await profileRepo.GetAsync();
         var businessName = profile.BusinessName ?? "Our Company";
 
+        var shareService = App.Services.GetRequiredService<Services.IShareService>();
+        var canExportPdf = shareService.CanExportPdf;
+
         // Build email fields
         var recipientBox = new TextBox
         {
@@ -365,7 +368,9 @@ public sealed partial class DashboardPage : Page
                     },
                     new TextBlock
                     {
-                        Text = "The PDF will be downloaded. Please attach it to the email.",
+                        Text = canExportPdf
+                            ? "The PDF will be downloaded. Please attach it to the email."
+                            : $"{Services.UnsupportedPdfGenerator.UnavailableMessage} The email opens without an attachment.",
                         Style = (Style)Application.Current.Resources["BodySmall"],
                         Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["OnTertiaryContainerBrush"],
                         TextWrapping = TextWrapping.Wrap,
@@ -390,16 +395,20 @@ public sealed partial class DashboardPage : Page
             primaryButtonText: "Send via Email",
             closeButtonText: "Cancel");
 
-        dialog.SecondaryButtonText = "Download PDF Only";
+        if (canExportPdf)
+        {
+            dialog.SecondaryButtonText = "Download PDF Only";
+        }
 
         var result = await dialog.ShowAsync();
 
-        var shareService = App.Services.GetRequiredService<Services.IShareService>();
-
         if (result == ContentDialogResult.Primary)
         {
-            // Download PDF + launch email client + mark as sent
-            await shareService.GenerateAndDownloadPdfAsync(freshQuote);
+            // Download PDF (where the head can make one) + launch email client + mark as sent
+            if (canExportPdf)
+            {
+                await shareService.GenerateAndDownloadPdfAsync(freshQuote);
+            }
 
             var emailService = App.Services.GetRequiredService<Services.IEmailLauncherService>();
             await emailService.ComposeEmailAsync(

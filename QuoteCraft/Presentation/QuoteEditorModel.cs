@@ -58,6 +58,10 @@ public partial record QuoteEditorModel
     public IState<string> TaxRate { get; }
     public IState<string> ClientName { get; }
     public IState<string> QuoteNumber { get; }
+
+    // Empty where PDF export works; otherwise the note shown in place of the Export PDF button.
+    public IFeed<string> PdfUnavailableNote => Feed.Async(ct => ValueTask.FromResult(
+        _shareService.CanExportPdf ? string.Empty : UnsupportedPdfGenerator.UnavailableMessage));
     public IState<string> ValidationError => State<string>.Value(this, () => string.Empty);
 
     public IState<int> LineItemsVersion => State<int>.Value(this, () => 0);

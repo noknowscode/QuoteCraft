@@ -932,8 +932,17 @@
                     </StackPanel>
                   </Button>
 
+                  <TextBlock Grid.Column="1"
+                             Text="{Binding DataContext.PdfUnavailableNote, ElementName=DashboardRoot}"
+                             Visibility="{Binding DataContext.PdfUnavailableNote, ElementName=DashboardRoot, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert}"
+                             Style="{StaticResource BodySmall}"
+                             Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                             TextWrapping="Wrap" TextAlignment="Right"
+                             VerticalAlignment="Center" Margin="12,0" />
+
                   <Button Grid.Column="2"
                           Command="{Binding DataContext.DownloadPdf, ElementName=DashboardRoot}"
+                          Visibility="{Binding DataContext.PdfUnavailableNote, ElementName=DashboardRoot, Converter={StaticResource EmptyToVisibleConverter}}"
                           AutomationProperties.Name="Download PDF"
                           Background="{ThemeResource PrimaryBrush}"
                           Foreground="{ThemeResource OnPrimaryBrush}"

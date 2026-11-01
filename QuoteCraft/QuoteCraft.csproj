@@ -62,9 +62,19 @@
     <WindowsSdkPackageVersion>10.0.19041.87</WindowsSdkPackageVersion>
   </PropertyGroup>
 
+  <!--
+    QuestPDF ships native libraries for Windows, Linux and macOS only, so PDF export exists on the desktop and
+    WinAppSDK heads (docs/DECISIONS-production-readiness.md, D2). QUESTPDF gates the generator in code.
+  -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-desktop' or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+    <DefineConstants>$(DefineConstants);QUESTPDF</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.Sqlite.Core" />
     <PackageReference Include="SQLitePCLRaw.bundle_e_sqlcipher" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-desktop' or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
     <PackageReference Include="QuestPDF" />
   </ItemGroup>
 

@@ -40,6 +40,10 @@ public partial record DashboardModel
     // Feature gate state: shown when a limit is hit
     public IState<string> UpgradeMessage => State<string>.Value(this, () => string.Empty);
 
+    // Empty where PDF export works; otherwise the note shown in place of the Download PDF button.
+    public IFeed<string> PdfUnavailableNote => Feed.Async(ct => ValueTask.FromResult(
+        _shareService.CanExportPdf ? string.Empty : Services.UnsupportedPdfGenerator.UnavailableMessage));
+
     // Cached quote list: refreshed once per DetailVersion bump, shared across derived feeds
     private List<QuoteEntity>? _cachedQuotes;
     private int _cachedVersion = -1;
