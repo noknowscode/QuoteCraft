@@ -158,11 +158,14 @@ public partial record OnboardingModel
                 ValidUntil = DateTimeOffset.UtcNow.AddDays(profile.QuoteValidDays),
             };
             await _quoteRepo.SaveAsync(quote);
-            await _navigator.NavigateRouteAsync(this, "QuoteEditor", data: quote);
+
+            // Onboarding is the first route on a first run: open the editor inside Main, as the other pages do.
+            await _navigator.NavigateRouteAsync(this, "Main/QuoteEditor", qualifier: Qualifiers.ClearBackStack, data: quote);
         }
         else
         {
-            await _navigator.NavigateBackAsync(this);
+            // Onboarding is the first route on a first run, so there is nothing to go back to.
+            await _navigator.NavigateRouteAsync(this, "Main", qualifier: Qualifiers.ClearBackStack);
         }
     }
 }
