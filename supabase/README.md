@@ -16,3 +16,7 @@ Secrets are read from the function environment, never from source. Set these in 
 - `STRIPE_WEBHOOK_SECRET`
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `SUPABASE_URL`
+
+The app itself only needs the project URL and the **anon** key, in `QuoteCraft/appsettings.json` (section `Supabase`) or
+`QUOTECRAFT_SUPABASE_URL` / `QUOTECRAFT_SUPABASE_ANON_KEY`. Without them it runs local-only. The service-role key stays
+here, in the function environment; it must never reach the app.
