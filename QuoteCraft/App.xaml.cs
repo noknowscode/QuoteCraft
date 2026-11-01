@@ -129,6 +129,8 @@ public partial class App : Application
         await AppStorage.EnsureReadyAsync();
 
         Host = await builder.NavigateAsync<Shell>();
+
+        await ShowOnboardingOnFirstRunAsync();
         }
         catch (Exception ex)
         {
@@ -136,6 +138,29 @@ public partial class App : Application
 #if DEBUG
             throw;
 #endif
+        }
+    }
+
+    /// <summary>
+    /// On first run, onboarding replaces Main; it navigates to Main when it is done. This runs once the first
+    /// navigation has finished: a check in ShellModel's constructor raced the default route and never showed, and
+    /// one started while Main was still loading left the WebAssembly splash screen up for good.
+    /// </summary>
+    private async Task ShowOnboardingOnFirstRunAsync()
+    {
+        var services = Host!.Services;
+        if (await services.GetRequiredService<Services.IOnboardingService>().IsOnboardingCompleteAsync())
+        {
+            return;
+        }
+
+        if (MainWindow?.Content is IContentControlProvider { ContentControl: { } root } && root.Navigator() is { } navigator)
+        {
+            await navigator.NavigateRouteAsync(this, "Onboarding", qualifier: Qualifiers.ClearBackStack);
+        }
+        else
+        {
+            services.GetRequiredService<ILogger<App>>().LogError("No navigator to open onboarding");
         }
     }
 

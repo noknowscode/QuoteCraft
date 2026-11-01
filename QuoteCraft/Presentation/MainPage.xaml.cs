@@ -15,28 +15,11 @@ public sealed partial class MainPage : Page
         this.InitializeComponent();
         this.Loaded += MainPage_Loaded;
         this.Unloaded += MainPage_Unloaded;
-        this.DataContextChanged += (_, _) => CheckFirstRun();
-    }
-
-    private bool _firstRunChecked;
-
-    // On first run, onboarding replaces Main once Main is on screen and its model is set; navigation sets the
-    // DataContext after Loaded. See MainModel.ShowOnboardingOnFirstRun.
-    private void CheckFirstRun()
-    {
-        if (_firstRunChecked || !IsLoaded || MvuxHelper.GetModel<MainModel>(DataContext) is not { } model)
-        {
-            return;
-        }
-
-        _firstRunChecked = true;
-        _ = model.ShowOnboardingOnFirstRun(CancellationToken.None).AsTask();
     }
 
     private void MainPage_Loaded(object sender, RoutedEventArgs e)
     {
         UpdateThemeToggleVisuals();
-        CheckFirstRun();
 
         // Wire up offline banner
         try
