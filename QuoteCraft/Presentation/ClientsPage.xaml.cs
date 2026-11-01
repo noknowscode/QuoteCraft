@@ -168,7 +168,7 @@ public sealed partial class ClientsPage : Page
     {
         if (sender is FrameworkElement { DataContext: QuoteEntity quote })
         {
-            var navigator = App.Services.GetRequiredService<INavigator>();
+            var navigator = this.Navigator() ?? throw new InvalidOperationException("The page has no navigator.");
             await navigator.NavigateRouteAsync(this, "QuoteEditor", data: quote);
         }
     }

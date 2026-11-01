@@ -267,7 +267,7 @@ public sealed partial class DashboardPage : Page
             var profileRepo = App.Services.GetRequiredService<IBusinessProfileRepository>();
             var quoteRepo = App.Services.GetRequiredService<IQuoteRepository>();
             var quoteNumGen = App.Services.GetRequiredService<QuoteNumberGenerator>();
-            var navigator = App.Services.GetRequiredService<INavigator>();
+            var navigator = this.Navigator() ?? throw new InvalidOperationException("The page has no navigator.");
 
             var profile = await profileRepo.GetAsync();
             var quoteNumber = await quoteNumGen.GenerateAsync();
