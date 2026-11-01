@@ -71,6 +71,7 @@ public partial class App : Application
                     configBuilder
                         .EmbeddedSource<App>()
                         .Section<AppConfig>()
+                        .Section<Data.Remote.SupabaseOptions>("Supabase")
                 )
                 .UseHttp((context, services) => {
 #if DEBUG
@@ -103,7 +104,9 @@ public partial class App : Application
                     // Shared HttpClient for auth, sync, and cloud services
                     services.AddSingleton<HttpClient>();
 
-                    // Auth, sync, and cloud services
+                    // Auth, sync, and cloud services. Local-first: they stay idle and hidden unless
+                    // appsettings.json (or QUOTECRAFT_SUPABASE_URL / _ANON_KEY) names a Supabase project.
+                    services.AddSingleton<Data.Remote.SupabaseConfig>();
                     services.AddSingleton<Services.IAuthService, Services.AuthService>();
                     services.AddSingleton<Data.Remote.SupabaseClient>();
                     services.AddSingleton<Services.ISyncService, Services.SyncService>();

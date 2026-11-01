@@ -9,6 +9,7 @@ public class AuthService : IAuthService
 {
     private readonly HttpClient _http;
     private readonly ILogger<AuthService> _logger;
+    private readonly SupabaseConfig _config;
     private readonly string _supabaseUrl;
     private readonly string _supabaseAnonKey;
     private AuthState _currentState;
@@ -16,23 +17,30 @@ public class AuthService : IAuthService
 
     public event Action<AuthState>? AuthStateChanged;
 
-    public AuthService(HttpClient httpClient, ILogger<AuthService> logger)
+    public AuthService(HttpClient httpClient, SupabaseConfig config, ILogger<AuthService> logger)
     {
         _http = httpClient;
         _logger = logger;
-
-        // These should come from configuration; placeholder values for setup
-        _supabaseUrl = SupabaseConfig.Url;
-        _supabaseAnonKey = SupabaseConfig.AnonKey;
+        _config = config;
+        _supabaseUrl = config.Url;
+        _supabaseAnonKey = config.AnonKey;
 
         _currentState = new AuthState(false, null, null, null, null);
-        _ = RestoreSessionAsync();
+
+        // Local-first: with no Supabase project there is no account to restore.
+        if (config.IsConfigured)
+        {
+            _ = RestoreSessionAsync();
+        }
     }
+
+    public bool IsAvailable => _config.IsConfigured;
 
     public AuthState CurrentState => _currentState;
 
     public async Task<AuthState> SignUpAsync(string email, string password)
     {
+        _config.EnsureConfigured();
         var url = $"{_supabaseUrl}/auth/v1/signup";
         var body = new { email, password };
 
@@ -46,6 +54,7 @@ public class AuthService : IAuthService
 
     public async Task<AuthState> SignInAsync(string email, string password)
     {
+        _config.EnsureConfigured();
         var url = $"{_supabaseUrl}/auth/v1/token?grant_type=password";
         var body = new { email, password };
 
@@ -59,6 +68,7 @@ public class AuthService : IAuthService
 
     public async Task<AuthState> SignInWithMagicLinkAsync(string email)
     {
+        _config.EnsureConfigured();
         var url = $"{_supabaseUrl}/auth/v1/magiclink";
         var body = new { email };
 

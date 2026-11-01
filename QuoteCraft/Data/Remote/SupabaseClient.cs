@@ -14,6 +14,7 @@ public class SupabaseClient
     private readonly HttpClient _http;
     private readonly IAuthService _authService;
     private readonly ILogger<SupabaseClient> _logger;
+    private readonly SupabaseConfig _config;
     private readonly string _baseUrl;
     private readonly string _anonKey;
 
@@ -23,13 +24,14 @@ public class SupabaseClient
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     };
 
-    public SupabaseClient(HttpClient httpClient, IAuthService authService, ILogger<SupabaseClient> logger)
+    public SupabaseClient(HttpClient httpClient, IAuthService authService, SupabaseConfig config, ILogger<SupabaseClient> logger)
     {
         _http = httpClient;
         _authService = authService;
         _logger = logger;
-        _baseUrl = SupabaseConfig.Url;
-        _anonKey = SupabaseConfig.AnonKey;
+        _config = config;
+        _baseUrl = config.Url;
+        _anonKey = config.AnonKey;
     }
 
     /// <summary>
@@ -124,6 +126,8 @@ public class SupabaseClient
 
     private HttpRequestMessage CreateRequest(HttpMethod method, string url)
     {
+        _config.EnsureConfigured();
+
         var request = new HttpRequestMessage(method, url);
         request.Headers.Add("apikey", _anonKey);
 

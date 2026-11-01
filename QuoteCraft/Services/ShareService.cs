@@ -21,12 +21,18 @@ public class ShareService : IShareService
 {
     private readonly IPdfGenerator _pdfGenerator;
     private readonly IQuoteRepository _quoteRepo;
+    private readonly Data.Remote.SupabaseConfig _supabase;
     private readonly ILogger<ShareService> _logger;
 
-    public ShareService(IPdfGenerator pdfGenerator, IQuoteRepository quoteRepo, ILogger<ShareService> logger)
+    public ShareService(
+        IPdfGenerator pdfGenerator,
+        IQuoteRepository quoteRepo,
+        Data.Remote.SupabaseConfig supabase,
+        ILogger<ShareService> logger)
     {
         _pdfGenerator = pdfGenerator;
         _quoteRepo = quoteRepo;
+        _supabase = supabase;
         _logger = logger;
     }
 
@@ -71,6 +77,9 @@ public class ShareService : IShareService
 
     public async Task<string> GenerateShareLinkAsync(QuoteEntity quote)
     {
+        // The client-facing page is a Supabase Edge Function (supabase/functions/quote-view).
+        _supabase.EnsureConfigured();
+
         var fresh = await _quoteRepo.GetByIdAsync(quote.Id) ?? quote;
 
         // Generate share token if not already present
@@ -82,7 +91,7 @@ public class ShareService : IShareService
         }
 
         // Construct the client-facing URL
-        return $"{Data.Remote.SupabaseConfig.Url}/functions/v1/quote-view?token={fresh.ShareToken}";
+        return $"{_supabase.Url}/functions/v1/quote-view?token={fresh.ShareToken}";
     }
 
     public async Task CopyShareLinkAsync(QuoteEntity quote)

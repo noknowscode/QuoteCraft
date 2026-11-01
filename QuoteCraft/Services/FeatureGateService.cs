@@ -10,6 +10,12 @@ public enum SubscriptionTier
 public interface IFeatureGateService
 {
     SubscriptionTier CurrentTier { get; }
+
+    /// <summary>
+    /// True when plans apply: a Supabase project with billing is configured. Without one QuoteCraft runs locally,
+    /// with no plan limits and no upgrade prompts (docs/DECISIONS-production-readiness.md, D3).
+    /// </summary>
+    bool HasPlans { get; }
     Task<bool> CanCreateQuoteAsync();
     Task<bool> CanAddClientAsync();
     Task<int> GetQuotesUsedThisMonthAsync();
@@ -39,40 +45,36 @@ public class FeatureGateService : IFeatureGateService
         _quoteRepo = quoteRepo;
         _clientRepo = clientRepo;
         _subscriptionService = subscriptionService;
-
-        // Listen for tier changes from subscription service
-        _subscriptionService.TierChanged += tier => { /* tier is now live */ };
     }
 
     public SubscriptionTier CurrentTier => _subscriptionService.CurrentTier;
 
-    public int MaxQuotesPerMonth => CurrentTier switch
-    {
-        SubscriptionTier.Free => 5,
-        _ => int.MaxValue // Unlimited
-    };
+    public bool HasPlans => _subscriptionService.IsAvailable;
 
-    public int MaxClients => CurrentTier switch
-    {
-        SubscriptionTier.Free => 10,
-        _ => int.MaxValue
-    };
+    // Free-plan limits apply only where a paid plan can be bought; local-only builds have no plans.
+    private bool IsFreePlan => HasPlans && CurrentTier == SubscriptionTier.Free;
 
-    public bool HasPdfWatermark => CurrentTier == SubscriptionTier.Free;
+    private bool HasPaidFeatures => !HasPlans || CurrentTier >= SubscriptionTier.Pro;
 
-    public bool HasCloudSync => CurrentTier >= SubscriptionTier.Pro;
+    public int MaxQuotesPerMonth => IsFreePlan ? 5 : int.MaxValue;
 
-    public bool HasAllCatalogs => CurrentTier >= SubscriptionTier.Pro;
+    public int MaxClients => IsFreePlan ? 10 : int.MaxValue;
 
-    public bool HasBranding => CurrentTier >= SubscriptionTier.Pro;
+    public bool HasPdfWatermark => IsFreePlan;
 
-    public bool HasNotifications => CurrentTier >= SubscriptionTier.Pro;
+    public bool HasCloudSync => HasPlans && CurrentTier >= SubscriptionTier.Pro;
 
-    public bool HasAdvancedStatuses => CurrentTier >= SubscriptionTier.Pro;
+    public bool HasAllCatalogs => HasPaidFeatures;
+
+    public bool HasBranding => HasPaidFeatures;
+
+    public bool HasNotifications => HasPaidFeatures;
+
+    public bool HasAdvancedStatuses => HasPaidFeatures;
 
     public async Task<bool> CanCreateQuoteAsync()
     {
-        if (CurrentTier >= SubscriptionTier.Pro)
+        if (!IsFreePlan)
             return true;
 
         var usedThisMonth = await GetQuotesUsedThisMonthAsync();
@@ -81,7 +83,7 @@ public class FeatureGateService : IFeatureGateService
 
     public async Task<bool> CanAddClientAsync()
     {
-        if (CurrentTier >= SubscriptionTier.Pro)
+        if (!IsFreePlan)
             return true;
 
         var count = await GetClientCountAsync();

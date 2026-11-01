@@ -37,8 +37,9 @@
       <ScrollViewer Grid.Column="0" Padding="0,0,24,0">
         <StackPanel Spacing="28">
 
-        <!-- Upgrade Banner -->
-        <Border CornerRadius="12" Padding="24">
+        <!-- Upgrade Banner (only where billing is configured) -->
+        <Border CornerRadius="12" Padding="24"
+                Visibility="{Binding LocalModeNote, Converter={StaticResource EmptyToVisibleConverter}}">
           <Border.Background>
             <LinearGradientBrush StartPoint="0,0" EndPoint="1,0.5">
               <GradientStop Color="{StaticResource UpgradeBannerStartColor}" Offset="0" />
@@ -404,8 +405,37 @@
           </Border>
         </StackPanel>
 
+        <!-- LOCAL MODE (no Supabase project configured: no account, sync or plans) -->
+        <StackPanel Spacing="8"
+                    Visibility="{Binding LocalModeNote, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert}">
+          <TextBlock Text="ACCOUNT"
+                     Style="{StaticResource LabelSmall}"
+                     Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                     FontWeight="Bold" Margin="4,0,0,0" />
+
+          <Border Background="{ThemeResource SurfaceBrush}"
+                  BorderBrush="{ThemeResource OutlineVariantBrush}"
+                  BorderThickness="1" CornerRadius="12" Padding="20,12">
+            <Grid ColumnSpacing="12">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <FontIcon Glyph="&#xE977;" FontSize="16"
+                        Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                        VerticalAlignment="Top" Margin="0,2,0,0" />
+              <TextBlock Grid.Column="1"
+                         Text="{Binding LocalModeNote}"
+                         Style="{StaticResource BodyMedium}"
+                         Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                         TextWrapping="Wrap" />
+            </Grid>
+          </Border>
+        </StackPanel>
+
         <!-- SUBSCRIPTION -->
-        <StackPanel Spacing="8">
+        <StackPanel Spacing="8"
+                    Visibility="{Binding LocalModeNote, Converter={StaticResource EmptyToVisibleConverter}}">
           <TextBlock Text="SUBSCRIPTION"
                      Style="{StaticResource LabelSmall}"
                      Foreground="{ThemeResource OnSurfaceVariantBrush}"
@@ -463,7 +493,8 @@
         </StackPanel>
 
         <!-- ACCOUNT -->
-        <StackPanel Spacing="8">
+        <StackPanel Spacing="8"
+                    Visibility="{Binding LocalModeNote, Converter={StaticResource EmptyToVisibleConverter}}">
           <TextBlock Text="ACCOUNT"
                      Style="{StaticResource LabelSmall}"
                      Foreground="{ThemeResource OnSurfaceVariantBrush}"

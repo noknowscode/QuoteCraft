@@ -8,6 +8,7 @@ public partial record SettingsModel
     private readonly Services.IFeatureGateService _featureGate;
     private readonly Services.ISubscriptionService _subscriptionService;
     private readonly Services.IAuthService _authService;
+    private readonly Data.Remote.SupabaseConfig _supabase;
     private readonly ILogger<SettingsModel> _logger;
 
     public SettingsModel(
@@ -17,6 +18,7 @@ public partial record SettingsModel
         Services.IFeatureGateService featureGate,
         Services.ISubscriptionService subscriptionService,
         Services.IAuthService authService,
+        Data.Remote.SupabaseConfig supabase,
         ILogger<SettingsModel> logger)
     {
         _navigator = navigator;
@@ -25,6 +27,7 @@ public partial record SettingsModel
         _featureGate = featureGate;
         _subscriptionService = subscriptionService;
         _authService = authService;
+        _supabase = supabase;
         _logger = logger;
         _ = InitializeAsync();
     }
@@ -46,6 +49,11 @@ public partial record SettingsModel
 
     public IFeed<int> CatalogItemCount => Feed.Async(async ct =>
         await _catalogRepo.GetItemCountAsync());
+
+    // Empty when a Supabase project is configured (plans, subscription and account sections show); otherwise the
+    // local-mode note that takes their place.
+    public IFeed<string> LocalModeNote => Feed.Async(ct => ValueTask.FromResult(
+        _supabase.IsConfigured ? string.Empty : Data.Remote.SupabaseConfig.NotConfiguredMessage));
 
     // Subscription info feeds
     public IFeed<string> CurrentPlanName => Feed.Async(async ct =>
