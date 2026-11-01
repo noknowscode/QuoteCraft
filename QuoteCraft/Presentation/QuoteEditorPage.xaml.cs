@@ -120,14 +120,17 @@ public sealed partial class QuoteEditorPage : Page
             return;
         }
 
-        var picker = new Windows.Storage.Pickers.FileOpenPicker();
+        var picker = new Windows.Storage.Pickers.FileOpenPicker
+        {
+            SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary,
+        };
         picker.FileTypeFilter.Add(".jpg");
         picker.FileTypeFilter.Add(".jpeg");
         picker.FileTypeFilter.Add(".png");
         picker.FileTypeFilter.Add(".bmp");
         picker.FileTypeFilter.Add(".webp");
 
-#if !__BROWSERWASM__
+#if WINDOWS
         WinRT.Interop.InitializeWithWindow.Initialize(picker,
             WinRT.Interop.WindowNative.GetWindowHandle(App.MainAppWindow));
 #endif
