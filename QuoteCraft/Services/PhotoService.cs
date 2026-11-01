@@ -84,7 +84,9 @@ public class PhotoService : IPhotoService
                 var newWidth = Math.Max(1, (int)(original.Width * scale));
                 var newHeight = Math.Max(1, (int)(original.Height * scale));
 
-                using var resized = original.Resize(new SkiaSharp.SKImageInfo(newWidth, newHeight), SkiaSharp.SKFilterQuality.Medium);
+                using var resized = original.Resize(
+                    new SkiaSharp.SKImageInfo(newWidth, newHeight),
+                    new SkiaSharp.SKSamplingOptions(SkiaSharp.SKFilterMode.Linear, SkiaSharp.SKMipmapMode.Linear));
                 if (resized is null) return;
 
                 using var image = SkiaSharp.SKImage.FromBitmap(resized);

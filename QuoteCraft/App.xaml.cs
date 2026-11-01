@@ -112,7 +112,7 @@ public partial class App : Application
             );
         MainWindow = builder.Window;
 
-        #if DEBUG
+#if DEBUG && !NO_UNO_STUDIO
         MainWindow.UseStudio();
 #endif
                 MainWindow.SetWindowIcon();

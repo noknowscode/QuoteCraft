@@ -6,6 +6,9 @@ namespace QuoteCraft.Helpers;
 /// </summary>
 public static class DialogHelper
 {
+    // Pages pass their own XamlRoot, which is set once they are in the visual tree, as they are whenever a click runs.
+    private const string NoXamlRootMessage = "A dialog needs a page that is in the visual tree (XamlRoot is null).";
+
     /// <summary>
     /// Builds a gradient banner Border (slate blue gradient, amber icon, white text).
     /// </summary>
@@ -59,7 +62,7 @@ public static class DialogHelper
     /// Builds a simple ContentDialog with only a gradient banner (no form fields).
     /// </summary>
     public static ContentDialog BuildBannerDialog(
-        XamlRoot xamlRoot,
+        XamlRoot? xamlRoot,
         string iconGlyph,
         string title,
         string subtitle,
@@ -75,7 +78,7 @@ public static class DialogHelper
             Content = panel,
             CloseButtonText = closeButtonText ?? "OK",
             PrimaryButtonText = primaryButtonText,
-            XamlRoot = xamlRoot,
+            XamlRoot = xamlRoot ?? throw new InvalidOperationException(NoXamlRootMessage),
         };
     }
 
@@ -83,7 +86,7 @@ public static class DialogHelper
     /// Builds a ContentDialog with a gradient banner header and custom body content.
     /// </summary>
     public static ContentDialog BuildBannerDialogWithContent(
-        XamlRoot xamlRoot,
+        XamlRoot? xamlRoot,
         string iconGlyph,
         string title,
         string subtitle,
@@ -104,7 +107,7 @@ public static class DialogHelper
             PrimaryButtonText = primaryButtonText ?? "Save",
             CloseButtonText = closeButtonText ?? "Cancel",
             DefaultButton = ContentDialogButton.Primary,
-            XamlRoot = xamlRoot,
+            XamlRoot = xamlRoot ?? throw new InvalidOperationException(NoXamlRootMessage),
         };
     }
 

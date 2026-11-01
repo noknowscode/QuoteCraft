@@ -1,6 +1,12 @@
 <Project Sdk="Uno.Sdk">
   <PropertyGroup>
+    <!-- Uno.Sdk skips the heads the build OS can't build (iOS on Linux, Windows off Windows). -->
     <TargetFrameworks>net10.0-android;net10.0-browserwasm;net10.0-desktop</TargetFrameworks>
+    <!--
+      App-only override for single-head builds (CI, RID-specific publish): -p:QuoteCraftTargetFrameworks=net10.0-desktop.
+      A global -p:TargetFrameworks would also retarget the test project.
+    -->
+    <TargetFrameworks Condition="'$(QuoteCraftTargetFrameworks)' != ''">$(QuoteCraftTargetFrameworks)</TargetFrameworks>
 
     <OutputType>Exe</OutputType>
     <UnoSingleProject>true</UnoSingleProject>
@@ -16,6 +22,8 @@
     <ApplicationPublisher>QuoteCraft</ApplicationPublisher>
     <!-- Package Description -->
     <Description>QuoteCraft powered by Uno Platform.</Description>
+    <!-- Uno0001 = member not implemented in Uno Platform: fail the build instead of shipping a silent no-op. -->
+    <WarningsAsErrors>$(WarningsAsErrors);Uno0001</WarningsAsErrors>
 
     <!--
       UnoFeatures are used to quickly add and manage features enabled for your app.
@@ -33,12 +41,20 @@
       Navigation;
       SkiaRenderer;
     </UnoFeatures>
+    <!--
+      Uno.Sdk 7.0.0-dev.115 bundles Hot Design 2.0.0-dev.31 and App MCP 2.0.0-dev.18, whose clients still reference
+      Uno.UI.Lottie, an assembly Uno 7 no longer ships: every Debug launch crashed in GlobalStaticResources. Both stay off
+      (Debug only; Release never had them) until a dev build drops the reference. Delete these three lines then.
+    -->
+    <UnoDisableHotDesign>true</UnoDisableHotDesign>
+    <UnoDisableMCPSupport>true</UnoDisableMCPSupport>
+    <DefineConstants>$(DefineConstants);NO_UNO_STUDIO</DefineConstants>
   </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.Sqlite.Core" />
     <PackageReference Include="SQLitePCLRaw.bundle_e_sqlcipher" />
     <PackageReference Include="QuestPDF" />
-    <PackageReference Include="SkiaSharp" />
   </ItemGroup>
 
 </Project>

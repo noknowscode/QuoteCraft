@@ -57,14 +57,18 @@ public sealed partial class MainPage : Page
 
     private void ThemeToggle_Click(object sender, RoutedEventArgs e)
     {
-        var isDark = SystemThemeHelper.IsRootInDarkMode(this.XamlRoot);
-        SystemThemeHelper.SetRootTheme(this.XamlRoot, !isDark);
+        if (XamlRoot is not { } root) return;
+
+        var isDark = SystemThemeHelper.IsRootInDarkMode(root);
+        SystemThemeHelper.SetRootTheme(root, !isDark);
         UpdateThemeToggleVisuals();
     }
 
     private void UpdateThemeToggleVisuals()
     {
-        var isDark = SystemThemeHelper.IsRootInDarkMode(this.XamlRoot);
+        if (XamlRoot is not { } root) return;
+
+        var isDark = SystemThemeHelper.IsRootInDarkMode(root);
         ThemeIcon.Glyph = isDark ? "\uE706" : "\uE708";
         ThemeLabel.Text = isDark ? "Light Mode" : "Dark Mode";
     }
