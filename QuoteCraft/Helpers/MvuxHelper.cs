@@ -8,6 +8,8 @@ namespace QuoteCraft.Helpers;
 /// MVUX generates ViewModel wrapper classes (e.g., DashboardViewModel for DashboardModel)
 /// set as the page DataContext. The underlying model is accessible via the Model property.
 /// </summary>
+[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2070",
+    Justification = "The MVUX-generated view models live in this assembly, which Platforms/WebAssembly/LinkerConfig.xml preserves whole.")]
 internal static class MvuxHelper
 {
     private static readonly ConcurrentDictionary<Type, PropertyInfo?> _cache = new();

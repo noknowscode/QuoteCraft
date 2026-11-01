@@ -5,6 +5,10 @@ using QuoteCraft.Data.Remote;
 
 namespace QuoteCraft.Services;
 
+// Trimmed heads (WebAssembly): the JSON payload types are this assembly's own (DTOs and anonymous types), and
+// Platforms/WebAssembly/LinkerConfig.xml preserves the assembly whole, so reflection serialization finds their members.
+[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026",
+    Justification = "Serialized types are in this assembly, which LinkerConfig.xml preserves.")]
 public class AuthService : IAuthService
 {
     private readonly HttpClient _http;

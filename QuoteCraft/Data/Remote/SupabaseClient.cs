@@ -9,6 +9,10 @@ namespace QuoteCraft.Data.Remote;
 /// HTTP client wrapper for Supabase REST API.
 /// Handles auth headers, token refresh, and typed API methods.
 /// </summary>
+// Trimmed heads (WebAssembly): the JSON payload types are this assembly's own (DTOs and anonymous types), and
+// Platforms/WebAssembly/LinkerConfig.xml preserves the assembly whole, so reflection serialization finds their members.
+[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026",
+    Justification = "Serialized types are in this assembly, which LinkerConfig.xml preserves.")]
 public class SupabaseClient
 {
     private readonly HttpClient _http;

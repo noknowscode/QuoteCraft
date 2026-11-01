@@ -107,10 +107,14 @@ public class AppDatabase
 
     private static async Task InitializeCoreAsync(SqliteConnection connection)
     {
-        // Enable WAL mode for better concurrent read performance
+#if !__WASM__
+        // Enable WAL mode for better concurrent read performance. Not on WebAssembly: WAL is for concurrent readers and
+        // the browser runtime has one thread, and the -wal/-shm side files would only add to what IndexedDB syncs.
+        // The browser keeps SQLite's default rollback journal.
         var walCmd = connection.CreateCommand();
         walCmd.CommandText = "PRAGMA journal_mode=WAL;";
         await walCmd.ExecuteNonQueryAsync();
+#endif
 
         var cmd = connection.CreateCommand();
         cmd.CommandText = """
