@@ -213,11 +213,12 @@ public class AppDatabase
         versionCmd.CommandText = "SELECT COALESCE(MAX(version), 0) FROM schema_version";
         var currentVersion = Convert.ToInt32(await versionCmd.ExecuteScalarAsync());
 
-        var migrations = new SortedDictionary<int, string>
+        // Each migration runs once, in its own transaction, in version order.
+        var migrations = new SortedDictionary<int, Func<SqliteConnection, SqliteTransaction, Task>>
         {
-            { 2, "" },
+            { 2, Sql("") },
 
-            { 3, """
+            { 3, Sql("""
                 ALTER TABLE quotes ADD COLUMN synced_at TEXT;
                 ALTER TABLE quotes ADD COLUMN share_token TEXT;
                 ALTER TABLE clients ADD COLUMN synced_at TEXT;
@@ -248,37 +249,33 @@ public class AppDatabase
                 CREATE INDEX IF NOT EXISTS idx_status_history_quote_id ON status_history(quote_id);
                 CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications(is_read);
                 CREATE INDEX IF NOT EXISTS idx_quotes_share_token ON quotes(share_token);
-                """ },
+                """) },
 
-            { 4, """
+            { 4, Sql("""
                 ALTER TABLE business_profile ADD COLUMN website TEXT;
                 ALTER TABLE business_profile ADD COLUMN business_number TEXT;
-                """ },
+                """) },
 
-            { 5, $$"""
+            { 5, Sql($$"""
                 UPDATE quotes SET status='Sent',     valid_until='{{DateTimeOffset.UtcNow.AddDays(14):O}}', updated_at='{{DateTimeOffset.UtcNow:O}}' WHERE title='Drain Cleaning Service';
                 UPDATE quotes SET status='Viewed',   valid_until='{{DateTimeOffset.UtcNow.AddDays(14):O}}', updated_at='{{DateTimeOffset.UtcNow:O}}' WHERE title='Office Plumbing Fit-out';
                 UPDATE quotes SET status='Draft',    valid_until='{{DateTimeOffset.UtcNow.AddDays(14):O}}', updated_at='{{DateTimeOffset.UtcNow:O}}' WHERE title='Emergency Pipe Repair';
                 UPDATE quotes SET status='Sent',     valid_until='{{DateTimeOffset.UtcNow.AddDays(14):O}}', updated_at='{{DateTimeOffset.UtcNow:O}}' WHERE title='Bathroom Remodel';
                 UPDATE quotes SET valid_until='{{DateTimeOffset.UtcNow.AddDays(14):O}}', updated_at='{{DateTimeOffset.UtcNow:O}}' WHERE title='Kitchen Renovation';
                 UPDATE quotes SET valid_until='{{DateTimeOffset.UtcNow.AddDays(14):O}}', updated_at='{{DateTimeOffset.UtcNow:O}}' WHERE title='Water Heater Install';
-                """ },
+                """) },
+
+            { 6, NumberQuotesPerYearAsync },
         };
 
-        foreach (var (version, sql) in migrations)
+        foreach (var (version, migrate) in migrations)
         {
             if (version <= currentVersion) continue;
 
             using var tx = connection.BeginTransaction();
             try
             {
-                if (!string.IsNullOrWhiteSpace(sql))
-                {
-                    var migCmd = connection.CreateCommand();
-                    migCmd.CommandText = sql;
-                    migCmd.Transaction = tx;
-                    await migCmd.ExecuteNonQueryAsync();
-                }
+                await migrate(connection, tx);
 
                 var insertVersion = connection.CreateCommand();
                 insertVersion.CommandText = "INSERT INTO schema_version (version, applied_at) VALUES (@v, @t)";
@@ -304,6 +301,105 @@ public class AppDatabase
             insertV1.Parameters.AddWithValue("@t", DateTimeOffset.UtcNow.ToString("O"));
             await insertV1.ExecuteNonQueryAsync();
         }
+    }
+
+    private static Func<SqliteConnection, SqliteTransaction, Task> Sql(string sql) => async (connection, tx) =>
+    {
+        if (!string.IsNullOrWhiteSpace(sql))
+        {
+            await ExecuteAsync(connection, tx, sql);
+        }
+    };
+
+    private static async Task ExecuteAsync(SqliteConnection connection, SqliteTransaction tx, string sql)
+    {
+        var cmd = connection.CreateCommand();
+        cmd.Transaction = tx;
+        cmd.CommandText = sql;
+        await cmd.ExecuteNonQueryAsync();
+    }
+
+    /// <summary>
+    /// Migration 6. Quote numbers came from the quote count plus one, so a delete made the next quote reuse a number,
+    /// and the PDF export (named after the number) overwrote the other quote's file. Numbers now come from a per-year
+    /// counter that never goes back, and a unique index keeps them distinct. Quotes that already share a number keep
+    /// it on the first one (oldest, not deleted first); the others take the next numbers of their year.
+    /// </summary>
+    private static async Task NumberQuotesPerYearAsync(SqliteConnection connection, SqliteTransaction tx)
+    {
+        await ExecuteAsync(connection, tx,
+            "CREATE TABLE quote_counters (year INTEGER PRIMARY KEY, last_number INTEGER NOT NULL)");
+
+        var quotes = new List<(string Id, string Number)>();
+        var read = connection.CreateCommand();
+        read.Transaction = tx;
+        read.CommandText = "SELECT id, quote_number FROM quotes ORDER BY is_deleted, created_at, rowid";
+        using (var reader = await read.ExecuteReaderAsync())
+        {
+            while (await reader.ReadAsync())
+            {
+                quotes.Add((reader.GetString(0), reader.GetString(1)));
+            }
+        }
+
+        // Every counter starts after the highest number its year already has.
+        var lastByYear = new Dictionary<int, int>();
+        foreach (var (_, number) in quotes)
+        {
+            if (QuoteNumberGenerator.TryParse(number, out _, out var year, out var sequence))
+            {
+                lastByYear[year] = Math.Max(lastByYear.GetValueOrDefault(year), sequence);
+            }
+        }
+
+        var taken = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var (id, number) in quotes)
+        {
+            if (taken.Add(number))
+            {
+                continue;
+            }
+
+            string renumbered;
+            if (QuoteNumberGenerator.TryParse(number, out var prefix, out var year, out _))
+            {
+                do
+                {
+                    lastByYear[year]++;
+                    renumbered = QuoteNumberGenerator.Format(prefix, year, lastByYear[year]);
+                }
+                while (!taken.Add(renumbered));
+            }
+            else
+            {
+                var suffix = 2;
+                do
+                {
+                    renumbered = $"{number}-{suffix++}";
+                }
+                while (!taken.Add(renumbered));
+            }
+
+            var update = connection.CreateCommand();
+            update.Transaction = tx;
+            update.CommandText = "UPDATE quotes SET quote_number = @number, updated_at = @now WHERE id = @id";
+            update.Parameters.AddWithValue("@number", renumbered);
+            update.Parameters.AddWithValue("@now", DateTimeOffset.UtcNow.ToString("O"));
+            update.Parameters.AddWithValue("@id", id);
+            await update.ExecuteNonQueryAsync();
+        }
+
+        foreach (var (year, last) in lastByYear)
+        {
+            var insert = connection.CreateCommand();
+            insert.Transaction = tx;
+            insert.CommandText = "INSERT INTO quote_counters (year, last_number) VALUES (@year, @last)";
+            insert.Parameters.AddWithValue("@year", year);
+            insert.Parameters.AddWithValue("@last", last);
+            await insert.ExecuteNonQueryAsync();
+        }
+
+        await ExecuteAsync(connection, tx, "CREATE UNIQUE INDEX ux_quotes_quote_number ON quotes(quote_number)");
     }
 
     private static async Task SeedCatalogItemsAsync(SqliteConnection connection)

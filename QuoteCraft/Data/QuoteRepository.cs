@@ -9,7 +9,7 @@ public interface IQuoteRepository
     Task<QuoteEntity?> GetByIdAsync(string id);
     Task SaveAsync(QuoteEntity quote);
     Task DeleteAsync(string id);
-    Task<int> GetQuoteCountAsync();
+    Task<string> NextQuoteNumberAsync(string prefix, int year);
     Task SaveLineItemAsync(LineItemEntity item);
     Task SaveLineItemsBatchAsync(params LineItemEntity[] items);
     Task DeleteLineItemAsync(string id);
@@ -147,14 +147,37 @@ public class QuoteRepository : IQuoteRepository
         _photoService.DeletePhotosForQuote(id);
     }
 
-    public async Task<int> GetQuoteCountAsync()
+    /// <summary>
+    /// The next number of <paramref name="year"/>'s counter (it only goes up), skipping any number a quote already has
+    /// (sample data, or a prefix changed and changed back). The quotes table also refuses a duplicate.
+    /// </summary>
+    public async Task<string> NextQuoteNumberAsync(string prefix, int year)
     {
         var conn = await _db.GetConnectionAsync();
 
-        var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT COUNT(*) FROM quotes WHERE is_deleted = 0";
-        var result = await cmd.ExecuteScalarAsync();
-        return Convert.ToInt32(result);
+        using var tx = conn.BeginTransaction();
+        while (true)
+        {
+            var next = conn.CreateCommand();
+            next.Transaction = tx;
+            next.CommandText = """
+                INSERT INTO quote_counters (year, last_number) VALUES (@year, 1)
+                ON CONFLICT(year) DO UPDATE SET last_number = last_number + 1
+                RETURNING last_number
+                """;
+            next.Parameters.AddWithValue("@year", year);
+            var number = QuoteNumberGenerator.Format(prefix, year, Convert.ToInt32(await next.ExecuteScalarAsync()));
+
+            var taken = conn.CreateCommand();
+            taken.Transaction = tx;
+            taken.CommandText = "SELECT EXISTS (SELECT 1 FROM quotes WHERE quote_number = @number)";
+            taken.Parameters.AddWithValue("@number", number);
+            if (Convert.ToInt32(await taken.ExecuteScalarAsync()) == 0)
+            {
+                tx.Commit();
+                return number;
+            }
+        }
     }
 
     public async Task SaveLineItemAsync(LineItemEntity item)
