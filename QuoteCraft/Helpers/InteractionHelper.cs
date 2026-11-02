@@ -115,7 +115,6 @@ public static class InteractionHelper
             border.KeyDown += Border_KeyDown;
             border.ActualThemeChanged += Border_ActualThemeChanged;
             border.IsTabStop = true;
-            border.UseSystemFocusVisuals = true;
         }
         else
         {

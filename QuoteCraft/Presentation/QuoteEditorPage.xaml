@@ -147,11 +147,12 @@
                       </Grid.ColumnDefinitions>
                       <utu:AutoLayout Padding="{StaticResource Inset16}"
                                       Spacing="{StaticResource Space8}"
-                                      Orientation="Vertical">
+                                      Orientation="Vertical"
+                                      HorizontalAlignment="Stretch">
                         <TextBlock Text="{Binding Description}"
                                    Style="{StaticResource BodyLarge}"
                                    TextWrapping="Wrap" />
-                        <Grid ColumnSpacing="{StaticResource Space8}">
+                        <Grid ColumnSpacing="{StaticResource Space8}" utu:AutoLayout.CounterAlignment="Stretch">
                           <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />

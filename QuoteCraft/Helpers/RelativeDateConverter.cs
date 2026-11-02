@@ -23,8 +23,8 @@ public class RelativeDateConverter : IValueConverter
 
 /// <summary>
 /// "Just now", "3 days ago", "Tomorrow", "In 2 weeks": a date relative to now, in the past or the future (a quote's
-/// valid-until date is usually ahead). Calendar words (Today, Yesterday, Tomorrow) use the day in <paramref name="now"/>'s
-/// time zone.
+/// valid-until date is usually ahead). Calendar words (Today, Yesterday, Tomorrow) use the calendar day in the time
+/// zone of the "now" passed in (the device's local time in the app).
 /// </summary>
 public static class RelativeDate
 {
