@@ -31,7 +31,7 @@ public class QuoteRepository : IQuoteRepository
 
     public async Task<List<QuoteEntity>> GetAllAsync()
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT * FROM quotes WHERE is_deleted = 0 ORDER BY created_at DESC";
@@ -71,7 +71,7 @@ public class QuoteRepository : IQuoteRepository
 
     public async Task<QuoteEntity?> GetByIdAsync(string id)
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT * FROM quotes WHERE id = @id AND is_deleted = 0";
@@ -89,7 +89,7 @@ public class QuoteRepository : IQuoteRepository
 
     public async Task SaveAsync(QuoteEntity quote)
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         quote.UpdatedAt = DateTimeOffset.UtcNow;
 
@@ -127,10 +127,12 @@ public class QuoteRepository : IQuoteRepository
 
     public async Task DeleteAsync(string id)
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
+        using var tx = conn.BeginTransaction();
 
-        // Soft-delete the quote
+        // Soft-delete the quote (it keeps its number: numbers are never reused)
         var cmd = conn.CreateCommand();
+        cmd.Transaction = tx;
         cmd.CommandText = "UPDATE quotes SET is_deleted = 1, updated_at = @updated_at WHERE id = @id";
         cmd.Parameters.AddWithValue("@id", id);
         cmd.Parameters.AddWithValue("@updated_at", DateTimeOffset.UtcNow.ToString("O"));
@@ -139,9 +141,11 @@ public class QuoteRepository : IQuoteRepository
 
         // Hard-delete orphaned line items
         var lineCmd = conn.CreateCommand();
+        lineCmd.Transaction = tx;
         lineCmd.CommandText = "DELETE FROM line_items WHERE quote_id = @id";
         lineCmd.Parameters.AddWithValue("@id", id);
         await lineCmd.ExecuteNonQueryAsync();
+        tx.Commit();
 
         // Clean up photo files from disk
         _photoService.DeletePhotosForQuote(id);
@@ -153,7 +157,7 @@ public class QuoteRepository : IQuoteRepository
     /// </summary>
     public async Task<string> NextQuoteNumberAsync(string prefix, int year)
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         using var tx = conn.BeginTransaction();
         while (true)
@@ -187,7 +191,7 @@ public class QuoteRepository : IQuoteRepository
     /// </summary>
     public async Task SaveLineItemAsync(LineItemEntity item)
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         item.UpdatedAt = DateTimeOffset.UtcNow;
 
@@ -217,7 +221,7 @@ public class QuoteRepository : IQuoteRepository
     /// </summary>
     public async Task ReorderLineItemsAsync(string quoteId, IReadOnlyList<string> orderedIds)
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         using var transaction = conn.BeginTransaction();
         var now = DateTimeOffset.UtcNow.ToString("O");
@@ -240,7 +244,7 @@ public class QuoteRepository : IQuoteRepository
 
     public async Task DeleteLineItemAsync(string id)
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "DELETE FROM line_items WHERE id = @id";
@@ -250,7 +254,7 @@ public class QuoteRepository : IQuoteRepository
 
     public async Task<List<LineItemEntity>> GetLineItemsAsync(string quoteId)
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT * FROM line_items WHERE quote_id = @quote_id ORDER BY sort_order, rowid";
@@ -267,7 +271,7 @@ public class QuoteRepository : IQuoteRepository
 
     public async Task<int> CountCreatedSinceAsync(DateTimeOffset since)
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT COUNT(*) FROM quotes WHERE is_deleted = 0 AND created_at >= @since";
@@ -278,7 +282,7 @@ public class QuoteRepository : IQuoteRepository
     /// <summary>Sent and Viewed quotes valid until before <paramref name="now"/>; a Draft never expires.</summary>
     public async Task<List<QuoteEntity>> GetExpirableAsync(DateTimeOffset now)
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = """

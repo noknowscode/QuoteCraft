@@ -26,7 +26,7 @@ public class CatalogItemRepository : ICatalogItemRepository
     {
         if (_cache is not null) return _cache;
 
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT * FROM catalog_items WHERE is_deleted = 0 ORDER BY category, sort_order, description";
@@ -43,7 +43,7 @@ public class CatalogItemRepository : ICatalogItemRepository
 
     public async Task<CatalogItemEntity?> GetByIdAsync(string id)
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT * FROM catalog_items WHERE id = @id AND is_deleted = 0";
@@ -60,7 +60,7 @@ public class CatalogItemRepository : ICatalogItemRepository
     public async Task SaveAsync(CatalogItemEntity item)
     {
         InvalidateCache();
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         item.UpdatedAt = DateTimeOffset.UtcNow;
 
@@ -88,7 +88,7 @@ public class CatalogItemRepository : ICatalogItemRepository
     public async Task DeleteAsync(string id)
     {
         InvalidateCache();
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "UPDATE catalog_items SET is_deleted = 1, updated_at = @updated_at WHERE id = @id";

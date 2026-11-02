@@ -67,7 +67,7 @@ public class LineItemTests
         }
 
         // Items saved by the old dialog all had position 0, so swapping two positions changed nothing.
-        var connection = await test.Database.GetConnectionAsync();
+        await using var connection = await test.Database.OpenConnectionAsync();
         var reset = connection.CreateCommand();
         reset.CommandText = "UPDATE line_items SET sort_order = 0";
         await reset.ExecuteNonQueryAsync();

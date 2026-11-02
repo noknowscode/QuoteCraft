@@ -19,7 +19,7 @@ public class NotificationService : INotificationService
 
     public async Task<List<NotificationEntity>> GetAllAsync()
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT * FROM notifications ORDER BY created_at DESC LIMIT 50";
@@ -35,7 +35,7 @@ public class NotificationService : INotificationService
 
     public async Task<int> GetUnreadCountAsync()
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT COUNT(*) FROM notifications WHERE is_read = 0";
@@ -52,7 +52,7 @@ public class NotificationService : INotificationService
 
     public async Task CreateAsync(NotificationType type, string title, string message, string? quoteId = null)
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = """
@@ -73,7 +73,7 @@ public class NotificationService : INotificationService
 
     public async Task MarkAsReadAsync(string notificationId)
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "UPDATE notifications SET is_read = 1 WHERE id = @id AND is_read = 0";
@@ -89,7 +89,7 @@ public class NotificationService : INotificationService
 
     public async Task MarkAllAsReadAsync()
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "UPDATE notifications SET is_read = 1 WHERE is_read = 0";

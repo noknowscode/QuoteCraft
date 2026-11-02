@@ -2,12 +2,18 @@ using Microsoft.Data.Sqlite;
 
 namespace QuoteCraft.Data;
 
+/// <summary>
+/// The local SQLite database. Each operation opens its own connection and disposes it when done
+/// (<see cref="OpenConnectionAsync"/>): MVUX feeds read on background threads while pages write on the UI thread, and
+/// one shared connection let their commands and transactions interleave. Microsoft.Data.Sqlite pools the connections,
+/// so the SQLCipher key is derived once per pooled connection, not per operation; WAL lets readers run beside a
+/// writer, and a writer that finds the database busy retries for the command timeout (30 s).
+/// </summary>
 public class AppDatabase
 {
     private readonly string _connectionString;
     private readonly SemaphoreSlim _initLock = new(1, 1);
-    private SqliteConnection? _sharedConnection;
-    private bool _initialized;
+    private volatile bool _initialized;
 
     public AppDatabase()
         : this(AppStorage.Root)
@@ -22,14 +28,18 @@ public class AppDatabase
         Directory.CreateDirectory(dir);
         var dbPath = Path.Combine(dir, "quotecraft.db");
 
-#if __WASM__
+        var connectionString = new SqliteConnectionStringBuilder
+        {
+            DataSource = dbPath,
+            ForeignKeys = true,
+            Pooling = true,
+        };
+#if !__WASM__
         // WebAssembly: the database lives in the browser's IndexedDB storage for this site, where a key would have to
-        // sit next to it, so SQLCipher runs without one (docs/DECISIONS-production-readiness.md, D1).
-        _connectionString = $"Data Source={dbPath}";
-#else
-        var key = GetOrCreateEncryptionKey(dir);
-        _connectionString = $"Data Source={dbPath};Password={key}";
+        // sit next to it, so SQLCipher runs without one there (docs/DECISIONS-production-readiness.md, D1).
+        connectionString.Password = GetOrCreateEncryptionKey(dir);
 #endif
+        _connectionString = connectionString.ToString();
     }
 
 #if !__WASM__
@@ -51,63 +61,38 @@ public class AppDatabase
 #endif
 
     /// <summary>
-    /// Returns the shared persistent connection. Opens and initializes on first call.
-    /// Do NOT dispose the returned connection — it is shared across the app lifetime.
+    /// Opens a connection for one operation; the caller disposes it (<c>await using</c>). The first call creates or
+    /// migrates the schema.
     /// </summary>
-    public async Task<SqliteConnection> GetConnectionAsync()
-    {
-        if (_initialized && _sharedConnection is { State: System.Data.ConnectionState.Open })
-            return _sharedConnection;
-
-        await _initLock.WaitAsync();
-        try
-        {
-            if (_initialized && _sharedConnection is { State: System.Data.ConnectionState.Open })
-                return _sharedConnection;
-
-            // Open persistent connection
-            _sharedConnection?.Dispose();
-            _sharedConnection = new SqliteConnection(_connectionString);
-            await _sharedConnection.OpenAsync();
-
-            // PRAGMAs — set once on the persistent connection
-            var pragmaCmd = _sharedConnection.CreateCommand();
-            pragmaCmd.CommandText = "PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;";
-            await pragmaCmd.ExecuteNonQueryAsync();
-
-            if (!_initialized)
-            {
-                await InitializeCoreAsync(_sharedConnection);
-                _initialized = true;
-            }
-
-            return _sharedConnection;
-        }
-        finally
-        {
-            _initLock.Release();
-        }
-    }
-
-    // Keep for backward compat during init — creates a temporary connection
-    [Obsolete("Use GetConnectionAsync() instead")]
-    public async Task InitializeAsync()
-    {
-        await GetConnectionAsync();
-    }
-
-    // Keep for backward compat — but callers should migrate to GetConnectionAsync()
-    [Obsolete("Use GetConnectionAsync() instead")]
-    public async Task<SqliteConnection> CreateConnectionAsync()
+    public async Task<SqliteConnection> OpenConnectionAsync()
     {
         var connection = new SqliteConnection(_connectionString);
-        await connection.OpenAsync();
-
-        var fkCmd = connection.CreateCommand();
-        fkCmd.CommandText = "PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;";
-        await fkCmd.ExecuteNonQueryAsync();
-
-        return connection;
+        try
+        {
+            await connection.OpenAsync();
+            if (!_initialized)
+            {
+                await _initLock.WaitAsync();
+                try
+                {
+                    if (!_initialized)
+                    {
+                        await InitializeCoreAsync(connection);
+                        _initialized = true;
+                    }
+                }
+                finally
+                {
+                    _initLock.Release();
+                }
+            }
+            return connection;
+        }
+        catch
+        {
+            await connection.DisposeAsync();
+            throw;
+        }
     }
 
     private static async Task InitializeCoreAsync(SqliteConnection connection)

@@ -80,7 +80,6 @@ public class QuoteNumberGeneratorTests
     public async Task The_migration_renumbers_shared_numbers_and_continues_the_count()
     {
         using var test = new TestDatabase();
-        await test.Database.GetConnectionAsync();
 
         // Put the database back to version 5, with two quotes that share a number, as the count-based numbering left it.
         await ExecuteAsync(test.Database, """
@@ -127,7 +126,7 @@ public class QuoteNumberGeneratorTests
 
     private static async Task ExecuteAsync(AppDatabase database, string sql)
     {
-        var connection = await database.GetConnectionAsync();
+        await using var connection = await database.OpenConnectionAsync();
         var cmd = connection.CreateCommand();
         cmd.CommandText = sql;
         await cmd.ExecuteNonQueryAsync();

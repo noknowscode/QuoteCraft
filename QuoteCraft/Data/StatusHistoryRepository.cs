@@ -20,7 +20,7 @@ public class StatusHistoryRepository : IStatusHistoryRepository
 
     public async Task RecordAsync(string quoteId, string status, string? changedBy = null)
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = """
@@ -37,7 +37,7 @@ public class StatusHistoryRepository : IStatusHistoryRepository
 
     public async Task<List<StatusHistoryEntry>> GetByQuoteIdAsync(string quoteId)
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT * FROM status_history WHERE quote_id = @quote_id ORDER BY changed_at, rowid";

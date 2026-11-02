@@ -20,7 +20,7 @@ public class BusinessProfileRepository : IBusinessProfileRepository
     {
         if (_cache is not null) return _cache;
 
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT * FROM business_profile WHERE id = 'default'";
@@ -58,7 +58,7 @@ public class BusinessProfileRepository : IBusinessProfileRepository
     {
         _cache = null; // Invalidate cache
 
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         profile.UpdatedAt = DateTimeOffset.UtcNow;
 
