@@ -17,9 +17,9 @@ public static class DialogHelper
         var headerTitle = new TextBlock
         {
             Text = title,
-            Style = (Style)Application.Current.Resources["TitleMedium"],
+            Style = (Style)Application.Current.Resources["TitleMediumBold"],
             Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["AppBarForegroundBrush"],
-            FontWeight = Microsoft.UI.Text.FontWeights.Bold,
+            TextWrapping = TextWrapping.Wrap,
         };
         var headerSubtitle = new TextBlock
         {
@@ -28,17 +28,17 @@ public static class DialogHelper
             Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["UpgradeBannerSubtitleBrush"],
             TextWrapping = TextWrapping.Wrap,
         };
-        var textStack = new StackPanel { Spacing = 2 };
+        var textStack = new StackPanel { Spacing = (double)Application.Current.Resources["Space2"] };
         textStack.Children.Add(headerTitle);
         textStack.Children.Add(headerSubtitle);
 
         var icon = new FontIcon
         {
             Glyph = iconGlyph,
-            FontSize = 20,
+            FontSize = (double)Application.Current.Resources["IconSize2xl"],
             Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["AppBarAccentBrush"],
             VerticalAlignment = VerticalAlignment.Center,
-            Margin = new Thickness(0, 0, 12, 0),
+            Margin = (Thickness)Application.Current.Resources["GapEnd12"],
         };
 
         var grid = new Grid();
@@ -52,8 +52,8 @@ public static class DialogHelper
         return new Border
         {
             Background = BuildGradientBrush(),
-            CornerRadius = new CornerRadius(12),
-            Padding = new Thickness(20, 16, 20, 16),
+            CornerRadius = (CornerRadius)Application.Current.Resources["RadiusLg"],
+            Padding = (Thickness)Application.Current.Resources["BannerInset"],
             Child = grid,
         };
     }
@@ -70,16 +70,17 @@ public static class DialogHelper
         string? primaryButtonText = null)
     {
         var banner = BuildGradientBanner(iconGlyph, title, subtitle);
-        var panel = new StackPanel { Spacing = 0, MinWidth = 380 };
+        var root = xamlRoot ?? throw new InvalidOperationException(NoXamlRootMessage);
+        var panel = new StackPanel { MinWidth = MinContentWidth(root) };
         panel.Children.Add(banner);
 
-        return new ContentDialog
+        return Styled(new ContentDialog
         {
             Content = panel,
             CloseButtonText = closeButtonText ?? "OK",
             PrimaryButtonText = primaryButtonText,
-            XamlRoot = xamlRoot ?? throw new InvalidOperationException(NoXamlRootMessage),
-        };
+            XamlRoot = root,
+        });
     }
 
     /// <summary>
@@ -95,42 +96,65 @@ public static class DialogHelper
         string? closeButtonText = null)
     {
         var banner = BuildGradientBanner(iconGlyph, title, subtitle);
-        banner.Margin = new Thickness(0, 0, 0, 4);
+        banner.Margin = (Thickness)Application.Current.Resources["GapBottom4"];
 
-        var panel = new StackPanel { Spacing = 16, MinWidth = 380 };
+        var root = xamlRoot ?? throw new InvalidOperationException(NoXamlRootMessage);
+        var panel = new StackPanel { Spacing = (double)Application.Current.Resources["Space16"], MinWidth = MinContentWidth(root) };
         panel.Children.Add(banner);
         panel.Children.Add(bodyContent);
 
-        return new ContentDialog
+        // Long forms (Send Quote) scroll inside the dialog on short windows.
+        return Styled(new ContentDialog
         {
-            Content = panel,
+            Content = new ScrollViewer { Content = panel, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled },
             PrimaryButtonText = primaryButtonText ?? "Save",
             CloseButtonText = closeButtonText ?? "Cancel",
             DefaultButton = ContentDialogButton.Primary,
-            XamlRoot = xamlRoot ?? throw new InvalidOperationException(NoXamlRootMessage),
-        };
+            XamlRoot = root,
+        });
     }
 
+    /// <summary>The banner gradient (App.xaml BannerGradientBrush: brand colours, the same in both themes).</summary>
+    public static Microsoft.UI.Xaml.Media.Brush BuildGradientBrush() =>
+        (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["BannerGradientBrush"];
+
     /// <summary>
-    /// Builds the gradient brush matching the Pro banner.
+    /// The Material dialog style, so code-built dialogs match the rest of the app (buttons, surface, corner radius).
     /// </summary>
-    public static Microsoft.UI.Xaml.Media.LinearGradientBrush BuildGradientBrush()
+    public static ContentDialog Styled(ContentDialog dialog)
     {
-        var brush = new Microsoft.UI.Xaml.Media.LinearGradientBrush
+        if (Application.Current.Resources.TryGetValue("MaterialContentDialogStyle", out var style) && style is Style material)
         {
-            StartPoint = new Windows.Foundation.Point(0, 0),
-            EndPoint = new Windows.Foundation.Point(1, 0.5),
+            dialog.Style = material;
+        }
+        return dialog;
+    }
+
+    /// <summary>DialogMinWidth on tablets and desktops; on a phone, whatever the window leaves after the dialog's chrome.</summary>
+    public static double MinContentWidth(XamlRoot root)
+    {
+        var preferred = (double)Application.Current.Resources["DialogMinWidth"];
+        var chrome = (double)Application.Current.Resources["DialogChromeWidth"];
+        return Math.Max(0, Math.Min(preferred, root.Size.Width - chrome));
+    }
+
+    /// <summary>An error line for a dialog form, hidden until <see cref="ShowValidation"/> fills it.</summary>
+    public static TextBlock BuildValidationText(FrameworkElement owner)
+    {
+        var text = new TextBlock
+        {
+            Style = (Style)Application.Current.Resources["BodySmall"],
+            Foreground = ThemeResources.GetBrush(owner, "ErrorBrush"),
+            TextWrapping = TextWrapping.Wrap,
+            Visibility = Visibility.Collapsed,
         };
-        brush.GradientStops.Add(new Microsoft.UI.Xaml.Media.GradientStop
-        {
-            Color = (Windows.UI.Color)Application.Current.Resources["UpgradeBannerStartColor"],
-            Offset = 0,
-        });
-        brush.GradientStops.Add(new Microsoft.UI.Xaml.Media.GradientStop
-        {
-            Color = (Windows.UI.Color)Application.Current.Resources["UpgradeBannerEndColor"],
-            Offset = 1,
-        });
-        return brush;
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetLiveSetting(text, Microsoft.UI.Xaml.Automation.Peers.AutomationLiveSetting.Assertive);
+        return text;
+    }
+
+    public static void ShowValidation(TextBlock validation, string message)
+    {
+        validation.Text = message;
+        validation.Visibility = Visibility.Visible;
     }
 }

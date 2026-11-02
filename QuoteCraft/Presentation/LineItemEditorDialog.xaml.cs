@@ -9,7 +9,6 @@ public sealed partial class LineItemEditorDialog : ContentDialog
     public LineItemEditorDialog()
     {
         this.InitializeComponent();
-        ApplyGradientBrushes();
         this.PrimaryButtonClick += OnPrimaryButtonClick;
         this.SecondaryButtonClick += OnSecondaryButtonClick;
     }
@@ -111,15 +110,4 @@ public sealed partial class LineItemEditorDialog : ContentDialog
         LineTotalText.Text = $"${price * qty:F2}";
     }
 
-    private void ApplyGradientBrushes()
-    {
-        HeaderBanner.Background = DialogHelper.BuildGradientBrush();
-        TotalBorder.Background = DialogHelper.BuildGradientBrush();
-        HeaderIcon.Foreground = (Brush)Application.Current.Resources["AppBarAccentBrush"];
-        HeaderTitle.Foreground = (Brush)Application.Current.Resources["AppBarForegroundBrush"];
-        HeaderSubtitle.Foreground = (Brush)Application.Current.Resources["UpgradeBannerSubtitleBrush"];
-        TotalLabel.Foreground = (Brush)Application.Current.Resources["UpgradeBannerSubtitleBrush"];
-        LineTotalText.Foreground = (Brush)Application.Current.Resources["AppBarForegroundBrush"];
-        LineTotalText.FontFamily = Application.Current.Resources["MonospaceFontFamily"] as FontFamily;
-    }
 }

@@ -11,7 +11,6 @@ public sealed partial class CatalogBrowserDialog : ContentDialog
     public CatalogBrowserDialog()
     {
         this.InitializeComponent();
-        ApplyGradientBrushes();
     }
 
     /// <summary>
@@ -43,46 +42,28 @@ public sealed partial class CatalogBrowserDialog : ContentDialog
 
         foreach (var cat in categories)
         {
-            var chip = new Button
+            // Material chips: their checked state and colours come from the theme, in Light and Dark alike.
+            var chip = new Uno.Toolkit.UI.Chip
             {
                 Content = cat,
-                Padding = new Thickness(12, 4, 12, 4),
-                CornerRadius = new CornerRadius(16),
-                MinHeight = 28,
-                BorderThickness = new Thickness(1),
+                Style = (Style)Application.Current.Resources["MaterialChipStyle"],
+                IsChecked = cat == _selectedCategory,
                 Tag = cat,
             };
-            UpdateChipStyle(chip, cat == _selectedCategory);
             chip.Click += CategoryChip_Click;
             CategoryChips.Children.Add(chip);
         }
     }
 
-    private void UpdateChipStyle(Button chip, bool isSelected)
-    {
-        if (isSelected)
-        {
-            chip.Background = (Brush)Application.Current.Resources["PrimaryBrush"];
-            chip.Foreground = (Brush)Application.Current.Resources["OnPrimaryBrush"];
-            chip.BorderBrush = (Brush)Application.Current.Resources["PrimaryBrush"];
-        }
-        else
-        {
-            chip.Background = null;
-            chip.Foreground = (Brush)Application.Current.Resources["OnSurfaceBrush"];
-            chip.BorderBrush = (Brush)Application.Current.Resources["OutlineVariantBrush"];
-        }
-    }
-
     private void CategoryChip_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is Button btn && btn.Tag is string cat)
+        if (sender is FrameworkElement { Tag: string cat })
         {
             _selectedCategory = cat;
             foreach (var child in CategoryChips.Children)
             {
-                if (child is Button chipBtn)
-                    UpdateChipStyle(chipBtn, chipBtn.Tag as string == _selectedCategory);
+                if (child is Uno.Toolkit.UI.Chip chip)
+                    chip.IsChecked = chip.Tag as string == _selectedCategory;
             }
             FilterItems();
         }
@@ -109,11 +90,4 @@ public sealed partial class CatalogBrowserDialog : ContentDialog
             ItemAdded?.Invoke(item);
     }
 
-    private void ApplyGradientBrushes()
-    {
-        HeaderBanner.Background = DialogHelper.BuildGradientBrush();
-        HeaderIcon.Foreground = (Brush)Application.Current.Resources["AppBarAccentBrush"];
-        HeaderTitle.Foreground = (Brush)Application.Current.Resources["AppBarForegroundBrush"];
-        HeaderSubtitle.Foreground = (Brush)Application.Current.Resources["UpgradeBannerSubtitleBrush"];
-    }
 }

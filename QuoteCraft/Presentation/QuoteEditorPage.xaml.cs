@@ -56,7 +56,16 @@ public sealed partial class QuoteEditorPage : Page
         }
     }
 
-    private async void LineItemCard_Tapped(object sender, TappedRoutedEventArgs e)
+    private void LineItemCard_KeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key is Windows.System.VirtualKey.Enter or Windows.System.VirtualKey.Space && e.OriginalSource == sender)
+        {
+            e.Handled = true;
+            LineItemCard_Tapped(sender, null);
+        }
+    }
+
+    private async void LineItemCard_Tapped(object sender, TappedRoutedEventArgs? e)
     {
         if (sender is FrameworkElement { DataContext: LineItemEntity item })
         {

@@ -1,25 +1,27 @@
 <ContentDialog x:Class="QuoteCraft.Presentation.CatalogBrowserDialog"
                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+               xmlns:utu="using:Uno.Toolkit.UI"
+               Style="{StaticResource MaterialContentDialogStyle}"
                xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
                CloseButtonText="Done"
                DefaultButton="Close">
 
-  <StackPanel Spacing="12" MinWidth="400" MinHeight="300">
+  <StackPanel Spacing="{StaticResource Space12}" MinWidth="{utu:Responsive Narrow=0, Normal={StaticResource DialogMinWidth}}" MinHeight="{StaticResource BrowserMinHeight}">
 
     <!-- Gradient Header Banner -->
-    <Border x:Name="HeaderBanner" CornerRadius="12" Padding="20,16" Margin="0,0,0,4">
+    <Border x:Name="HeaderBanner" Background="{StaticResource BannerGradientBrush}" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource BannerInset}" Margin="{StaticResource GapBottom4}">
       <Grid>
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="Auto" />
           <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <FontIcon x:Name="HeaderIcon" Glyph="&#xE82D;" FontSize="20"
-                  VerticalAlignment="Center" Margin="0,0,12,0" />
-        <StackPanel Grid.Column="1" Spacing="2">
-          <TextBlock x:Name="HeaderTitle" Text="Add from Catalog"
+        <FontIcon x:Name="HeaderIcon" Foreground="{StaticResource AppBarAccentBrush}" Glyph="&#xE82D;" FontSize="{StaticResource IconSize2xl}"
+                  VerticalAlignment="Center" Margin="{StaticResource GapEnd12}" />
+        <StackPanel Grid.Column="1" Spacing="{StaticResource Space2}">
+          <TextBlock x:Name="HeaderTitle" Foreground="{StaticResource AppBarForegroundBrush}" TextWrapping="Wrap" Text="Add from Catalog"
                      Style="{StaticResource TitleMediumBold}" />
-          <TextBlock x:Name="HeaderSubtitle"
+          <TextBlock x:Name="HeaderSubtitle" Foreground="{StaticResource UpgradeBannerSubtitleBrush}" TextWrapping="Wrap"
                      Text="Browse your saved items and add to this quote"
                      Style="{StaticResource BodySmall}" />
         </StackPanel>
@@ -28,18 +30,19 @@
 
     <!-- Search Box -->
     <Border Background="{ThemeResource SurfaceVariantBrush}"
-            CornerRadius="8" Padding="12,0" Height="36">
+            CornerRadius="{StaticResource RadiusMd}" Padding="{StaticResource InsetX12}" Height="{StaticResource SearchHeight}">
       <Grid>
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="Auto" />
           <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <FontIcon Glyph="&#xE721;" FontSize="14"
+        <FontIcon Glyph="&#xE721;" FontSize="{StaticResource IconSizeMd}"
                   Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                  VerticalAlignment="Center" Margin="0,0,8,0" />
+                  VerticalAlignment="Center" Margin="{StaticResource GapEnd8}" />
         <TextBox x:Name="SearchBox" Grid.Column="1"
                  PlaceholderText="Search catalog..."
-                 BorderThickness="0" Background="{x:Null}"
+                 AutomationProperties.Name="Search catalog"
+                 BorderThickness="0" Background="Transparent"
                  Padding="0" MinHeight="0"
                  VerticalAlignment="Center"
                  TextChanged="SearchBox_TextChanged" />
@@ -49,30 +52,30 @@
     <!-- Category Chips -->
     <ScrollViewer HorizontalScrollBarVisibility="Auto"
                   VerticalScrollBarVisibility="Disabled"
-                  HorizontalScrollMode="Enabled" MaxHeight="36">
+                  HorizontalScrollMode="Enabled">
       <StackPanel x:Name="CategoryChips"
-                  Orientation="Horizontal" Spacing="6" />
+                  Orientation="Horizontal" Spacing="{StaticResource Space8}" />
     </ScrollViewer>
 
     <!-- Items List -->
-    <ScrollViewer MaxHeight="320">
+    <ScrollViewer MaxHeight="{StaticResource BrowserListMaxHeight}">
       <muxc:ItemsRepeater x:Name="CatalogItemsList">
         <muxc:ItemsRepeater.Layout>
-          <muxc:StackLayout Spacing="4" />
+          <muxc:StackLayout Spacing="{StaticResource Space4}" />
         </muxc:ItemsRepeater.Layout>
         <muxc:ItemsRepeater.ItemTemplate>
           <DataTemplate>
             <Border Background="{ThemeResource SurfaceBrush}"
                     BorderBrush="{ThemeResource OutlineVariantBrush}"
-                    BorderThickness="1" CornerRadius="8"
-                    Padding="12,8">
+                    BorderThickness="1" CornerRadius="{StaticResource RadiusMd}"
+                    Padding="{StaticResource Inset12x8}">
               <Grid>
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="*" />
                   <ColumnDefinition Width="Auto" />
                   <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <StackPanel VerticalAlignment="Center" Spacing="2">
+                <StackPanel VerticalAlignment="Center" Spacing="{StaticResource Space2}">
                   <TextBlock Text="{Binding Description}"
                              Style="{StaticResource BodyMedium}" />
                   <TextBlock Text="{Binding Category}"
@@ -83,11 +86,13 @@
                            Text="{Binding UnitPrice, Converter={StaticResource CurrencyFormatConverter}}"
                            FontFamily="{StaticResource MonospaceFontFamily}"
                            Style="{StaticResource BodyMedium}"
-                           VerticalAlignment="Center" Margin="0,0,8,0" />
+                           VerticalAlignment="Center" Margin="{StaticResource GapEnd8}" />
                 <Button Grid.Column="2" Click="AddItem_Click"
+                        AutomationProperties.Name="Add to quote"
+                        ToolTipService.ToolTip="Add to quote"
                         Style="{StaticResource MaterialTextButtonStyle}"
-                        Padding="8,4" MinWidth="0" MinHeight="0">
-                  <FontIcon Glyph="&#xE710;" FontSize="16" />
+                        Padding="{StaticResource Inset8x4}" MinWidth="{StaticResource TouchTarget}" MinHeight="{StaticResource TouchTarget}">
+                  <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeLg}" />
                 </Button>
               </Grid>
             </Border>

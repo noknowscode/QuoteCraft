@@ -1,25 +1,27 @@
 <ContentDialog x:Class="QuoteCraft.Presentation.LineItemEditorDialog"
                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+               xmlns:utu="using:Uno.Toolkit.UI"
+               Style="{StaticResource MaterialContentDialogStyle}"
                PrimaryButtonText="Save"
                CloseButtonText="Cancel"
                DefaultButton="Primary">
 
-  <StackPanel Spacing="16" MinWidth="380">
+  <StackPanel Spacing="{StaticResource Space16}" MinWidth="{utu:Responsive Narrow=0, Normal={StaticResource DialogMinWidth}}">
 
     <!-- Gradient Header Banner -->
-    <Border x:Name="HeaderBanner" CornerRadius="12" Padding="20,16" Margin="0,0,0,4">
+    <Border x:Name="HeaderBanner" Background="{StaticResource BannerGradientBrush}" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource BannerInset}" Margin="{StaticResource GapBottom4}">
       <Grid>
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="Auto" />
           <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <FontIcon x:Name="HeaderIcon" Glyph="&#xE70F;" FontSize="20"
-                  VerticalAlignment="Center" Margin="0,0,12,0" />
-        <StackPanel Grid.Column="1" Spacing="2">
-          <TextBlock x:Name="HeaderTitle" Text="Line Item"
+        <FontIcon x:Name="HeaderIcon" Foreground="{StaticResource AppBarAccentBrush}" Glyph="&#xE70F;" FontSize="{StaticResource IconSize2xl}"
+                  VerticalAlignment="Center" Margin="{StaticResource GapEnd12}" />
+        <StackPanel Grid.Column="1" Spacing="{StaticResource Space2}">
+          <TextBlock x:Name="HeaderTitle" Foreground="{StaticResource AppBarForegroundBrush}" TextWrapping="Wrap" Text="Line Item"
                      Style="{StaticResource TitleMediumBold}" />
-          <TextBlock x:Name="HeaderSubtitle"
+          <TextBlock x:Name="HeaderSubtitle" Foreground="{StaticResource UpgradeBannerSubtitleBrush}" TextWrapping="Wrap"
                      Text="Add or edit a line item for this quote"
                      Style="{StaticResource BodySmall}" />
         </StackPanel>
@@ -45,28 +47,31 @@
         <ColumnDefinition Width="Auto" />
       </Grid.ColumnDefinitions>
       <Button Content="-" Click="MinusQty_Click"
+              AutomationProperties.Name="Decrease quantity"
               Style="{StaticResource MaterialOutlinedButtonStyle}"
-              MinWidth="40" Padding="8,4" CornerRadius="8" />
+              MinWidth="{StaticResource TouchTarget}" MinHeight="{StaticResource TouchTarget}" Padding="{StaticResource Inset8x4}" CornerRadius="{StaticResource RadiusMd}" />
       <TextBox x:Name="QuantityBox" Grid.Column="1"
+               Header="Quantity"
                Text="1" HorizontalAlignment="Stretch" TextAlignment="Center"
-               InputScope="Number" Margin="8,0"
+               InputScope="Number" Margin="{StaticResource InsetX8}"
                TextChanged="PriceOrQty_Changed" />
       <Button Content="+" Click="PlusQty_Click" Grid.Column="2"
+              AutomationProperties.Name="Increase quantity"
               Style="{StaticResource MaterialOutlinedButtonStyle}"
-              MinWidth="40" Padding="8,4" CornerRadius="8" />
+              MinWidth="{StaticResource TouchTarget}" MinHeight="{StaticResource TouchTarget}" Padding="{StaticResource Inset8x4}" CornerRadius="{StaticResource RadiusMd}" />
     </Grid>
 
     <!-- Line Total -->
-    <Border x:Name="TotalBorder" CornerRadius="12" Padding="20,16">
+    <Border x:Name="TotalBorder" Background="{StaticResource BannerGradientBrush}" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource BannerInset}">
       <Grid>
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*" />
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
-        <TextBlock x:Name="TotalLabel" Text="Line Total"
+        <TextBlock x:Name="TotalLabel" Foreground="{StaticResource UpgradeBannerSubtitleBrush}" Text="Line Total"
                    Style="{StaticResource BodyMedium}"
                    VerticalAlignment="Center" />
-        <TextBlock x:Name="LineTotalText" Grid.Column="1"
+        <TextBlock x:Name="LineTotalText" Foreground="{StaticResource AppBarForegroundBrush}" FontFamily="{StaticResource MonospaceFontFamily}" Grid.Column="1"
                    Text="$0.00"
                    Style="{StaticResource TitleLarge}"
                    FontWeight="Bold" VerticalAlignment="Center" />

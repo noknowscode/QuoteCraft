@@ -64,6 +64,9 @@ public partial record QuoteEditorModel
         _shareService.CanExportPdf ? string.Empty : UnsupportedPdfGenerator.UnavailableMessage));
     public IState<string> ValidationError => State<string>.Value(this, () => string.Empty);
 
+    /// <summary>True while Save writes the quote (the page shows a progress bar).</summary>
+    public IState<bool> IsSaving => State<bool>.Value(this, () => false);
+
     public IState<int> LineItemsVersion => State<int>.Value(this, () => 0);
     public IState<int> PhotosVersion => State<int>.Value(this, () => 0);
 
@@ -173,8 +176,28 @@ public partial record QuoteEditorModel
         }
 
         await ValidationError.UpdateAsync(_ => string.Empty, ct);
-        await PersistEditsAsync();
-        await _navigator.NavigateBackAsync(this);
+        await IsSaving.UpdateAsync(_ => true, ct);
+        try
+        {
+            await PersistEditsAsync();
+        }
+        catch (Exception)
+        {
+            await ValidationError.UpdateAsync(_ => "The quote could not be saved. Try again.", ct);
+            return;
+        }
+        finally
+        {
+            await IsSaving.UpdateAsync(_ => false, ct);
+        }
+        await GoBack(ct);
+    }
+
+    /// <summary>Retry after a failed load: read the line items and photos again.</summary>
+    public async ValueTask Reload(CancellationToken ct)
+    {
+        await LineItemsVersion.UpdateAsync(v => v + 1, ct);
+        await PhotosVersion.UpdateAsync(v => v + 1, ct);
     }
 
     public async ValueTask MarkSent(CancellationToken ct)
@@ -238,9 +261,17 @@ public partial record QuoteEditorModel
                await ClientName != _initialClientName;
     }
 
+    /// <summary>
+    /// Back to where the editor was opened from; to the quotes list when there is nothing to go back to (the editor
+    /// opened straight after onboarding).
+    /// </summary>
     public async ValueTask GoBack(CancellationToken ct)
     {
-        await _navigator.NavigateBackAsync(this);
+        var response = await _navigator.NavigateBackAsync(this, cancellation: ct);
+        if (response is not { Success: true })
+        {
+            await _navigator.NavigateRouteAsync(this, "Dashboard", cancellation: ct);
+        }
     }
 
     public Task<List<CatalogItemEntity>> GetCatalogItemsAsync() => _catalogRepo.GetAllAsync();
@@ -292,6 +323,6 @@ public partial record QuoteEditorModel
         // Record status history
         await _statusHistoryRepo.RecordAsync(_quoteId, status.ToString(), "user");
 
-        await _navigator.NavigateBackAsync(this);
+        await GoBack(CancellationToken.None);
     }
 }
