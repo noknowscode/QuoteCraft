@@ -189,7 +189,7 @@ public partial class App : Application
     /// the app's own selector does. <c>--qc-route=&lt;route&gt;[:detail]</c> opens Dashboard (the quotes list), Clients,
     /// Catalog, Settings, Onboarding or QuoteEditor (the seeded quote with the most line items, opened from the
     /// dashboard like a tap does); <c>:detail</c> also selects the first quote, client or category, and
-    /// <c>Onboarding:complete</c> runs onboarding through Create First Quote. Each step prints a
+    /// <c>Onboarding:step3</c> opens its last step and <c>Onboarding:complete</c> runs it through Create First Quote. Each step prints a
     /// <c>VERIFY</c> line to stderr.
     /// </summary>
     private async Task ApplyVerificationViewAsync()
@@ -224,17 +224,25 @@ public partial class App : Application
             var detail = parts.Length == 2 && parts[1] == "detail";
             if (route == "Onboarding")
             {
-                var response = await root.Navigator()!.NavigateRouteAsync(this, "Onboarding", qualifier: Qualifiers.ClearBackStack);
+                // The shell's navigator, as ShowOnboardingOnFirstRunAsync uses it.
+                var shellNavigator = (MainWindow.Content as IContentControlProvider)?.ContentControl.Navigator();
+                var response = shellNavigator is null ? null
+                    : await shellNavigator.NavigateRouteAsync(this, "Onboarding", qualifier: Qualifiers.ClearBackStack);
                 VerificationArgs.Log($"route={spec} success={response?.Success}");
                 // Onboarding:complete walks the steps and presses Create First Quote, as a first-run user would.
-                if (parts.Length == 2 && parts[1] == "complete"
+                // Onboarding:step3 shows the quote settings step.
+                if (parts.Length == 2 && parts[1] is "complete" or "step3"
                     && await WaitForAsync<OnboardingPage>(root) is { } onboarding
                     && MvuxHelper.GetModel<OnboardingModel>(onboarding.DataContext) is { } model)
                 {
+                    await Task.Delay(1000);
                     await model.NextStep(CancellationToken.None);
                     await model.NextStep(CancellationToken.None);
-                    await model.Complete(CancellationToken.None);
-                    VerificationArgs.Log($"route={spec} completed editor={await WaitForAsync<QuoteEditorPage>(root) is not null}");
+                    if (parts[1] == "complete")
+                    {
+                        await model.Complete(CancellationToken.None);
+                        VerificationArgs.Log($"route={spec} completed editor={await WaitForAsync<QuoteEditorPage>(root) is not null}");
+                    }
                 }
                 return;
             }
