@@ -16,6 +16,26 @@ public partial class App : Application
         Uno.UI.FeatureConfiguration.Font.DefaultTextFontFamily = "ms-appx:///Assets/Fonts/DMSans-Regular.ttf#DM Sans";
 #endif
         this.InitializeComponent();
+
+        // The safety net under the pages' own error handling: log what nothing else caught.
+        UnhandledException += OnUnhandledException;
+        AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+            ErrorReporter.Log(e.ExceptionObject as Exception, "Unhandled exception");
+        TaskScheduler.UnobservedTaskException += (_, e) =>
+        {
+            ErrorReporter.Log(e.Exception, "Unobserved task exception");
+            e.SetObserved();
+        };
+    }
+
+    /// <summary>
+    /// An exception on the UI thread that no handler caught: logged, and marked handled so one failed action does not
+    /// close the app with the user's work in it. Page actions report their own failures (ErrorReporter).
+    /// </summary>
+    private void OnUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+    {
+        ErrorReporter.Log(e.Exception, "Unhandled exception on the UI thread");
+        e.Handled = true;
     }
 
     protected Window? MainWindow { get; private set; }
@@ -24,6 +44,9 @@ public partial class App : Application
     /// <summary>Service provider for pages that need to resolve services directly.</summary>
     public static IServiceProvider Services =>
         ((App)Current).Host!.Services;
+
+    /// <summary>The services once the host has started; null before (and if startup failed).</summary>
+    public static IServiceProvider? ServicesOrNull => (Current as App)?.Host?.Services;
 
     public static Window MainAppWindow => ((App)Current).MainWindow!;
 
@@ -157,11 +180,42 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"App initialization failed: {ex}");
-#if DEBUG
-            throw;
-#endif
+            ErrorReporter.Log(ex, "QuoteCraft could not start");
+            ShowStartupError(ex);
         }
+    }
+
+    /// <summary>
+    /// Startup failed (the database could not open, say): say so in the window instead of leaving it blank.
+    /// </summary>
+    private void ShowStartupError(Exception ex)
+    {
+        TextBlock Line(string text, string style) => new()
+        {
+            Text = text,
+            TextWrapping = TextWrapping.Wrap,
+            Style = Resources.TryGetValue(style, out var value) ? value as Style : null,
+        };
+
+        var message = new StackPanel
+        {
+            MaxWidth = Resources.TryGetValue("ReadingMaxWidth", out var width) && width is double max ? max : double.PositiveInfinity,
+            Spacing = Resources.TryGetValue("Space12", out var gap) && gap is double space ? space : 0,
+            Padding = Resources.TryGetValue("Inset24", out var inset) && inset is Thickness padding ? padding : default,
+            VerticalAlignment = VerticalAlignment.Center,
+            HorizontalAlignment = HorizontalAlignment.Center,
+        };
+        message.Children.Add(Line("QuoteCraft could not start", "TitleLarge"));
+        message.Children.Add(Line(ex.Message, "BodyMedium"));
+        message.Children.Add(Line("Close QuoteCraft and open it again. If this keeps happening, the details are in the app log.", "BodyMedium"));
+
+        MainWindow ??= new Window();
+        MainWindow.Content = new Grid
+        {
+            Background = Resources.TryGetValue("BackgroundBrush", out var brush) ? brush as Microsoft.UI.Xaml.Media.Brush : null,
+            Children = { message },
+        };
+        MainWindow.Activate();
     }
 
     /// <summary>

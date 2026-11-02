@@ -200,9 +200,24 @@ public partial record SettingsModel
         Helpers.CurrencyFormatConverter.CurrencyCode = profile.CurrencyCode;
     }
 
-    public async ValueTask SetLogoPath(string path, CancellationToken ct)
+    /// <summary>
+    /// Copies a picked image into the app's data folder as the logo (Save keeps it). Read through the StorageFile: a
+    /// picked file's Path is not readable on every head (WebAssembly, Android, iOS).
+    /// </summary>
+    public async Task<string> SetLogoAsync(Windows.Storage.StorageFile file)
     {
-        await LogoPath.UpdateAsync(_ => path, ct);
+        var logoDir = AppStorage.Combine("logo");
+        Directory.CreateDirectory(logoDir);
+
+        var destPath = Path.Combine(logoDir, $"logo{Path.GetExtension(file.Name)}");
+        await using (var source = await file.OpenStreamForReadAsync())
+        await using (var destination = File.Create(destPath))
+        {
+            await source.CopyToAsync(destination);
+        }
+
+        await LogoPath.UpdateAsync(_ => destPath, CancellationToken.None);
+        return destPath;
     }
 
     public async ValueTask RemoveLogo(CancellationToken ct)

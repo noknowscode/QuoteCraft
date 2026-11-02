@@ -119,6 +119,23 @@ public partial record CatalogModel
             await SelectedCategory.UpdateAsync(_ => card.Name, ct);
     }
 
+    public Task<CatalogItemEntity?> GetItemAsync(string id) => _catalogRepo.GetByIdAsync(id);
+
+    public Task<List<string>> GetCategoryNamesAsync() => _catalogRepo.GetCategoriesAsync();
+
+    /// <summary>The item dialog's Save; the cards and the open category read the catalog again.</summary>
+    public async Task SaveItemAsync(CatalogItemEntity item)
+    {
+        await _catalogRepo.SaveAsync(item);
+        await Version.UpdateAsync(v => v + 1, CancellationToken.None);
+    }
+
+    public async Task DeleteItemAsync(string id)
+    {
+        await _catalogRepo.DeleteAsync(id);
+        await Version.UpdateAsync(v => v + 1, CancellationToken.None);
+    }
+
     public async ValueTask OpenItem(CatalogDisplayItem item, CancellationToken ct)
     {
         if (item.IsHeader) return;

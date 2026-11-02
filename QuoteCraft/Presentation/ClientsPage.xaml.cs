@@ -4,8 +4,6 @@ namespace QuoteCraft.Presentation;
 
 public sealed partial class ClientsPage : Page
 {
-    private IClientRepository? _clientRepo;
-
     /// <summary>Access the underlying MVUX model from the generated ViewModel DataContext.</summary>
     private ClientsModel? Model => MvuxHelper.GetModel<ClientsModel>(DataContext);
 
@@ -14,44 +12,40 @@ public sealed partial class ClientsPage : Page
         this.InitializeComponent();
     }
 
-    private IClientRepository ClientRepo =>
-        _clientRepo ??= App.Services.GetRequiredService<IClientRepository>();
-
-    private async void AddClient_Click(object sender, RoutedEventArgs e)
-    {
-        var featureGate = App.Services.GetRequiredService<IFeatureGateService>();
-        if (!await featureGate.CanAddClientAsync())
+    private async void AddClient_Click(object sender, RoutedEventArgs e) =>
+        await ErrorReporter.RunAsync(this, "The client could not be added.", async () =>
         {
-            var limitDialog = Helpers.DialogHelper.BuildBannerDialog(
-                this.XamlRoot,
-                "\uE77B",
-                "Client Limit Reached",
-                featureGate.GetUpgradeMessage("clients"),
-                closeButtonText: "OK",
-                primaryButtonText: "Upgrade");
-            if (await limitDialog.ShowAsync() == ContentDialogResult.Primary && this.Navigator() is { } navigator)
+            if (Model is not { } model) return;
+
+            if (await model.GetClientLimitMessageAsync() is { } limit)
             {
-                // Plans and the upgrade live in Settings.
-                await navigator.NavigateRouteAsync(this, "Settings");
+                var limitDialog = DialogHelper.BuildBannerDialog(
+                    this.XamlRoot,
+                    "\uE77B",
+                    "Client Limit Reached",
+                    limit,
+                    closeButtonText: "OK",
+                    primaryButtonText: "Upgrade");
+                if (await limitDialog.ShowAsync() == ContentDialogResult.Primary)
+                {
+                    // Plans and the upgrade live in Settings.
+                    await model.OpenSettings(CancellationToken.None);
+                }
+                return;
             }
-            return;
-        }
 
-        await ShowClientEditorDialog(new ClientEntity(), isNew: true);
-    }
+            await ShowClientEditorDialog(model, new ClientEntity(), isNew: true);
+        });
 
-    private async void EditClient_Click(object sender, RoutedEventArgs e)
-    {
-        // The selection lives in the model (cards select through the list's command, taps and keys alike).
-        if (Model is not { } model || await model.SelectedClient is not { } selected) return;
+    private async void EditClient_Click(object sender, RoutedEventArgs e) =>
+        await ErrorReporter.RunAsync(this, "The client could not be opened.", async () =>
+        {
+            // The selection lives in the model (cards select through the list's command, taps and keys alike).
+            if (Model is { } model && await model.GetSelectedClientAsync() is { } client)
+                await ShowClientEditorDialog(model, client, isNew: false);
+        });
 
-        // Re-fetch to get latest data
-        var fresh = await ClientRepo.GetByIdAsync(selected.Id);
-        if (fresh is not null)
-            await ShowClientEditorDialog(fresh, isNew: false);
-    }
-
-    private async Task ShowClientEditorDialog(ClientEntity entity, bool isNew = false)
+    private async Task ShowClientEditorDialog(ClientsModel model, ClientEntity entity, bool isNew = false)
     {
         var nameBox = new TextBox
         {
@@ -126,13 +120,13 @@ public sealed partial class ClientsPage : Page
             entity.Email = emailBox.Text;
             entity.Phone = phoneBox.Text;
             entity.Address = addressBox.Text;
-            entity.UpdatedAt = DateTimeOffset.UtcNow;
             try
             {
-                await ClientRepo.SaveAsync(entity);
+                await model.SaveClientAsync(entity);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                ErrorReporter.Log(ex, "Save client");
                 DialogHelper.ShowValidation(validation, "The client could not be saved. Try again.");
                 args.Cancel = true;
             }
@@ -142,46 +136,31 @@ public sealed partial class ClientsPage : Page
             }
         };
 
-        var result = await dialog.ShowAsync();
-        if (result == ContentDialogResult.Primary)
+        // Save happens in the dialog (it stays open on a failure), and refreshes the list.
+        await dialog.ShowAsync();
+    }
+
+    private async void DeleteClient_Click(object sender, RoutedEventArgs e) =>
+        await ErrorReporter.RunAsync(this, "The client could not be deleted.", async () =>
         {
-            RefreshClients();
-        }
-    }
+            var dialog = DialogHelper.BuildBannerDialog(
+                this.XamlRoot,
+                "\uE74D",
+                "Delete Client?",
+                "This client will be permanently removed from your contact list.",
+                closeButtonText: "Cancel",
+                primaryButtonText: "Delete");
 
-    private void RefreshClients()
-    {
-        var model = Model;
-        if (model is not null)
-            _ = model.RefreshList(CancellationToken.None);
-    }
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary && Model is { } model)
+                await model.DeleteClient(CancellationToken.None);
+        });
 
-    private async void DeleteClient_Click(object sender, RoutedEventArgs e)
-    {
-        var model = Model;
-        if (model is null) return;
-
-        var dialog = Helpers.DialogHelper.BuildBannerDialog(
-            this.XamlRoot,
-            "\uE74D",
-            "Delete Client?",
-            "This client will be permanently removed from your contact list.",
-            closeButtonText: "Cancel",
-            primaryButtonText: "Delete");
-
-        var result = await dialog.ShowAsync();
-        if (result == ContentDialogResult.Primary)
+    private async void NewQuoteForClient_Click(object sender, RoutedEventArgs e) =>
+        await ErrorReporter.RunAsync(this, "The quote could not be created.", async () =>
         {
-            await model.DeleteClient(CancellationToken.None);
-        }
-    }
-
-    private async void NewQuoteForClient_Click(object sender, RoutedEventArgs e)
-    {
-        var model = Model;
-        if (model is not null)
-            await model.CreateQuoteForClient(CancellationToken.None);
-    }
+            if (Model is { } model)
+                await model.CreateQuoteForClient(CancellationToken.None);
+        });
 
     private void QuoteRow_KeyDown(object sender, KeyRoutedEventArgs e)
     {
@@ -194,10 +173,12 @@ public sealed partial class ClientsPage : Page
 
     private async void QuoteRow_Tapped(object sender, TappedRoutedEventArgs? e)
     {
-        if (sender is FrameworkElement { DataContext: QuoteEntity quote })
+        if (sender is not FrameworkElement { DataContext: QuoteEntity quote }) return;
+
+        await ErrorReporter.RunAsync(this, "The quote could not be opened.", async () =>
         {
             var navigator = this.Navigator() ?? throw new InvalidOperationException("The page has no navigator.");
             await navigator.NavigateRouteAsync(this, "QuoteEditor", data: quote);
-        }
+        });
     }
 }

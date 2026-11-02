@@ -49,21 +49,20 @@ public sealed partial class DashboardPage : Page
         foreach (var chip in _filterChips)
             chip.IsChecked = chip == clickedChip;
 
-        var filter = clickedChip.Content as string;
-        if (string.IsNullOrEmpty(filter)) return;
-
-        var model = Model;
-        if (model is not null)
-            await model.SelectedFilter.UpdateAsync(_ => filter, CancellationToken.None);
+        if (clickedChip.Content is string { Length: > 0 } filter && Model is { } model)
+        {
+            await ErrorReporter.RunAsync(this, "The quotes could not be filtered.",
+                async () => await model.SelectedFilter.UpdateAsync(_ => filter, CancellationToken.None));
+        }
     }
 
-    private async void DashboardPage_Loaded(object sender, RoutedEventArgs e)
-    {
-        // Auto-expire overdue quotes on dashboard load
-        var model = Model;
-        if (model is not null)
-            await model.ExpireOverdueQuotes(CancellationToken.None);
-    }
+    // Overdue quotes expire as the list opens (the expiry service also checks every few minutes).
+    private async void DashboardPage_Loaded(object sender, RoutedEventArgs e) =>
+        await ErrorReporter.RunQuietlyAsync("Expiring overdue quotes", async () =>
+        {
+            if (Model is { } model)
+                await model.ExpireOverdueQuotes(CancellationToken.None);
+        });
 
     // -- Quote Card Selection ---------------------------------------------------
 
@@ -98,40 +97,36 @@ public sealed partial class DashboardPage : Page
 
     // -- Inline Edit ------------------------------------------------------------
 
-    private async void EditQuote_Click(object sender, RoutedEventArgs e)
-    {
-        IsEditMode = true;
-        var model = Model;
-        if (model is not null)
-            EditingNotes = await model.GetSelectedQuoteNotesAsync();
-    }
-
-    private async void DoneEditing_Click(object sender, RoutedEventArgs e)
-    {
-        IsEditMode = false;
-        var model = Model;
-        if (model is not null)
-            await model.SaveInlineNotes(EditingNotes, CancellationToken.None);
-    }
-
-    private async void DeleteQuote_Click(object sender, RoutedEventArgs e)
-    {
-        var dialog = DialogHelper.BuildBannerDialog(
-            this.XamlRoot,
-            "\uE74D",
-            "Delete Quote?",
-            "This quote and all its line items will be permanently removed.",
-            closeButtonText: "Cancel",
-            primaryButtonText: "Delete");
-
-        var result = await dialog.ShowAsync();
-        if (result == ContentDialogResult.Primary)
+    private async void EditQuote_Click(object sender, RoutedEventArgs e) =>
+        await ErrorReporter.RunAsync(this, "The quote could not be opened for editing.", async () =>
         {
-            var model = Model;
-            if (model is not null)
+            if (Model is { } model)
+                EditingNotes = await model.GetSelectedQuoteNotesAsync();
+            IsEditMode = true;
+        });
+
+    private async void DoneEditing_Click(object sender, RoutedEventArgs e) =>
+        await ErrorReporter.RunAsync(this, "Your notes could not be saved.", async () =>
+        {
+            if (Model is { } model)
+                await model.SaveInlineNotes(EditingNotes, CancellationToken.None);
+            IsEditMode = false;
+        });
+
+    private async void DeleteQuote_Click(object sender, RoutedEventArgs e) =>
+        await ErrorReporter.RunAsync(this, "The quote could not be deleted.", async () =>
+        {
+            var dialog = DialogHelper.BuildBannerDialog(
+                this.XamlRoot,
+                "\uE74D",
+                "Delete Quote?",
+                "This quote and all its line items will be permanently removed.",
+                closeButtonText: "Cancel",
+                primaryButtonText: "Delete");
+
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary && Model is { } model)
                 await model.DeleteQuote(CancellationToken.None);
-        }
-    }
+        });
 
     // -- Alternate Row Styling --------------------------------------------------
 
@@ -146,66 +141,57 @@ public sealed partial class DashboardPage : Page
 
     // -- Inline Line Item Dialog ------------------------------------------------
 
-    private async void InlineAddLineItem_Click(object sender, RoutedEventArgs e)
-    {
-        var dialog = new LineItemEditorDialog { XamlRoot = this.XamlRoot };
-        dialog.SetAddMode();
-        var result = await dialog.ShowAsync();
-
-        if (result == ContentDialogResult.Primary && dialog.Result is not null)
+    private async void InlineAddLineItem_Click(object sender, RoutedEventArgs e) =>
+        await ErrorReporter.RunAsync(this, "The line item could not be saved.", async () =>
         {
-            var model = Model;
-            if (model is not null)
-                await model.SaveInlineLineItem(dialog.Result, CancellationToken.None);
-        }
-    }
+            var dialog = new LineItemEditorDialog { XamlRoot = this.XamlRoot };
+            dialog.SetAddMode();
+
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary && dialog.Result is { } item && Model is { } model)
+                await model.SaveInlineLineItem(item, CancellationToken.None);
+        });
 
     private async void InlineLineItem_Tapped(object sender, TappedRoutedEventArgs e)
     {
-        if (!IsEditMode) return;
-        if (sender is FrameworkElement { DataContext: LineItemEntity item })
+        if (!IsEditMode || sender is not FrameworkElement { DataContext: LineItemEntity item }) return;
+
+        await ErrorReporter.RunAsync(this, "The line item could not be saved.", async () =>
         {
             var dialog = new LineItemEditorDialog { XamlRoot = this.XamlRoot };
             dialog.SetEditMode(item);
             var result = await dialog.ShowAsync();
 
-            if (result == ContentDialogResult.Primary && dialog.Result is not null)
-            {
-                var model = Model;
-                if (model is not null)
-                    await model.SaveInlineLineItem(dialog.Result, CancellationToken.None);
-            }
+            if (Model is not { } model) return;
+            if (result == ContentDialogResult.Primary && dialog.Result is { } edited)
+                await model.SaveInlineLineItem(edited, CancellationToken.None);
             else if (result == ContentDialogResult.Secondary && dialog.WasDeleted)
-            {
-                var model = Model;
-                if (model is not null)
-                    await model.DeleteInlineLineItem(dialog.EditingItemId ?? string.Empty, CancellationToken.None);
-            }
-        }
+                await model.DeleteInlineLineItem(dialog.EditingItemId ?? string.Empty, CancellationToken.None);
+        });
     }
 
     // -- Create Quote Dialog ----------------------------------------------------
 
-    private async void CreateQuote_Click(object sender, RoutedEventArgs e)
+    private async void CreateQuote_Click(object sender, RoutedEventArgs e) =>
+        await ErrorReporter.RunAsync(this, "The quote could not be created.", CreateQuoteAsync);
+
+    private async Task CreateQuoteAsync()
     {
-        // Feature gate check
-        var featureGate = App.Services.GetRequiredService<Services.IFeatureGateService>();
-        if (!await featureGate.CanCreateQuoteAsync())
+        if (Model is not { } model) return;
+
+        // Feature gate (only where plans exist)
+        if (await model.GetQuoteLimitMessageAsync() is { } limit)
         {
-            var limitDialog = Helpers.DialogHelper.BuildBannerDialog(
+            var limitDialog = DialogHelper.BuildBannerDialog(
                 this.XamlRoot,
                 "\uE1D0",
                 "Quote Limit Reached",
-                featureGate.GetUpgradeMessage("quotes"),
+                limit,
                 closeButtonText: "OK",
                 primaryButtonText: "Upgrade");
             if (await limitDialog.ShowAsync() == ContentDialogResult.Primary)
             {
                 // Plans and the upgrade live in Settings.
-                if (this.Navigator() is { } navigator)
-                {
-                    await navigator.NavigateRouteAsync(this, "Settings");
-                }
+                await model.OpenSettings(CancellationToken.None);
             }
             return;
         }
@@ -217,10 +203,7 @@ public sealed partial class DashboardPage : Page
             PlaceholderText = "e.g. Kitchen Renovation",
         };
 
-        var clientRepo = App.Services.GetRequiredService<IClientRepository>();
-        var allClients = await clientRepo.GetAllAsync();
-        var clientNames = allClients.Select(c => c.Name).ToList();
-
+        var clientNames = await model.GetClientNamesAsync();
         var clientBox = new AutoSuggestBox
         {
             Header = "Client Name (optional)",
@@ -249,7 +232,7 @@ public sealed partial class DashboardPage : Page
         fieldsPanel.Children.Add(clientBox);
         fieldsPanel.Children.Add(validation);
 
-        var dialog = Helpers.DialogHelper.BuildBannerDialogWithContent(
+        var dialog = DialogHelper.BuildBannerDialogWithContent(
             this.XamlRoot,
             "\uE1D0",
             "New Quote",
@@ -260,99 +243,49 @@ public sealed partial class DashboardPage : Page
 
         dialog.PrimaryButtonClick += (s, args) =>
         {
-            var title = titleBox.Text?.Trim() ?? string.Empty;
-            if (string.IsNullOrWhiteSpace(title))
+            if (string.IsNullOrWhiteSpace(titleBox.Text))
             {
                 DialogHelper.ShowValidation(validation, "Enter a title for the quote.");
                 args.Cancel = true;
-                return;
             }
         };
 
-        var result = await dialog.ShowAsync();
-        if (result == ContentDialogResult.Primary)
+        if (await dialog.ShowAsync() == ContentDialogResult.Primary)
         {
-            var profileRepo = App.Services.GetRequiredService<IBusinessProfileRepository>();
-            var quoteRepo = App.Services.GetRequiredService<IQuoteRepository>();
-            var quoteNumGen = App.Services.GetRequiredService<QuoteNumberGenerator>();
-            var navigator = this.Navigator() ?? throw new InvalidOperationException("The page has no navigator.");
-
-            var profile = await profileRepo.GetAsync();
-            var quoteNumber = await quoteNumGen.GenerateAsync();
-
-            var quote = new QuoteEntity
-            {
-                Title = titleBox.Text?.Trim() ?? "New Quote",
-                QuoteNumber = quoteNumber,
-                Status = QuoteStatus.Draft,
-                TaxRate = profile.DefaultTaxRate,
-                ValidUntil = DateTimeOffset.UtcNow.AddDays(profile.QuoteValidDays),
-            };
-
-            // Link the client with that name, if there is one
-            var clientName = clientBox.Text?.Trim() ?? string.Empty;
-            if (!string.IsNullOrEmpty(clientName))
-            {
-                quote.ClientName = clientName;
-                quote.ClientId = ClientLink.Resolve(clientName, null, null, allClients);
-            }
-
-            await quoteRepo.SaveAsync(quote);
-            await navigator.NavigateRouteAsync(this, "QuoteEditor", data: quote);
+            await model.CreateQuoteAsync(titleBox.Text, clientBox.Text);
         }
     }
 
     // -- Send Quote via Email ---------------------------------------------------
 
-    private async void SendQuote_Click(object sender, RoutedEventArgs e)
+    private async void SendQuote_Click(object sender, RoutedEventArgs e) =>
+        await ErrorReporter.RunAsync(this, "The quote could not be sent.", SendQuoteAsync);
+
+    private async Task SendQuoteAsync()
     {
-        var model = Model;
-        if (model is null) return;
-
-        var quote = await model.SelectedQuote;
-        if (quote is null) return;
-
-        var quoteRepo = App.Services.GetRequiredService<IQuoteRepository>();
-        var freshQuote = await quoteRepo.GetByIdAsync(quote.Id);
-        if (freshQuote is null) return;
-
-        // Resolve client email
-        var clientEmail = string.Empty;
-        if (!string.IsNullOrEmpty(freshQuote.ClientId))
-        {
-            var clientRepo = App.Services.GetRequiredService<IClientRepository>();
-            var client = await clientRepo.GetByIdAsync(freshQuote.ClientId);
-            clientEmail = client?.Email ?? string.Empty;
-        }
-
-        // Resolve business profile for email template
-        var profileRepo = App.Services.GetRequiredService<IBusinessProfileRepository>();
-        var profile = await profileRepo.GetAsync();
-        var businessName = profile.BusinessName ?? "Our Company";
-
-        var shareService = App.Services.GetRequiredService<Services.IShareService>();
-        var canExportPdf = shareService.CanExportPdf;
+        if (Model is not { } model || await model.GetSendDetailsAsync() is not { } quote) return;
 
         // Build email fields
         var recipientBox = new TextBox
         {
             Header = "Recipient Email",
-            Text = clientEmail,
+            Text = quote.ClientEmail,
             PlaceholderText = "client@example.com",
         };
         var subjectBox = new TextBox
         {
             Header = "Subject",
-            Text = $"Quote {freshQuote.QuoteNumber} - {freshQuote.Title}",
+            Text = $"Quote {quote.QuoteNumber} - {quote.Title}",
         };
         var bodyBox = new TextBox
         {
             Header = "Message",
-            Text = $"Hi {freshQuote.ClientName ?? "there"},\n\nPlease find attached quote {freshQuote.QuoteNumber} for \"{freshQuote.Title}\".\n\nThe quote is valid until {freshQuote.ValidUntil?.ToString("MMMM d, yyyy") ?? "further notice"}.\n\nPlease don't hesitate to reach out with any questions.\n\nBest regards,\n{businessName}",
+            Text = $"Hi {quote.ClientName ?? "there"},\n\nPlease find attached quote {quote.QuoteNumber} for \"{quote.Title}\".\n\nThe quote is valid until {quote.ValidUntil?.ToString("MMMM d, yyyy") ?? "further notice"}.\n\nPlease don't hesitate to reach out with any questions.\n\nBest regards,\n{quote.BusinessName}",
             AcceptsReturn = true,
             TextWrapping = TextWrapping.Wrap,
             MinHeight = (double)Application.Current.Resources["MessageMinHeight"],
         };
+
         var infoBanner = new Border
         {
             Background = ThemeResources.GetBrush(this, "TertiaryContainerBrush"),
@@ -373,7 +306,7 @@ public sealed partial class DashboardPage : Page
                     },
                     new TextBlock
                     {
-                        Text = canExportPdf
+                        Text = quote.CanAttachPdf
                             ? "The PDF will be downloaded. Please attach it to the email."
                             : $"{Services.UnsupportedPdfGenerator.UnavailableMessage} The email opens without an attachment.",
                         Style = (Style)Application.Current.Resources["BodySmall"],
@@ -395,12 +328,12 @@ public sealed partial class DashboardPage : Page
             this.XamlRoot,
             "\uE724",
             "Send Quote",
-            $"Send {freshQuote.QuoteNumber} to {freshQuote.ClientName ?? "client"}",
+            $"Send {quote.QuoteNumber} to {quote.ClientName ?? "client"}",
             fieldsPanel,
             primaryButtonText: "Send via Email",
             closeButtonText: "Cancel");
 
-        if (canExportPdf)
+        if (quote.CanAttachPdf)
         {
             dialog.SecondaryButtonText = "Download PDF Only";
         }
@@ -409,46 +342,31 @@ public sealed partial class DashboardPage : Page
 
         if (result == ContentDialogResult.Primary)
         {
-            // Download PDF (where the head can make one) + launch email client + mark as sent
-            if (canExportPdf)
-            {
-                await shareService.GenerateAndDownloadPdfAsync(freshQuote);
-            }
-
-            var emailService = App.Services.GetRequiredService<Services.IEmailLauncherService>();
-            await emailService.ComposeEmailAsync(
+            // The PDF (where this head can make one), then the email, then the quote is marked Sent.
+            await model.SendByEmailAsync(
+                quote.QuoteId,
                 recipientBox.Text?.Trim() ?? string.Empty,
                 subjectBox.Text?.Trim() ?? string.Empty,
                 bodyBox.Text?.Trim() ?? string.Empty);
-
-            await model.MarkSentAsync(freshQuote.Id);
         }
         else if (result == ContentDialogResult.Secondary)
         {
-            // Download PDF only
-            await shareService.GenerateAndDownloadPdfAsync(freshQuote);
+            await model.ExportPdfAsync(quote.QuoteId);
         }
     }
 
     // -- Inline Catalog Browser -------------------------------------------------
 
-    private async void InlineCatalogBrowser_Click(object sender, RoutedEventArgs e)
-    {
-        List<CatalogItemEntity>? items = null;
-        var model = Model;
-        if (model is not null)
-            items = await model.GetCatalogItemsAsync();
-
-        if (items is null || items.Count == 0) return;
-
-        var dialog = new CatalogBrowserDialog { XamlRoot = this.XamlRoot };
-        dialog.LoadItems(items);
-        dialog.ItemAdded += async catalogItem =>
+    private async void InlineCatalogBrowser_Click(object sender, RoutedEventArgs e) =>
+        await ErrorReporter.RunAsync(this, "The catalog could not be opened.", async () =>
         {
-            var m = Model;
-            if (m is not null)
-                await m.AddInlineFromCatalog(catalogItem, CancellationToken.None);
-        };
-        await dialog.ShowAsync();
-    }
+            if (Model is not { } model || await model.GetCatalogItemsAsync() is not { Count: > 0 } items) return;
+
+            var dialog = new CatalogBrowserDialog { XamlRoot = this.XamlRoot };
+            dialog.LoadItems(items);
+            // The browser stays open while items are added, so a failure is logged (a second dialog cannot open).
+            dialog.ItemAdded += async catalogItem => await ErrorReporter.RunQuietlyAsync("Adding a catalog item",
+                async () => await model.AddInlineFromCatalog(catalogItem, CancellationToken.None));
+            await dialog.ShowAsync();
+        });
 }

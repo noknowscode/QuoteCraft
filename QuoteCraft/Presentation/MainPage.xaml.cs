@@ -35,7 +35,8 @@ public sealed partial class MainPage : Page
             && Uno.Extensions.Navigation.UI.Region.GetName(item) is { Length: > 0 } route
             && this.Navigator() is { } navigator)
         {
-            await navigator.NavigateRouteAsync(item, route);
+            await ErrorReporter.RunAsync(this, "The page could not be opened.",
+                async () => await navigator.NavigateRouteAsync(item, route));
         }
     }
 
@@ -96,8 +97,11 @@ public sealed partial class MainPage : Page
             return;
         }
 
-        await service.SetThemeAsync(Enum.Parse<AppTheme>(tag));
-        UpdateThemeToggleVisuals();
+        await ErrorReporter.RunAsync(this, "The theme could not be changed.", async () =>
+        {
+            await service.SetThemeAsync(Enum.Parse<AppTheme>(tag));
+            UpdateThemeToggleVisuals();
+        });
     }
 
     private void UpdateThemeToggleVisuals()
@@ -127,17 +131,19 @@ public sealed partial class MainPage : Page
         NotificationsOverlay.Visibility = Visibility.Collapsed;
     }
 
-    private async void MarkAllRead_Click(object sender, RoutedEventArgs e)
-    {
-        if (_notificationService is not null)
+    private async void MarkAllRead_Click(object sender, RoutedEventArgs e) =>
+        await ErrorReporter.RunAsync(this, "The notifications could not be marked as read.", async () =>
         {
-            await _notificationService.MarkAllAsReadAsync();
-            await LoadNotificationsAsync();
-        }
-    }
+            if (_notificationService is not null)
+            {
+                await _notificationService.MarkAllAsReadAsync();
+                await LoadNotificationsAsync();
+            }
+        });
 
     private async void NotifRetry_Click(object sender, RoutedEventArgs e) => await LoadNotificationsAsync();
 
+    /// <summary>Fills the overlay. A failed read shows the overlay's error state, with Retry, rather than throwing.</summary>
     private async Task LoadNotificationsAsync()
     {
         if (_notificationService is null) return;

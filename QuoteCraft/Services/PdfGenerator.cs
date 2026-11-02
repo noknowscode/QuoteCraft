@@ -217,13 +217,15 @@ public class PdfGenerator : IPdfGenerator
 
         return filePath;
         }
-        catch (IOException ex)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            throw new InvalidOperationException("Failed to generate PDF. Check available disk space.", ex);
+            // Most often the previous export of this quote is still open in a PDF viewer that locks it (Windows).
+            throw new InvalidOperationException(
+                "The PDF file could not be written. If it is open in another app, close it and try again.", ex);
         }
         catch (QuestPDF.Drawing.Exceptions.DocumentLayoutException ex)
         {
-            throw new InvalidOperationException("Failed to generate PDF due to a layout error.", ex);
+            throw new InvalidOperationException("The PDF could not be laid out.", ex);
         }
     }
 }

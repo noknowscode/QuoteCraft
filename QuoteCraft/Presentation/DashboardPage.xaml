@@ -111,47 +111,84 @@
       </Grid>
     </Border>
 
-    <!-- Upgrade Prompt Banner (shown when feature gate blocks an action) -->
-    <mvux:FeedView Grid.Row="1" Source="{Binding UpgradeMessage}">
-      <DataTemplate>
-        <Border Background="{StaticResource AppBarBackgroundBrush}"
-                Padding="{StaticResource Inset16x12}"
-                Visibility="{Binding Data, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert}">
-          <Grid ColumnSpacing="{StaticResource Space8}">
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="Auto" />
-              <ColumnDefinition Width="*" />
-              <ColumnDefinition Width="Auto" />
-              <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <FontIcon Glyph="&#xE7BA;" FontSize="{StaticResource IconSizeXl}" Foreground="{StaticResource AppBarForegroundBrush}"
-                      VerticalAlignment="Center" />
-            <TextBlock Grid.Column="1" Text="{Binding Data}"
-                       Style="{StaticResource BodyMedium}" Foreground="{StaticResource AppBarForegroundBrush}"
-                       VerticalAlignment="Center" TextWrapping="Wrap" />
-            <Button Grid.Column="2"
-                    Command="{Binding DataContext.OpenSettings, ElementName=DashboardRoot}"
-                    Style="{StaticResource AccentButtonStyle}"
-                    Padding="{StaticResource ButtonInsetCompact}">
-              <TextBlock Text="Upgrade" Style="{StaticResource LabelLargeSemiBold}" Foreground="{StaticResource OnAccentBrush}" />
-            </Button>
-            <Button Grid.Column="3"
-                    Command="{Binding DataContext.DismissUpgrade, ElementName=DashboardRoot}"
-                    AutomationProperties.Name="Dismiss"
-                    ToolTipService.ToolTip="Dismiss"
-                    Style="{StaticResource MaterialTextButtonStyle}"
-                    MinWidth="{StaticResource TouchTarget}" MinHeight="{StaticResource TouchTarget}">
-              <FontIcon Glyph="&#xE711;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource AppBarForegroundBrush}" />
-            </Button>
-          </Grid>
-        </Border>
-      </DataTemplate>
-      <mvux:FeedView.NoneTemplate>
+    <!-- Banners: an upgrade prompt (a plan limit blocked an action), or what the last action could not do -->
+    <StackPanel Grid.Row="1">
+      <mvux:FeedView Source="{Binding UpgradeMessage}">
         <DataTemplate>
-          <Border Height="0" />
+          <Border Background="{StaticResource AppBarBackgroundBrush}"
+                  Padding="{StaticResource Inset16x12}"
+                  Visibility="{Binding Data, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert}">
+            <Grid ColumnSpacing="{StaticResource Space8}">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+              </Grid.ColumnDefinitions>
+              <FontIcon Glyph="&#xE7BA;" FontSize="{StaticResource IconSizeXl}" Foreground="{StaticResource AppBarForegroundBrush}"
+                        VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="{Binding Data}"
+                         Style="{StaticResource BodyMedium}" Foreground="{StaticResource AppBarForegroundBrush}"
+                         VerticalAlignment="Center" TextWrapping="Wrap" />
+              <Button Grid.Column="2"
+                      Command="{Binding DataContext.OpenSettings, ElementName=DashboardRoot}"
+                      Style="{StaticResource AccentButtonStyle}"
+                      Padding="{StaticResource ButtonInsetCompact}">
+                <TextBlock Text="Upgrade" Style="{StaticResource LabelLargeSemiBold}" Foreground="{StaticResource OnAccentBrush}" />
+              </Button>
+              <Button Grid.Column="3"
+                      Command="{Binding DataContext.DismissUpgrade, ElementName=DashboardRoot}"
+                      AutomationProperties.Name="Dismiss"
+                      ToolTipService.ToolTip="Dismiss"
+                      Style="{StaticResource MaterialTextButtonStyle}"
+                      MinWidth="{StaticResource TouchTarget}" MinHeight="{StaticResource TouchTarget}">
+                <FontIcon Glyph="&#xE711;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource AppBarForegroundBrush}" />
+              </Button>
+            </Grid>
+          </Border>
         </DataTemplate>
-      </mvux:FeedView.NoneTemplate>
-    </mvux:FeedView>
+        <mvux:FeedView.NoneTemplate>
+          <DataTemplate>
+            <Border Height="0" />
+          </DataTemplate>
+        </mvux:FeedView.NoneTemplate>
+      </mvux:FeedView>
+
+      <mvux:FeedView Source="{Binding ActionError}">
+        <DataTemplate>
+          <Border Background="{ThemeResource ErrorContainerBrush}"
+                  Padding="{StaticResource Inset16x12}"
+                  AutomationProperties.LiveSetting="Assertive"
+                  Visibility="{Binding Data, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert}">
+            <Grid ColumnSpacing="{StaticResource Space8}">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+              </Grid.ColumnDefinitions>
+              <FontIcon Glyph="&#xE783;" FontSize="{StaticResource IconSizeXl}" Foreground="{ThemeResource OnErrorContainerBrush}"
+                        VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="{Binding Data}"
+                         Style="{StaticResource BodyMedium}" Foreground="{ThemeResource OnErrorContainerBrush}"
+                         VerticalAlignment="Center" TextWrapping="Wrap" />
+              <Button Grid.Column="2"
+                      Command="{Binding DataContext.DismissError, ElementName=DashboardRoot}"
+                      AutomationProperties.Name="Dismiss"
+                      ToolTipService.ToolTip="Dismiss"
+                      Style="{StaticResource MaterialTextButtonStyle}"
+                      MinWidth="{StaticResource TouchTarget}" MinHeight="{StaticResource TouchTarget}">
+                <FontIcon Glyph="&#xE711;" FontSize="{StaticResource IconSizeSm}" Foreground="{ThemeResource OnErrorContainerBrush}" />
+              </Button>
+            </Grid>
+          </Border>
+        </DataTemplate>
+        <mvux:FeedView.NoneTemplate>
+          <DataTemplate>
+            <Border Height="0" />
+          </DataTemplate>
+        </mvux:FeedView.NoneTemplate>
+      </mvux:FeedView>
+    </StackPanel>
 
     <!-- Stat cards with sparklines (Wide and Widest) -->
     <mvux:FeedView Grid.Row="2" Source="{Binding Analytics}"

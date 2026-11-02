@@ -126,6 +126,28 @@ public partial record ClientsModel
         }
     }
 
+    /// <summary>Null when a client can be added; otherwise the plan-limit message (only where plans exist).</summary>
+    public async Task<string?> GetClientLimitMessageAsync() =>
+        await _featureGate.CanAddClientAsync() ? null : _featureGate.GetUpgradeMessage("clients");
+
+    /// <summary>The selected client as stored now (the edit dialog starts from it), or null.</summary>
+    public async Task<ClientEntity?> GetSelectedClientAsync() =>
+        await SelectedClient is { } selected ? await _clientRepo.GetByIdAsync(selected.Id) : null;
+
+    /// <summary>The client dialog's Save; the list and the detail read the client again.</summary>
+    public async Task SaveClientAsync(ClientEntity client)
+    {
+        client.UpdatedAt = DateTimeOffset.UtcNow;
+        await _clientRepo.SaveAsync(client);
+        await Version.UpdateAsync(v => v + 1, CancellationToken.None);
+    }
+
+    /// <summary>Plans and the upgrade live in Settings.</summary>
+    public async ValueTask OpenSettings(CancellationToken ct)
+    {
+        await _navigator.NavigateRouteAsync(this, "Settings", cancellation: ct);
+    }
+
     public async ValueTask AddClient(CancellationToken ct)
     {
         if (!await _featureGate.CanAddClientAsync())

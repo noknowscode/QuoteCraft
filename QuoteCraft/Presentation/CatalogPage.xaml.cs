@@ -4,8 +4,6 @@ namespace QuoteCraft.Presentation;
 
 public sealed partial class CatalogPage : Page
 {
-    private ICatalogItemRepository? _catalogRepo;
-
     /// <summary>Access the underlying MVUX model from the generated ViewModel DataContext.</summary>
     private CatalogModel? Model => MvuxHelper.GetModel<CatalogModel>(DataContext);
 
@@ -14,18 +12,14 @@ public sealed partial class CatalogPage : Page
         this.InitializeComponent();
     }
 
-    private ICatalogItemRepository CatalogRepo =>
-        _catalogRepo ??= App.Services.GetRequiredService<ICatalogItemRepository>();
-
     // -- Category Card Selection ------------------------------------------------
 
     private async void CategoryCard_Tapped(object sender, TappedRoutedEventArgs e)
     {
-        if (sender is FrameworkElement { DataContext: CatalogCategoryCard card })
+        if (sender is FrameworkElement { DataContext: CatalogCategoryCard card } && Model is { } model)
         {
-            var model = Model;
-            if (model is not null)
-                await model.SelectCategoryCard(card, CancellationToken.None);
+            await ErrorReporter.RunAsync(this, "The category could not be opened.",
+                async () => await model.SelectCategoryCard(card, CancellationToken.None));
         }
     }
 
@@ -34,11 +28,7 @@ public sealed partial class CatalogPage : Page
     private async void CatalogItem_Tapped(object sender, TappedRoutedEventArgs e)
     {
         if (sender is FrameworkElement { DataContext: CatalogDisplayItem item })
-        {
-            var entity = await CatalogRepo.GetByIdAsync(item.Id);
-            if (entity is not null)
-                await ShowCatalogEditorDialog(entity, isNew: false);
-        }
+            await EditItemAsync(item);
     }
 
     private async void CatalogItem_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
@@ -47,34 +37,38 @@ public sealed partial class CatalogPage : Page
             && sender is FrameworkElement { DataContext: CatalogDisplayItem item })
         {
             e.Handled = true;
-            var entity = await CatalogRepo.GetByIdAsync(item.Id);
-            if (entity is not null)
-                await ShowCatalogEditorDialog(entity, isNew: false);
+            await EditItemAsync(item);
         }
     }
 
-    private async void AddItem_Click(object sender, RoutedEventArgs e)
-    {
-        await ShowCatalogEditorDialog(new CatalogItemEntity(), isNew: true);
-    }
-
-    private async void AddItemToCategory_Click(object sender, RoutedEventArgs e)
-    {
-        // Pre-fill category with the currently selected category
-        var entity = new CatalogItemEntity();
-        var catalogModel = Model;
-        if (catalogModel is not null)
+    private Task EditItemAsync(CatalogDisplayItem item) =>
+        ErrorReporter.RunAsync(this, "The catalog item could not be opened.", async () =>
         {
-            var category = await catalogModel.SelectedCategory;
-            if (!string.IsNullOrEmpty(category))
+            if (Model is { } model && await model.GetItemAsync(item.Id) is { } entity)
+                await ShowCatalogEditorDialog(model, entity, isNew: false);
+        });
+
+    private async void AddItem_Click(object sender, RoutedEventArgs e) =>
+        await ErrorReporter.RunAsync(this, "The catalog item could not be added.", async () =>
+        {
+            if (Model is { } model)
+                await ShowCatalogEditorDialog(model, new CatalogItemEntity(), isNew: true);
+        });
+
+    private async void AddItemToCategory_Click(object sender, RoutedEventArgs e) =>
+        await ErrorReporter.RunAsync(this, "The catalog item could not be added.", async () =>
+        {
+            if (Model is not { } model) return;
+
+            // Pre-fill category with the currently selected category
+            var entity = new CatalogItemEntity();
+            if (await model.SelectedCategory is { Length: > 0 } category)
                 entity.Category = category;
-        }
-        await ShowCatalogEditorDialog(entity, isNew: true);
-    }
+            await ShowCatalogEditorDialog(model, entity, isNew: true);
+        });
 
-    private async Task ShowCatalogEditorDialog(CatalogItemEntity entity, bool isNew = false)
+    private async Task ShowCatalogEditorDialog(CatalogModel model, CatalogItemEntity entity, bool isNew = false)
     {
-
         var descBox = new TextBox
         {
             Header = "Description",
@@ -90,7 +84,7 @@ public sealed partial class CatalogPage : Page
         };
 
         // Category ComboBox with existing categories
-        var categories = await CatalogRepo.GetCategoriesAsync();
+        var categories = await model.GetCategoryNamesAsync();
         var categoryBox = new ComboBox
         {
             Header = "Category",
@@ -118,7 +112,7 @@ public sealed partial class CatalogPage : Page
         fieldsPanel.Children.Add(categoryBox);
         fieldsPanel.Children.Add(validation);
 
-        var dialog = Helpers.DialogHelper.BuildBannerDialogWithContent(
+        var dialog = DialogHelper.BuildBannerDialogWithContent(
             this.XamlRoot,
             "\uE82D",
             isNew ? "Add Catalog Item" : "Edit Catalog Item",
@@ -163,17 +157,28 @@ public sealed partial class CatalogPage : Page
 
             entity.UnitPrice = price;
 
-            await CatalogRepo.SaveAsync(entity);
+            // Saving: the dialog waits for the database, and stays open with a message if it fails.
+            var deferral = args.GetDeferral();
+            try
+            {
+                await model.SaveItemAsync(entity);
+            }
+            catch (Exception ex)
+            {
+                ErrorReporter.Log(ex, "Save catalog item");
+                DialogHelper.ShowValidation(validation, "The item could not be saved. Try again.");
+                args.Cancel = true;
+            }
+            finally
+            {
+                deferral.Complete();
+            }
         };
 
         var result = await dialog.ShowAsync();
-        if (result == ContentDialogResult.Primary)
+        if (result == ContentDialogResult.Secondary && !isNew)
         {
-            RefreshCatalog();
-        }
-        else if (result == ContentDialogResult.Secondary && !isNew)
-        {
-            var confirmDialog = Helpers.DialogHelper.BuildBannerDialog(
+            var confirmDialog = DialogHelper.BuildBannerDialog(
                 this.XamlRoot,
                 "\uE74D",
                 "Delete Catalog Item?",
@@ -183,16 +188,8 @@ public sealed partial class CatalogPage : Page
 
             if (await confirmDialog.ShowAsync() == ContentDialogResult.Primary)
             {
-                await CatalogRepo.DeleteAsync(entity.Id);
-                RefreshCatalog();
+                await model.DeleteItemAsync(entity.Id);
             }
         }
-    }
-
-    private void RefreshCatalog()
-    {
-        var model = Model;
-        if (model is not null)
-            _ = model.RefreshList(CancellationToken.None);
     }
 }

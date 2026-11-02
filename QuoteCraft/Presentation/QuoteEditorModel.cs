@@ -75,6 +75,10 @@ public partial record QuoteEditorModel
 
     public string QuoteId => _quoteId;
 
+    public int MaxPhotos => _photoService.MaxPhotos;
+
+    public bool PhotoLimitReached => _photoService.GetPhotos(_quoteId).Count >= _photoService.MaxPhotos;
+
     public IListFeed<string> Photos => PhotosVersion
         .SelectAsync(async (_, ct) =>
             (IImmutableList<string>)_photoService.GetPhotos(_quoteId).ToImmutableList())
@@ -168,8 +172,9 @@ public partial record QuoteEditorModel
         {
             await PersistEditsAsync();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            ErrorReporter.Log(ex, "Save quote");
             await ValidationError.UpdateAsync(_ => "The quote could not be saved. Try again.", ct);
             return;
         }
@@ -187,29 +192,29 @@ public partial record QuoteEditorModel
         await PhotosVersion.UpdateAsync(v => v + 1, ct);
     }
 
-    public async ValueTask MarkSent(CancellationToken ct)
-    {
-        await UpdateStatus(QuoteStatus.Sent);
-    }
+    public ValueTask MarkSent(CancellationToken ct) => UpdateStatus(QuoteStatus.Sent, ct);
 
-    public async ValueTask MarkAccepted(CancellationToken ct)
-    {
-        await UpdateStatus(QuoteStatus.Accepted);
-    }
+    public ValueTask MarkAccepted(CancellationToken ct) => UpdateStatus(QuoteStatus.Accepted, ct);
 
-    public async ValueTask MarkDeclined(CancellationToken ct)
-    {
-        await UpdateStatus(QuoteStatus.Declined);
-    }
+    public ValueTask MarkDeclined(CancellationToken ct) => UpdateStatus(QuoteStatus.Declined, ct);
 
+    /// <summary>Saves the edits, then writes and opens the PDF; a failure shows on the page, next to the button.</summary>
     public async ValueTask ExportPdf(CancellationToken ct)
     {
-        await PersistEditsAsync();
-
-        var quote = await _quoteRepo.GetByIdAsync(_quoteId);
-        if (quote is null) return;
-
-        await _shareService.GenerateAndDownloadPdfAsync(quote);
+        await ValidationError.UpdateAsync(_ => string.Empty, ct);
+        try
+        {
+            await PersistEditsAsync();
+            if (await _quoteRepo.GetByIdAsync(_quoteId) is { } quote)
+            {
+                await _shareService.GenerateAndDownloadPdfAsync(quote);
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorReporter.Log(ex, "Export PDF");
+            await ValidationError.UpdateAsync(_ => ErrorReporter.Describe("The PDF could not be created.", ex), ct);
+        }
     }
 
     public async ValueTask CopyShareLink(CancellationToken ct)
@@ -299,11 +304,21 @@ public partial record QuoteEditorModel
             (IImmutableList<StatusHistoryEntry>)(await _statusHistoryRepo.GetByQuoteIdAsync(_quoteId)).ToImmutableList())
         .AsListFeed();
 
-    private async Task UpdateStatus(QuoteStatus status)
+    private async ValueTask UpdateStatus(QuoteStatus status, CancellationToken ct)
     {
-        // The edits first, so a status change does not drop them.
-        await PersistEditsAsync();
-        await _status.SetStatusAsync(_quoteId, status);
-        await GoBack(CancellationToken.None);
+        await ValidationError.UpdateAsync(_ => string.Empty, ct);
+        try
+        {
+            // The edits first, so a status change does not drop them.
+            await PersistEditsAsync();
+            await _status.SetStatusAsync(_quoteId, status);
+        }
+        catch (Exception ex)
+        {
+            ErrorReporter.Log(ex, $"Mark {status}");
+            await ValidationError.UpdateAsync(_ => ErrorReporter.Describe($"The quote could not be marked {status}.", ex), ct);
+            return;
+        }
+        await GoBack(ct);
     }
 }

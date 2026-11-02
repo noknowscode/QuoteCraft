@@ -13,61 +13,40 @@ public sealed partial class SettingsPage : Page
         this.Loaded += SettingsPage_Loaded;
     }
 
-    private async void SettingsPage_Loaded(object sender, RoutedEventArgs e)
-    {
-        // Wait briefly for the model to load, then refresh logo thumbnails
-        await Task.Delay(300);
-        var model = Model;
-        if (model is null) return;
-
-        var logoPath = await model.LogoPath;
-        if (!string.IsNullOrEmpty(logoPath) && File.Exists(logoPath))
+    private async void SettingsPage_Loaded(object sender, RoutedEventArgs e) =>
+        await ErrorReporter.RunQuietlyAsync("Showing the logo", async () =>
         {
-            UpdateLogoThumbnails(logoPath);
-        }
-    }
+            // Wait briefly for the model to load, then refresh logo thumbnails
+            await Task.Delay(300);
+            if (Model is { } model && await model.LogoPath is { Length: > 0 } logoPath && File.Exists(logoPath))
+            {
+                UpdateLogoThumbnails(logoPath);
+            }
+        });
 
-    private async void UploadLogo_Click(object sender, RoutedEventArgs e)
-    {
-        var picker = new Windows.Storage.Pickers.FileOpenPicker
+    private async void UploadLogo_Click(object sender, RoutedEventArgs e) =>
+        await ErrorReporter.RunAsync(this, "The logo could not be added.", async () =>
         {
-            SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary,
-        };
-        picker.FileTypeFilter.Add(".jpg");
-        picker.FileTypeFilter.Add(".jpeg");
-        picker.FileTypeFilter.Add(".png");
-        picker.FileTypeFilter.Add(".bmp");
-        picker.FileTypeFilter.Add(".webp");
+            var picker = new Windows.Storage.Pickers.FileOpenPicker
+            {
+                SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary,
+            };
+            picker.FileTypeFilter.Add(".jpg");
+            picker.FileTypeFilter.Add(".jpeg");
+            picker.FileTypeFilter.Add(".png");
+            picker.FileTypeFilter.Add(".bmp");
+            picker.FileTypeFilter.Add(".webp");
 
 #if WINDOWS
-        WinRT.Interop.InitializeWithWindow.Initialize(picker,
-            WinRT.Interop.WindowNative.GetWindowHandle(App.MainAppWindow));
+            WinRT.Interop.InitializeWithWindow.Initialize(picker,
+                WinRT.Interop.WindowNative.GetWindowHandle(App.MainAppWindow));
 #endif
 
-        var file = await picker.PickSingleFileAsync();
-        if (file is null) return;
-
-        // Copy to local data directory
-        var logoDir = AppStorage.Combine("logo");
-        Directory.CreateDirectory(logoDir);
-
-        // Read through the StorageFile: a picked file's Path is not readable on every head (WebAssembly, Android, iOS).
-        var ext = Path.GetExtension(file.Name);
-        var destPath = Path.Combine(logoDir, $"logo{ext}");
-        await using (var source = await file.OpenStreamForReadAsync())
-        await using (var destination = File.Create(destPath))
-        {
-            await source.CopyToAsync(destination);
-        }
-
-        // Update model
-        var model = Model;
-        if (model is not null)
-            await model.SetLogoPath(destPath, CancellationToken.None);
-
-        // Update thumbnails in UI
-        UpdateLogoThumbnails(destPath);
-    }
+            if (await picker.PickSingleFileAsync() is { } file && Model is { } model)
+            {
+                UpdateLogoThumbnails(await model.SetLogoAsync(file));
+            }
+        });
 
     private void UpdateLogoThumbnails(string filePath)
     {
