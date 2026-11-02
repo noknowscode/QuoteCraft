@@ -33,9 +33,9 @@
              Header="Description"
              PlaceholderText="e.g. Kitchen faucet installation" />
 
+    <!-- Header and placeholder come from code: the business's currency, the user's number format. -->
     <TextBox x:Name="UnitPriceBox"
-             Header="Unit Price ($)"
-             PlaceholderText="0.00"
+             Header="Unit Price"
              InputScope="Number"
              TextChanged="PriceOrQty_Changed" />
 
@@ -61,6 +61,14 @@
               MinWidth="{StaticResource TouchTarget}" MinHeight="{StaticResource TouchTarget}" Padding="{StaticResource Inset8x4}" CornerRadius="{StaticResource RadiusMd}" />
     </Grid>
 
+    <!-- What Save found wrong (hidden until then) -->
+    <TextBlock x:Name="ValidationText"
+               Style="{StaticResource BodySmall}"
+               Foreground="{ThemeResource ErrorBrush}"
+               TextWrapping="Wrap"
+               Visibility="Collapsed"
+               AutomationProperties.LiveSetting="Assertive" />
+
     <!-- Line Total -->
     <Border x:Name="TotalBorder" Background="{StaticResource BannerGradientBrush}" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource BannerInset}">
       <Grid>
@@ -72,7 +80,6 @@
                    Style="{StaticResource BodyMedium}"
                    VerticalAlignment="Center" />
         <TextBlock x:Name="LineTotalText" Foreground="{StaticResource AppBarForegroundBrush}" FontFamily="{StaticResource MonospaceFontFamily}" Grid.Column="1"
-                   Text="$0.00"
                    Style="{StaticResource TitleLarge}"
                    FontWeight="Bold" VerticalAlignment="Center" />
       </Grid>

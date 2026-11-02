@@ -11,7 +11,7 @@ public interface IQuoteRepository
     Task DeleteAsync(string id);
     Task<string> NextQuoteNumberAsync(string prefix, int year);
     Task SaveLineItemAsync(LineItemEntity item);
-    Task SaveLineItemsBatchAsync(params LineItemEntity[] items);
+    Task ReorderLineItemsAsync(string quoteId, IReadOnlyList<string> orderedIds);
     Task DeleteLineItemAsync(string id);
     Task<List<LineItemEntity>> GetLineItemsAsync(string quoteId);
     Task<int> CountCreatedSinceAsync(DateTimeOffset since);
@@ -45,7 +45,7 @@ public class QuoteRepository : IQuoteRepository
 
         // Load all line items in one query instead of N+1
         var lineCmd = conn.CreateCommand();
-        lineCmd.CommandText = "SELECT * FROM line_items ORDER BY sort_order";
+        lineCmd.CommandText = "SELECT * FROM line_items ORDER BY sort_order, rowid";
         var itemsByQuote = new Dictionary<string, List<LineItemEntity>>();
         using (var reader = await lineCmd.ExecuteReaderAsync())
         {
@@ -180,6 +180,11 @@ public class QuoteRepository : IQuoteRepository
         }
     }
 
+    /// <summary>
+    /// A new item goes after the quote's last item; an edited item keeps its place (its description, price and
+    /// quantity change). <see cref="LineItemEntity.SortOrder"/> is not read: the order changes only through
+    /// <see cref="ReorderLineItemsAsync"/>.
+    /// </summary>
     public async Task SaveLineItemAsync(LineItemEntity item)
     {
         var conn = await _db.GetConnectionAsync();
@@ -191,56 +196,46 @@ public class QuoteRepository : IQuoteRepository
             INSERT INTO line_items
             (id, quote_id, description, unit_price, quantity, sort_order, updated_at)
             VALUES
-            (@id, @quote_id, @description, @unit_price, @quantity, @sort_order, @updated_at)
+            (@id, @quote_id, @description, @unit_price, @quantity,
+             (SELECT COALESCE(MAX(sort_order), -1) + 1 FROM line_items WHERE quote_id = @quote_id), @updated_at)
             ON CONFLICT(id) DO UPDATE SET
-                quote_id=excluded.quote_id, description=excluded.description,
-                unit_price=excluded.unit_price, quantity=excluded.quantity,
-                sort_order=excluded.sort_order, updated_at=excluded.updated_at
+                description=excluded.description, unit_price=excluded.unit_price,
+                quantity=excluded.quantity, updated_at=excluded.updated_at
             """;
         cmd.Parameters.AddWithValue("@id", item.Id);
         cmd.Parameters.AddWithValue("@quote_id", item.QuoteId);
         cmd.Parameters.AddWithValue("@description", item.Description);
         cmd.Parameters.AddWithValue("@unit_price", (double)item.UnitPrice);
         cmd.Parameters.AddWithValue("@quantity", item.Quantity);
-        cmd.Parameters.AddWithValue("@sort_order", item.SortOrder);
         cmd.Parameters.AddWithValue("@updated_at", item.UpdatedAt.ToString("O"));
         await cmd.ExecuteNonQueryAsync();
     }
 
-    public async Task SaveLineItemsBatchAsync(params LineItemEntity[] items)
+    /// <summary>
+    /// Numbers the quote's items 0, 1, 2… in the given order, in one transaction. Rewriting every position (rather
+    /// than swapping two) also repairs items that share a position.
+    /// </summary>
+    public async Task ReorderLineItemsAsync(string quoteId, IReadOnlyList<string> orderedIds)
     {
         var conn = await _db.GetConnectionAsync();
 
         using var transaction = conn.BeginTransaction();
-        try
+        var now = DateTimeOffset.UtcNow.ToString("O");
+        for (var position = 0; position < orderedIds.Count; position++)
         {
-            foreach (var item in items)
-            {
-                item.UpdatedAt = DateTimeOffset.UtcNow;
-                var cmd = conn.CreateCommand();
-                cmd.Transaction = transaction;
-                cmd.CommandText = """
-                    INSERT OR REPLACE INTO line_items
-                    (id, quote_id, description, unit_price, quantity, sort_order, updated_at)
-                    VALUES
-                    (@id, @quote_id, @description, @unit_price, @quantity, @sort_order, @updated_at)
-                    """;
-                cmd.Parameters.AddWithValue("@id", item.Id);
-                cmd.Parameters.AddWithValue("@quote_id", item.QuoteId);
-                cmd.Parameters.AddWithValue("@description", item.Description);
-                cmd.Parameters.AddWithValue("@unit_price", (double)item.UnitPrice);
-                cmd.Parameters.AddWithValue("@quantity", item.Quantity);
-                cmd.Parameters.AddWithValue("@sort_order", item.SortOrder);
-                cmd.Parameters.AddWithValue("@updated_at", item.UpdatedAt.ToString("O"));
-                await cmd.ExecuteNonQueryAsync();
-            }
-            transaction.Commit();
+            var cmd = conn.CreateCommand();
+            cmd.Transaction = transaction;
+            cmd.CommandText = """
+                UPDATE line_items SET sort_order = @sort_order, updated_at = @updated_at
+                WHERE id = @id AND quote_id = @quote_id
+                """;
+            cmd.Parameters.AddWithValue("@sort_order", position);
+            cmd.Parameters.AddWithValue("@updated_at", now);
+            cmd.Parameters.AddWithValue("@id", orderedIds[position]);
+            cmd.Parameters.AddWithValue("@quote_id", quoteId);
+            await cmd.ExecuteNonQueryAsync();
         }
-        catch
-        {
-            transaction.Rollback();
-            throw;
-        }
+        transaction.Commit();
     }
 
     public async Task DeleteLineItemAsync(string id)
@@ -258,7 +253,7 @@ public class QuoteRepository : IQuoteRepository
         var conn = await _db.GetConnectionAsync();
 
         var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT * FROM line_items WHERE quote_id = @quote_id ORDER BY sort_order";
+        cmd.CommandText = "SELECT * FROM line_items WHERE quote_id = @quote_id ORDER BY sort_order, rowid";
         cmd.Parameters.AddWithValue("@quote_id", quoteId);
 
         var items = new List<LineItemEntity>();

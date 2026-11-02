@@ -321,7 +321,6 @@ public partial record DashboardModel
                 Description = item.Description,
                 UnitPrice = item.UnitPrice,
                 Quantity = item.Quantity,
-                SortOrder = item.SortOrder,
             };
             await _quoteRepo.SaveLineItemAsync(newItem);
         }
@@ -353,13 +352,11 @@ public partial record DashboardModel
 
     public async ValueTask SaveInlineLineItem(LineItemEntity item, CancellationToken ct)
     {
+        // A new item goes last; an edited one keeps its place (the dialog has validated it).
         var quote = await SelectedQuote;
-        if (quote is null || string.IsNullOrWhiteSpace(item.Description)) return;
+        if (quote is null) return;
 
         item.QuoteId = quote.Id;
-        if (string.IsNullOrEmpty(item.Id))
-            item.SortOrder = (await _quoteRepo.GetByIdAsync(quote.Id))?.LineItems.Count ?? 0;
-
         await _quoteRepo.SaveLineItemAsync(item);
         await DetailVersion.UpdateAsync(v => v + 1, ct);
     }
@@ -384,7 +381,6 @@ public partial record DashboardModel
             Description = catalogItem.Description,
             UnitPrice = Money.WithMarkup(catalogItem.UnitPrice, profile.DefaultMarkup),
             Quantity = 1,
-            SortOrder = (await _quoteRepo.GetByIdAsync(quote.Id))?.LineItems.Count ?? 0,
         };
         await _quoteRepo.SaveLineItemAsync(item);
         await DetailVersion.UpdateAsync(v => v + 1, ct);

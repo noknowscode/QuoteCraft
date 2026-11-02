@@ -102,9 +102,9 @@ public partial record QuoteEditorModel
             (IImmutableList<LineItemEntity>)(await _quoteRepo.GetLineItemsAsync(_quoteId)).ToImmutableList())
         .AsListFeed();
 
+    /// <summary>A new item goes last; an edited one keeps its place (the dialog has validated it).</summary>
     public async ValueTask SaveLineItem(LineItemEntity item, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(item.Description)) return;
         item.QuoteId = _quoteId;
         await _quoteRepo.SaveLineItemAsync(item);
         await LineItemsVersion.UpdateAsync(v => v + 1, ct);
@@ -120,7 +120,6 @@ public partial record QuoteEditorModel
             Description = catalogItem.Description,
             UnitPrice = Money.WithMarkup(catalogItem.UnitPrice, profile.DefaultMarkup),
             Quantity = 1,
-            SortOrder = (await _quoteRepo.GetLineItemsAsync(_quoteId)).Count,
         };
         await _quoteRepo.SaveLineItemAsync(item);
         await LineItemsVersion.UpdateAsync(v => v + 1, ct);
@@ -132,29 +131,19 @@ public partial record QuoteEditorModel
         await LineItemsVersion.UpdateAsync(v => v + 1, ct);
     }
 
-    public async ValueTask MoveLineItemUp(LineItemEntity item, CancellationToken ct)
+    public ValueTask MoveLineItemUp(LineItemEntity item, CancellationToken ct) => MoveLineItemAsync(item, -1, ct);
+
+    public ValueTask MoveLineItemDown(LineItemEntity item, CancellationToken ct) => MoveLineItemAsync(item, +1, ct);
+
+    private async ValueTask MoveLineItemAsync(LineItemEntity item, int offset, CancellationToken ct)
     {
-        var items = await _quoteRepo.GetLineItemsAsync(_quoteId);
-        var sorted = items.OrderBy(i => i.SortOrder).ToList();
-        var index = sorted.FindIndex(i => i.Id == item.Id);
-        if (index <= 0) return;
+        var ids = (await _quoteRepo.GetLineItemsAsync(_quoteId)).Select(i => i.Id).ToList();
+        var from = ids.IndexOf(item.Id);
+        var to = from + offset;
+        if (from < 0 || to < 0 || to >= ids.Count) return;
 
-        var prev = sorted[index - 1];
-        (prev.SortOrder, item.SortOrder) = (item.SortOrder, prev.SortOrder);
-        await _quoteRepo.SaveLineItemsBatchAsync(prev, item);
-        await LineItemsVersion.UpdateAsync(v => v + 1, ct);
-    }
-
-    public async ValueTask MoveLineItemDown(LineItemEntity item, CancellationToken ct)
-    {
-        var items = await _quoteRepo.GetLineItemsAsync(_quoteId);
-        var sorted = items.OrderBy(i => i.SortOrder).ToList();
-        var index = sorted.FindIndex(i => i.Id == item.Id);
-        if (index < 0 || index >= sorted.Count - 1) return;
-
-        var next = sorted[index + 1];
-        (next.SortOrder, item.SortOrder) = (item.SortOrder, next.SortOrder);
-        await _quoteRepo.SaveLineItemsBatchAsync(next, item);
+        (ids[from], ids[to]) = (ids[to], ids[from]);
+        await _quoteRepo.ReorderLineItemsAsync(_quoteId, ids);
         await LineItemsVersion.UpdateAsync(v => v + 1, ct);
     }
 

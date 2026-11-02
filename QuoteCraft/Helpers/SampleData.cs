@@ -80,7 +80,6 @@ public static class SampleData
             }
             await quotes.SaveAsync(quote);
 
-            var order = 0;
             foreach (var (description, price, quantity) in items)
             {
                 await quotes.SaveLineItemAsync(new LineItemEntity
@@ -89,7 +88,6 @@ public static class SampleData
                     Description = description,
                     UnitPrice = price,
                     Quantity = quantity,
-                    SortOrder = order++,
                 });
             }
         }

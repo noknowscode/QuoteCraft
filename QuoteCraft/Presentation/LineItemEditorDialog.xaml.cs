@@ -1,4 +1,4 @@
-using Microsoft.UI.Xaml.Media;
+using System.Globalization;
 
 namespace QuoteCraft.Presentation;
 
@@ -11,10 +11,15 @@ public sealed partial class LineItemEditorDialog : ContentDialog
         this.InitializeComponent();
         this.PrimaryButtonClick += OnPrimaryButtonClick;
         this.SecondaryButtonClick += OnSecondaryButtonClick;
+
+        // Prices in the business's currency, typed in the user's own number format.
+        UnitPriceBox.Header = $"Unit Price ({Money.Symbol(CurrencyFormatConverter.CurrencyCode)})";
+        UnitPriceBox.PlaceholderText = Money.FormatAmountInput(0m);
     }
 
     /// <summary>
-    /// The saved line item after the user clicks Save. Null if cancelled.
+    /// The line item after Save: its description, price and quantity, and its id when editing. Its place in the quote
+    /// is the repository's business (a new item goes last, an edited one stays put). Null if cancelled.
     /// </summary>
     public LineItemEntity? Result { get; private set; }
 
@@ -45,8 +50,8 @@ public sealed partial class LineItemEditorDialog : ContentDialog
         _editingItemId = item.Id;
         SecondaryButtonText = "Delete";
         DescriptionBox.Text = item.Description;
-        UnitPriceBox.Text = item.UnitPrice.ToString("F2");
-        QuantityBox.Text = item.Quantity.ToString();
+        UnitPriceBox.Text = Money.FormatAmountInput(item.UnitPrice);
+        QuantityBox.Text = item.Quantity.ToString(CultureInfo.CurrentCulture);
         Result = null;
         WasDeleted = false;
         UpdateLineTotal();
@@ -54,20 +59,21 @@ public sealed partial class LineItemEditorDialog : ContentDialog
 
     private void OnPrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
     {
-        var desc = DescriptionBox.Text?.Trim() ?? string.Empty;
-        if (string.IsNullOrWhiteSpace(desc))
+        var error = LineItemInput.TryRead(DescriptionBox.Text, UnitPriceBox.Text, QuantityBox.Text,
+            out var description, out var unitPrice, out var quantity);
+        if (error is not null)
         {
+            // Say what is wrong and keep the dialog open, rather than saving a guess.
+            ValidationText.Text = error;
+            ValidationText.Visibility = Visibility.Visible;
             args.Cancel = true;
             return;
         }
 
-        _ = decimal.TryParse(UnitPriceBox.Text, out var unitPrice);
-        if (!int.TryParse(QuantityBox.Text, out var quantity) || quantity < 1)
-            quantity = 1;
-
+        ValidationText.Visibility = Visibility.Collapsed;
         Result = new LineItemEntity
         {
-            Description = desc,
+            Description = description,
             UnitPrice = unitPrice,
             Quantity = quantity,
         };
@@ -84,14 +90,14 @@ public sealed partial class LineItemEditorDialog : ContentDialog
     private void MinusQty_Click(object sender, RoutedEventArgs e)
     {
         if (int.TryParse(QuantityBox.Text, out var qty) && qty > 1)
-            QuantityBox.Text = (qty - 1).ToString();
+            QuantityBox.Text = (qty - 1).ToString(CultureInfo.CurrentCulture);
         UpdateLineTotal();
     }
 
     private void PlusQty_Click(object sender, RoutedEventArgs e)
     {
         if (int.TryParse(QuantityBox.Text, out var qty))
-            QuantityBox.Text = (qty + 1).ToString();
+            QuantityBox.Text = (qty + 1).ToString(CultureInfo.CurrentCulture);
         else
             QuantityBox.Text = "1";
         UpdateLineTotal();
@@ -102,12 +108,14 @@ public sealed partial class LineItemEditorDialog : ContentDialog
         UpdateLineTotal();
     }
 
+    /// <summary>The running line total, or a dash while the price or quantity does not read.</summary>
     private void UpdateLineTotal()
     {
-        _ = double.TryParse(UnitPriceBox.Text, out var price);
-        if (!int.TryParse(QuantityBox.Text, out var qty) || qty < 1)
-            qty = 1;
-        LineTotalText.Text = $"${price * qty:F2}";
+        var price = 0m;
+        var priceReads = string.IsNullOrWhiteSpace(UnitPriceBox.Text) || Money.TryParseAmount(UnitPriceBox.Text, out price);
+        var quantityReads = int.TryParse(QuantityBox.Text, NumberStyles.None, CultureInfo.CurrentCulture, out var quantity) && quantity >= 1;
+        LineTotalText.Text = priceReads && quantityReads
+            ? Money.Format(Money.LineTotal(price, quantity), CurrencyFormatConverter.CurrencyCode)
+            : "—";
     }
-
 }
