@@ -9,7 +9,7 @@ public interface IShareService
     /// <summary>False on the heads without a PDF engine (Android, iOS, WebAssembly).</summary>
     bool CanExportPdf { get; }
 
-    Task ShareQuotePdfAsync(QuoteEntity quote);
+    /// <summary>Writes the quote's PDF and opens it. It changes nothing on the quote: sending is a separate step.</summary>
     Task GenerateAndDownloadPdfAsync(QuoteEntity quote);
     Task<string> GenerateShareLinkAsync(QuoteEntity quote);
     Task CopyShareLinkAsync(QuoteEntity quote);
@@ -39,12 +39,6 @@ public class ShareService : IShareService
     }
 
     public bool CanExportPdf => _pdfGenerator.IsSupported;
-
-    public async Task ShareQuotePdfAsync(QuoteEntity quote)
-    {
-        await GenerateAndDownloadPdfAsync(quote);
-        await _status.MarkSentAsync(quote.Id);
-    }
 
     public async Task GenerateAndDownloadPdfAsync(QuoteEntity quote)
     {

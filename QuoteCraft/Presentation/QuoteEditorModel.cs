@@ -220,7 +220,7 @@ public partial record QuoteEditorModel
         var quote = await _quoteRepo.GetByIdAsync(_quoteId);
         if (quote is null) return;
 
-        await _shareService.ShareQuotePdfAsync(quote);
+        await _shareService.GenerateAndDownloadPdfAsync(quote);
     }
 
     public async ValueTask CopyShareLink(CancellationToken ct)

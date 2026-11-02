@@ -254,8 +254,7 @@ public partial record DashboardModel
             var freshQuote = await _quoteRepo.GetByIdAsync(quote.Id);
             if (freshQuote is not null)
             {
-                await _shareService.ShareQuotePdfAsync(freshQuote);
-                await DetailVersion.UpdateAsync(v => v + 1, ct);
+                await _shareService.GenerateAndDownloadPdfAsync(freshQuote);
             }
         }
     }
