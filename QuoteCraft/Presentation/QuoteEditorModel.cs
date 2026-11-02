@@ -235,34 +235,6 @@ public partial record QuoteEditorModel
         }
     }
 
-    public async ValueTask CopyShareLink(CancellationToken ct)
-    {
-        await PersistEditsAsync();
-
-        var quote = await _quoteRepo.GetByIdAsync(_quoteId);
-        if (quote is null) return;
-
-        await _shareService.CopyShareLinkAsync(quote);
-    }
-
-    public async ValueTask SendShareLink(CancellationToken ct)
-    {
-        await PersistEditsAsync();
-
-        var quote = await _quoteRepo.GetByIdAsync(_quoteId);
-        if (quote is null) return;
-
-        var link = await _shareService.GenerateShareLinkAsync(quote);
-
-        // Open email with link
-        var subject = $"Quote #{quote.QuoteNumber} - {quote.Title}";
-        var body = $"Please review your quote at: {link}";
-        var mailto = $"mailto:{Uri.EscapeDataString(quote.ClientName ?? "")}?subject={Uri.EscapeDataString(subject)}&body={Uri.EscapeDataString(body)}";
-        await Windows.System.Launcher.LaunchUriAsync(new Uri(mailto));
-
-        await _status.MarkSentAsync(quote.Id);
-    }
-
     public async Task<bool> HasUnsavedChangesAsync()
     {
         return await Title != _initialTitle ||
