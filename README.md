@@ -8,13 +8,13 @@ QuoteCraft helps service professionals create, manage, and send quotes to client
 
 ## Features
 
-- **Quote Management** — Create, edit, duplicate, and track quotes with status indicators (Draft, Sent, Viewed, Accepted, Declined, Expired)
+- **Quote Management** — Create, edit, duplicate, and track quotes with status indicators (Draft, Sent, Viewed, Accepted, Declined, Expired); sent quotes expire after their validity period, with a reminder 3 days before, and an expired quote can be reopened and sent again
 - **Client Directory** — Maintain a searchable client database with contact details and quote history
 - **Service Catalog** — Organize services and materials into categories (Electrical, Plumbing, HVAC, etc.) with preset pricing
 - **PDF Generation** — Generate professional PDF quotes ready to send to clients (desktop and Windows apps; see [Platform notes](#platform-notes))
 - **Email Integration** — Send quotes directly to clients via email
 - **Dashboard Analytics** — At-a-glance metrics including monthly totals, send counts, and acceptance rates with sparkline charts
-- **Quote Editor** — Line-item editor with quantity, pricing, tax rate, markup, and custom footer support
+- **Quote Editor** — Line-item editor with quantity, pricing, tax rate, markup, and custom footer support; subtotal, tax and total as the PDF shows them, and the quote's status history
 - **Light, Dark or System theme** — Follows the system by default; choose Light or Dark in Settings (Appearance) or from the side rail's Theme menu, and the choice is remembered
 - **Responsive Layout** — Four layouts, from a 360 px phone to a wide desktop: bottom tabs and one pane below 800 px, the side rail from 800 px, list and detail side by side from 1080 px (see [Layouts](#layouts))
 - **Business Profile** — Configure company name, phone, email, address, logo, and default quote settings
@@ -48,7 +48,8 @@ QuoteCraft helps service professionals create, manage, and send quotes to client
 ├── Directory.Build.props
 ├── Directory.Packages.props
 ├── docs/                                # PRD, architecture, design and revenue-model briefs; production-readiness decisions
-├── QuoteCraft.Tests/                    # xUnit tests (quote numbering, feature gates, quote entity, Supabase config, relative dates, settings validation)
+├── QuoteCraft.Tests/                    # xUnit tests: money rules, quote numbering and migrations, status and expiry, line items,
+│                                        # client links, concurrent database access (real temporary databases), feature gates, …
 └── QuoteCraft/
     ├── QuoteCraft.csproj
     ├── App.xaml / App.xaml.cs          # App shell, DI, routing, styles

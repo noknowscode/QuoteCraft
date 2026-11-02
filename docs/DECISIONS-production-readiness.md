@@ -192,7 +192,7 @@ clients it pushes now) is not a contained change, and none of it could be run ag
   it, so they look changed again and re-push every 30 seconds), `ReadClient` never reads `synced_at`, and pulled rows
   are saved with a new `UpdatedAt`. A sync pass should mark rows synced with their own `UpdatedAt`, save pulled rows
   as they are, and push only rows whose `updated_at` is later than `synced_at`.
-- Quote numbers: each device has its own per-year counter, so two devices can hand out the same number; the
+- Quote numbers: each device has its own per-year counter (D10), so two devices can hand out the same number; the
   unique index would refuse the second on pull. Synced numbering needs a device part or a server-side counter.
 
 Token: the refresh token stays in a plain file in the app's data folder. The app uses no platform secure store
@@ -201,3 +201,47 @@ Token: the refresh token stays in a plain file in the app's data folder. The app
 What stays: sign-in, plans and billing work as before when a project is configured (D3). `SyncService`, the
 connectivity check and the Supabase tables are kept for that pass.
 
+
+## D9. Money: decimal amounts, tax rounded once to the cent, rates as entered
+
+The rules live in `Helpers/Money` and nowhere else; the UI converter, the editor's totals, the dashboard and the PDF all
+go through them:
+- Amounts are `decimal`. Unit prices are whole cents: the item and catalog dialogs refuse a price with more than two
+  decimals rather than round it. A line total is unit price × quantity.
+- Tax is subtotal × rate, rounded once, to the cent, half away from zero (10.00 at 8.25 % is 0.83; .NET's default,
+  half to even, would give 0.82). The total is subtotal + tax.
+- Tax and markup rates are kept as typed (8.25, 9.975) and shown in full. They were shown with one decimal and read back
+  on every save, so 8.25 % became 8.3 %.
+- Typed numbers are read in the user's culture ("8,25" in German); amounts are shown in the convention of the
+  business's currency (USD as "$1,250.00", EUR as "1 250,00 €"), on screen and in the PDF. A thousands separator must
+  group by three, so "1,5" in English is refused instead of read as 15; a currency symbol in a price is ignored.
+
+Tradeoff: amounts and rates are still stored as SQLite `REAL`. Converting a stored double back to `decimal` keeps 15
+significant digits, which is exact for any price, rate or total this app handles (tested with 8.25 and 9.975). Moving
+to integer cents or text would be a migration for every money column and the remote schema, with no visible gain now.
+
+## D10. Quote numbers: a per-year counter that never goes back
+
+`quote_counters` holds one row per year; `NextQuoteNumberAsync` takes the next number in a transaction and skips any
+number a quote already has, and a unique index on `quote_number` refuses a duplicate. Migration 6 seeded the counters
+from the highest number each year had and renumbered quotes that shared a number (the oldest kept it).
+- A number taken and not saved (the New Quote dialog creates the quote at once, so this is rare) leaves a gap. Gaps are
+  fine; reuse is not, since PDF exports are named after the number.
+- Deleted quotes keep their numbers (they are soft-deleted), so their old PDFs stay unambiguous.
+- The year is the UTC year at creation. The counter is per device; synced numbering needs more (D8).
+
+## D11. Smaller round-2 changes
+
+- **Status rules** (`QuoteStatusService`, tested): only Sent and Viewed quotes expire; sending makes the quote valid for
+  the profile's number of days from today (or keeps a later date); Reopen turns an expired quote into a Draft with a
+  fresh validity period (a banner on the expired quote offers it); Send by email leaves Accepted and Declined alone;
+  Export PDF changes no status. `QuoteExpiryService` runs while the app runs (at start, then every 5 minutes) and adds
+  one 3-day reminder per quote and validity period.
+- **Removed:** share links and SMS sharing (they need the quote on the server, and sync is off: D8), and the routed
+  ClientEditor and CatalogEditor pages (nothing reached them; clients and catalog items are edited in dialogs).
+  Migration 5, which rewrote quotes found by title, is a no-op.
+- **Data access:** one pooled connection per operation instead of one shared connection, so MVUX's background reads
+  and the pages' writes no longer interleave on one connection (a concurrency test fails on the old code).
+- **Errors:** page handlers report failures through `ErrorReporter` (logged, and a dialog says what did not happen);
+  failed bound commands show on the page (a banner on Quotes, a message in the editor); `App` logs what nothing else
+  caught and keeps running; a startup failure shows its message instead of a blank window.
