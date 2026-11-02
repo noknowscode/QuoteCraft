@@ -8,6 +8,10 @@
       xmlns:mvux="using:Uno.Extensions.Reactive.UI"
       Background="{ThemeResource BackgroundBrush}">
 
+  <!--
+    Shell per category: Narrow and Normal (below 800) put the four destinations in a bottom tab bar; Wide and Widest
+    show the side rail with labels, notifications, the theme menu and the collapse toggle.
+  -->
   <Grid uen:Region.Attached="True">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
@@ -24,14 +28,15 @@
     <Border x:Name="OfflineBanner"
             Grid.Row="0" Grid.ColumnSpan="2"
             Background="{ThemeResource ErrorContainerBrush}"
-            Padding="12,8"
+            Padding="{StaticResource Inset12x8}"
             Visibility="Collapsed">
-      <StackPanel Orientation="Horizontal" Spacing="8"
+      <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}"
                   HorizontalAlignment="Center" VerticalAlignment="Center">
-        <FontIcon Glyph="&#xEB5E;" FontSize="14"
+        <FontIcon Glyph="&#xEB5E;" FontSize="{StaticResource IconSizeMd}"
                   Foreground="{ThemeResource OnErrorContainerBrush}" />
         <TextBlock Text="You're offline. Quotes will sync when connected."
                    Style="{StaticResource BodySmall}"
+                   TextWrapping="Wrap"
                    Foreground="{ThemeResource OnErrorContainerBrush}" />
       </StackPanel>
     </Border>
@@ -55,7 +60,7 @@
       </Grid.RowDefinitions>
 
       <!-- Header -->
-      <Grid Padding="16,0" Height="64"
+      <Grid Padding="{StaticResource InsetX16}" Height="{StaticResource PageHeaderHeight}"
             Background="{ThemeResource SurfaceBrush}"
             BorderBrush="{ThemeResource OutlineVariantBrush}"
             BorderThickness="0,0,0,1">
@@ -68,37 +73,35 @@
         <Button x:Name="NotifBackButton"
                 Click="NotifBack_Click"
                 Style="{StaticResource MaterialTextButtonStyle}"
-                AutomationProperties.Name="Go back"
+                MinWidth="{StaticResource TouchTarget}" MinHeight="{StaticResource TouchTarget}"
+                AutomationProperties.Name="Close notifications"
+                ToolTipService.ToolTip="Close notifications"
                 VerticalAlignment="Center">
-          <FontIcon Glyph="&#xE72B;" FontSize="18" />
+          <FontIcon Glyph="&#xE72B;" FontSize="{StaticResource IconSizeXl}" />
         </Button>
 
         <TextBlock Grid.Column="1" Text="Notifications"
-                   Style="{StaticResource TitleLarge}"
-                   FontWeight="Bold"
+                   Style="{StaticResource TitleLargeBold}"
                    VerticalAlignment="Center"
-                   Margin="8,0,0,0" />
+                   Margin="{StaticResource GapStart8}" />
 
         <Button Grid.Column="2"
                 x:Name="MarkAllReadButton"
                 Click="MarkAllRead_Click"
                 Style="{StaticResource MaterialTextButtonStyle}"
-                AutomationProperties.Name="Mark all as read"
-                VerticalAlignment="Center">
-          <TextBlock Text="Mark all read"
-                     Style="{StaticResource BodySmall}"
-                     Foreground="{ThemeResource PrimaryBrush}" />
-        </Button>
+                MinHeight="{StaticResource TouchTarget}"
+                Content="Mark all read"
+                VerticalAlignment="Center" />
       </Grid>
 
       <!-- Notification List -->
       <ListView x:Name="NotificationsList"
                 Grid.Row="1"
                 SelectionMode="None"
-                Padding="0,8">
+                Padding="{StaticResource InsetY8}">
         <ListView.ItemTemplate>
           <DataTemplate>
-            <Grid Padding="20,16" Margin="0,0,0,1"
+            <Grid Padding="{StaticResource Inset20x16}" Margin="{StaticResource RowSeparatorGap}"
                   Background="{ThemeResource SurfaceBrush}">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
@@ -106,15 +109,16 @@
                 <ColumnDefinition Width="Auto" />
               </Grid.ColumnDefinitions>
 
-              <Ellipse Width="8" Height="8"
+              <!-- Unread: a dot plus the bold title, so the state is not carried by colour alone -->
+              <Ellipse Width="{StaticResource DotSize}" Height="{StaticResource DotSize}"
                        Fill="{ThemeResource PrimaryBrush}"
-                       VerticalAlignment="Top" Margin="0,6,12,0"
+                       VerticalAlignment="Top" Margin="{StaticResource DotMargin}"
                        Visibility="{Binding IsRead, Converter={StaticResource InverseBoolConverter}}" />
 
-              <StackPanel Grid.Column="1" Spacing="4">
+              <StackPanel Grid.Column="1" Spacing="{StaticResource Space4}">
                 <TextBlock Text="{Binding Title}"
-                           Style="{StaticResource BodyMedium}"
-                           FontWeight="SemiBold" />
+                           Style="{StaticResource BodyMediumSemiBold}"
+                           TextWrapping="Wrap" />
                 <TextBlock Text="{Binding Message}"
                            Style="{StaticResource BodySmall}"
                            Foreground="{ThemeResource OnSurfaceVariantBrush}"
@@ -125,6 +129,7 @@
                          Text="{Binding CreatedAt, Converter={StaticResource RelativeDateConverter}}"
                          Style="{StaticResource LabelSmall}"
                          Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                         Margin="{StaticResource GapStart8}"
                          VerticalAlignment="Top" />
             </Grid>
           </DataTemplate>
@@ -135,23 +140,42 @@
       <StackPanel x:Name="NotifEmptyState"
                   Grid.Row="1"
                   HorizontalAlignment="Center" VerticalAlignment="Center"
-                  Spacing="12" Padding="32"
+                  Spacing="{StaticResource Space12}" Padding="{StaticResource Inset32}"
                   Visibility="Collapsed">
-        <FontIcon Glyph="&#xEA8F;" FontSize="48"
-                  Foreground="{ThemeResource OnSurfaceVariantBrush}" Opacity="0.5"
+        <FontIcon Glyph="&#xEA8F;" FontSize="{StaticResource IconSizeHero}"
+                  Foreground="{ThemeResource OnSurfaceVariantBrush}"
                   HorizontalAlignment="Center" />
         <TextBlock Text="No notifications yet"
                    Style="{StaticResource BodyMedium}"
                    Foreground="{ThemeResource OnSurfaceVariantBrush}"
                    HorizontalAlignment="Center" />
       </StackPanel>
+
+      <!-- Error state -->
+      <StackPanel x:Name="NotifErrorState"
+                  Grid.Row="1"
+                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                  Spacing="{StaticResource Space12}" Padding="{StaticResource Inset32}"
+                  Visibility="Collapsed">
+        <FontIcon Glyph="&#xE783;" FontSize="{StaticResource IconSizeHero}"
+                  Foreground="{ThemeResource ErrorBrush}"
+                  HorizontalAlignment="Center" />
+        <TextBlock Text="Notifications could not be loaded."
+                   Style="{StaticResource BodyMedium}"
+                   Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                   HorizontalAlignment="Center" />
+        <Button Content="Retry"
+                Click="NotifRetry_Click"
+                Style="{StaticResource MaterialOutlinedButtonStyle}"
+                HorizontalAlignment="Center" />
+      </StackPanel>
     </Grid>
 
-    <!-- Bottom TabBar (narrow/normal screens) -->
+    <!-- Bottom TabBar (Narrow and Normal) -->
     <utu:TabBar x:Name="BottomTabs"
                 Grid.Row="2"
                 Grid.Column="1"
-                Height="48"
+                Height="{StaticResource BottomTabBarHeight}"
                 Visibility="{utu:Responsive Normal=Visible, Wide=Collapsed}"
                 uen:Region.Attached="True"
                 Style="{StaticResource BottomTabBarStyle}">
@@ -192,12 +216,12 @@
       </utu:TabBarItem>
     </utu:TabBar>
 
-    <!-- Side rail (wide/desktop screens) -->
+    <!-- Side rail (Wide and Widest) -->
     <Grid x:Name="SideRail" ColumnDefinitions="*" Grid.RowSpan="3"
           BorderBrush="{ThemeResource OutlineVariantBrush}"
           BorderThickness="0,0,1,0"
           Visibility="{utu:Responsive Normal=Collapsed, Wide=Visible}"
-          Width="156">
+          Width="{StaticResource RailWidth}">
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
@@ -207,89 +231,92 @@
 
       <!-- Brand Header -->
       <Border Background="{StaticResource AppBarBackgroundBrush}"
-              Height="61" HorizontalAlignment="Stretch">
-        <Grid>
-          <StackPanel x:Name="BrandFull" Orientation="Horizontal" Spacing="8"
-                      HorizontalAlignment="Center" VerticalAlignment="Center">
-            <TextBlock Text="QC"
-                       Foreground="{StaticResource AppBarForegroundBrush}"
-                       FontWeight="Bold"
-                       FontSize="18" />
-            <TextBlock x:Name="BrandLabel" Text="QuoteCraft"
-                       Foreground="{StaticResource AppBarForegroundBrush}"
-                       FontWeight="Medium"
-                       FontSize="13"
-                       VerticalAlignment="Center"
-                       Opacity="0.85" />
-          </StackPanel>
-        </Grid>
+              Height="{StaticResource RailBrandHeight}" HorizontalAlignment="Stretch">
+        <StackPanel x:Name="BrandFull" Orientation="Horizontal" Spacing="{StaticResource Space8}"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    AutomationProperties.Name="QuoteCraft">
+          <TextBlock Text="QC"
+                     Foreground="{StaticResource AppBarForegroundBrush}"
+                     Style="{StaticResource TitleMediumBold}" />
+          <TextBlock x:Name="BrandLabel" Text="QuoteCraft"
+                     Foreground="{StaticResource AppBarForegroundBrush}"
+                     Style="{StaticResource LabelLarge}"
+                     VerticalAlignment="Center" />
+        </StackPanel>
       </Border>
 
-      <!-- 3px Amber accent bar -->
-      <Border Grid.Row="1" Height="3"
+      <!-- Amber accent bar -->
+      <Border Grid.Row="1" Height="{StaticResource AccentBarHeight}"
               Background="{StaticResource AppBarAccentBrush}" />
 
       <!-- Tab items - horizontal icon + label, stacked vertically -->
-      <utu:TabBar HorizontalAlignment="Stretch" Grid.Row="2"
+      <utu:TabBar x:Name="SideTabs"
+                  HorizontalAlignment="Stretch" Grid.Row="2"
                   VerticalAlignment="Top"
-                  Margin="0,8,0,0"
+                  Margin="{StaticResource GapTop8}"
                   uen:Region.Attached="True"
                   Style="{StaticResource VerticalTabBarStyle}">
         <utu:TabBar.ItemsPanel>
           <ItemsPanelTemplate>
-            <StackPanel Orientation="Vertical" Spacing="2" />
+            <StackPanel Orientation="Vertical" Spacing="{StaticResource Space2}" />
           </ItemsPanelTemplate>
         </utu:TabBar.ItemsPanel>
 
         <utu:TabBarItem uen:Region.Name="Dashboard"
                         Content="Quotes"
+                        AutomationProperties.Name="Quotes"
                         IsSelectable="True"
                         Style="{StaticResource SideNavTabBarItemStyle}">
           <utu:TabBarItem.Icon>
-            <FontIcon Glyph="&#xE8A5;" FontSize="18" />
+            <FontIcon Glyph="&#xE8A5;" FontSize="{StaticResource IconSizeXl}" />
           </utu:TabBarItem.Icon>
         </utu:TabBarItem>
 
         <utu:TabBarItem uen:Region.Name="Clients"
                         Content="Clients"
+                        AutomationProperties.Name="Clients"
                         IsSelectable="True"
                         Style="{StaticResource SideNavTabBarItemStyle}">
           <utu:TabBarItem.Icon>
-            <FontIcon Glyph="&#xE77B;" FontSize="18" />
+            <FontIcon Glyph="&#xE77B;" FontSize="{StaticResource IconSizeXl}" />
           </utu:TabBarItem.Icon>
         </utu:TabBarItem>
 
         <utu:TabBarItem uen:Region.Name="Catalog"
                         Content="Catalog"
+                        AutomationProperties.Name="Catalog"
                         IsSelectable="True"
                         Style="{StaticResource SideNavTabBarItemStyle}">
           <utu:TabBarItem.Icon>
-            <FontIcon Glyph="&#xE7BF;" FontSize="18" />
+            <FontIcon Glyph="&#xE7BF;" FontSize="{StaticResource IconSizeXl}" />
           </utu:TabBarItem.Icon>
         </utu:TabBarItem>
 
         <utu:TabBarItem uen:Region.Name="Settings"
                         Content="Settings"
+                        AutomationProperties.Name="Settings"
                         IsSelectable="True"
                         Style="{StaticResource SideNavTabBarItemStyle}">
           <utu:TabBarItem.Icon>
-            <FontIcon Glyph="&#xE115;" FontSize="18" />
+            <FontIcon Glyph="&#xE115;" FontSize="{StaticResource IconSizeXl}" />
           </utu:TabBarItem.Icon>
         </utu:TabBarItem>
       </utu:TabBar>
 
       <!-- Bottom actions: Notifications, Theme, Collapse -->
-      <StackPanel Grid.Row="3" Spacing="0">
-        <Border Height="1" Background="{ThemeResource OutlineVariantBrush}" Margin="12,0" />
+      <StackPanel Grid.Row="3">
+        <Border Height="{StaticResource HairlineThickness}" Background="{ThemeResource OutlineVariantBrush}" Margin="{StaticResource InsetX12}" />
         <Button Click="Notifications_Click"
-                Margin="6,8,6,0"
+                Margin="{StaticResource RailActionMargin}"
+                MinHeight="{StaticResource TouchTarget}"
                 HorizontalAlignment="Stretch"
                 Style="{StaticResource MaterialTextButtonStyle}"
-                AutomationProperties.Name="Open notifications">
+                AutomationProperties.Name="Notifications"
+                ToolTipService.ToolTip="Notifications">
           <Grid>
-            <StackPanel Orientation="Horizontal" Spacing="8"
+            <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}"
                         HorizontalAlignment="Center">
-              <FontIcon Glyph="&#xEA8F;" FontSize="16" />
+              <FontIcon Glyph="&#xEA8F;" FontSize="{StaticResource IconSizeLg}" />
               <TextBlock x:Name="NotifLabel" Text="Notifications" Style="{StaticResource BodySmall}" />
             </StackPanel>
             <!-- Unread badge -->
@@ -298,8 +325,8 @@
                            Margin="4,-4,0,0">
               <DataTemplate>
                 <Border Background="{ThemeResource ErrorBrush}"
-                        CornerRadius="8" MinWidth="16" Height="16"
-                        Padding="4,0"
+                        CornerRadius="{StaticResource RadiusMd}" MinWidth="{StaticResource BadgeSize}" Height="{StaticResource BadgeSize}"
+                        Padding="{StaticResource InsetX4}"
                         Visibility="{Binding Data, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert}"
                         HorizontalAlignment="Left">
                   <TextBlock Text="{Binding Data}"
@@ -311,29 +338,39 @@
             </mvux:FeedView>
           </Grid>
         </Button>
-        <Button x:Name="ThemeToggle"
-                Margin="6,8,6,0"
+        <Button x:Name="ThemeButton"
+                Margin="{StaticResource RailActionMargin}"
+                MinHeight="{StaticResource TouchTarget}"
                 HorizontalAlignment="Stretch"
-                Click="ThemeToggle_Click"
                 Style="{StaticResource MaterialTextButtonStyle}"
-                AutomationProperties.Name="Toggle dark mode">
-          <StackPanel Orientation="Horizontal" Spacing="8"
+                AutomationProperties.Name="Theme"
+                ToolTipService.ToolTip="Theme">
+          <Button.Flyout>
+            <MenuFlyout x:Name="ThemeMenu" Opening="ThemeMenu_Opening" Placement="RightEdgeAlignedBottom">
+              <RadioMenuFlyoutItem x:Name="ThemeSystemItem" Text="System default" GroupName="AppTheme" Tag="System" Click="ThemeItem_Click" />
+              <RadioMenuFlyoutItem x:Name="ThemeLightItem" Text="Light" GroupName="AppTheme" Tag="Light" Click="ThemeItem_Click" />
+              <RadioMenuFlyoutItem x:Name="ThemeDarkItem" Text="Dark" GroupName="AppTheme" Tag="Dark" Click="ThemeItem_Click" />
+            </MenuFlyout>
+          </Button.Flyout>
+          <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}"
                       HorizontalAlignment="Center">
-            <FontIcon x:Name="ThemeIcon" Glyph="&#xE708;" FontSize="16" />
-            <TextBlock x:Name="ThemeLabel" Text="Dark Mode" Style="{StaticResource BodySmall}" />
+            <FontIcon x:Name="ThemeIcon" Glyph="&#xE793;" FontSize="{StaticResource IconSizeLg}" />
+            <TextBlock x:Name="ThemeLabel" Text="Theme" Style="{StaticResource BodySmall}" />
           </StackPanel>
         </Button>
 
         <!-- Collapse / Expand toggle -->
         <Button x:Name="CollapseToggle"
-                Margin="6,4,6,12"
+                Margin="{StaticResource RailLastActionMargin}"
+                MinHeight="{StaticResource TouchTarget}"
                 HorizontalAlignment="Stretch"
                 Click="CollapseToggle_Click"
                 Style="{StaticResource MaterialTextButtonStyle}"
-                AutomationProperties.Name="Collapse sidebar">
-          <StackPanel Orientation="Horizontal" Spacing="8"
+                AutomationProperties.Name="Collapse sidebar"
+                ToolTipService.ToolTip="Collapse sidebar">
+          <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}"
                       HorizontalAlignment="Center">
-            <FontIcon x:Name="CollapseIcon" Glyph="&#xE76B;" FontSize="14" />
+            <FontIcon x:Name="CollapseIcon" Glyph="&#xE76B;" FontSize="{StaticResource IconSizeMd}" />
             <TextBlock x:Name="CollapseLabel" Text="Collapse" Style="{StaticResource BodySmall}" />
           </StackPanel>
         </Button>

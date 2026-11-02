@@ -1,3 +1,5 @@
+using Microsoft.UI.Xaml.Automation;
+using Uno.Extensions.Toolkit;
 using Uno.Toolkit.UI;
 using QuoteCraft.Helpers;
 using QuoteCraft.Services;
@@ -15,6 +17,26 @@ public sealed partial class MainPage : Page
         this.InitializeComponent();
         this.Loaded += MainPage_Loaded;
         this.Unloaded += MainPage_Unloaded;
+        this.ActualThemeChanged += (_, _) => UpdateThemeToggleVisuals();
+
+        foreach (var item in BottomTabs.Items.Concat(SideTabs.Items).OfType<TabBarItem>())
+        {
+            item.Click += TabItem_Click;
+        }
+    }
+
+    /// <summary>
+    /// A tab that is already selected does not navigate again, so after the quote editor (which is not a tab) the
+    /// Quotes tab did nothing. Tapping the selected tab now opens its page.
+    /// </summary>
+    private async void TabItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is TabBarItem { IsSelected: true } item
+            && Uno.Extensions.Navigation.UI.Region.GetName(item) is { Length: > 0 } route
+            && this.Navigator() is { } navigator)
+        {
+            await navigator.NavigateRouteAsync(item, route);
+        }
     }
 
     private void MainPage_Loaded(object sender, RoutedEventArgs e)
@@ -55,22 +77,41 @@ public sealed partial class MainPage : Page
         });
     }
 
-    private void ThemeToggle_Click(object sender, RoutedEventArgs e)
-    {
-        if (XamlRoot is not { } root) return;
+    // --- Theme: System (the default), Light or Dark, saved by the theme service and restored at launch ---
 
-        var isDark = SystemThemeHelper.IsRootInDarkMode(root);
-        SystemThemeHelper.SetRootTheme(root, !isDark);
+    private IThemeService? ThemeService => this.FindServiceProvider()?.GetService<IThemeService>();
+
+    private void ThemeMenu_Opening(object? sender, object e)
+    {
+        var theme = ThemeService?.Theme ?? AppTheme.System;
+        ThemeSystemItem.IsChecked = theme == AppTheme.System;
+        ThemeLightItem.IsChecked = theme == AppTheme.Light;
+        ThemeDarkItem.IsChecked = theme == AppTheme.Dark;
+    }
+
+    private async void ThemeItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement { Tag: string tag } || ThemeService is not { } service)
+        {
+            return;
+        }
+
+        await service.SetThemeAsync(Enum.Parse<AppTheme>(tag));
         UpdateThemeToggleVisuals();
     }
 
     private void UpdateThemeToggleVisuals()
     {
-        if (XamlRoot is not { } root) return;
-
-        var isDark = SystemThemeHelper.IsRootInDarkMode(root);
-        ThemeIcon.Glyph = isDark ? "\uE706" : "\uE708";
-        ThemeLabel.Text = isDark ? "Light Mode" : "Dark Mode";
+        var theme = ThemeService?.Theme ?? AppTheme.System;
+        // The label names the choice, so the button reads the same to a screen reader and on screen.
+        ThemeLabel.Text = theme switch
+        {
+            AppTheme.Light => "Light theme",
+            AppTheme.Dark => "Dark theme",
+            _ => "System theme",
+        };
+        ThemeIcon.Glyph = ActualTheme == ElementTheme.Dark ? "\uE708" : "\uE706";
+        AutomationProperties.SetName(ThemeButton, $"Theme: {ThemeLabel.Text}");
     }
 
     // --- Notifications overlay ---
@@ -95,11 +136,26 @@ public sealed partial class MainPage : Page
         }
     }
 
+    private async void NotifRetry_Click(object sender, RoutedEventArgs e) => await LoadNotificationsAsync();
+
     private async Task LoadNotificationsAsync()
     {
         if (_notificationService is null) return;
 
-        var notifications = await _notificationService.GetAllAsync();
+        List<NotificationEntity> notifications;
+        try
+        {
+            notifications = await _notificationService.GetAllAsync();
+        }
+        catch (Exception)
+        {
+            NotificationsList.Visibility = Visibility.Collapsed;
+            NotifEmptyState.Visibility = Visibility.Collapsed;
+            NotifErrorState.Visibility = Visibility.Visible;
+            return;
+        }
+
+        NotifErrorState.Visibility = Visibility.Collapsed;
         if (notifications.Count == 0)
         {
             NotificationsList.Visibility = Visibility.Collapsed;
@@ -122,12 +178,14 @@ public sealed partial class MainPage : Page
         if (_isSideRailCollapsed)
         {
             // Collapse: icons only
-            SideRail.Width = 56;
+            SideRail.Width = (double)Application.Current.Resources["RailCollapsedWidth"];
             BrandLabel.Visibility = Visibility.Collapsed;
             NotifLabel.Visibility = Visibility.Collapsed;
             ThemeLabel.Visibility = Visibility.Collapsed;
             CollapseLabel.Visibility = Visibility.Collapsed;
             CollapseIcon.Glyph = "\uE76C"; // ChevronRight
+            AutomationProperties.SetName(CollapseToggle, "Expand sidebar");
+            ToolTipService.SetToolTip(CollapseToggle, "Expand sidebar");
 
             // Hide labels on tab bar items via visual tree
             HideTabBarItemLabels(true);
@@ -135,12 +193,14 @@ public sealed partial class MainPage : Page
         else
         {
             // Expand: icons + labels
-            SideRail.Width = 156;
+            SideRail.Width = (double)Application.Current.Resources["RailWidth"];
             BrandLabel.Visibility = Visibility.Visible;
             NotifLabel.Visibility = Visibility.Visible;
             ThemeLabel.Visibility = Visibility.Visible;
             CollapseLabel.Visibility = Visibility.Visible;
             CollapseIcon.Glyph = "\uE76B"; // ChevronLeft
+            AutomationProperties.SetName(CollapseToggle, "Collapse sidebar");
+            ToolTipService.SetToolTip(CollapseToggle, "Collapse sidebar");
 
             HideTabBarItemLabels(false);
         }
