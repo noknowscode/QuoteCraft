@@ -11,7 +11,10 @@ public partial class App : Application
     /// </summary>
     public App()
     {
+#if HAS_UNO
+        // Uno-only: WinAppSDK has no FeatureConfiguration and takes DM Sans from the theme's DefaultFontFamily alone.
         Uno.UI.FeatureConfiguration.Font.DefaultTextFontFamily = "ms-appx:///Assets/Fonts/DMSans-Regular.ttf#DM Sans";
+#endif
         this.InitializeComponent();
     }
 
