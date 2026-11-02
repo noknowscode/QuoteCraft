@@ -241,6 +241,19 @@ public partial record DashboardModel
         await IsPreviewMode.UpdateAsync(_ => false, ct);
     }
 
+    /// <summary>One-pane layouts (below 1080): close the detail and show the list again.</summary>
+    public async ValueTask BackToList(CancellationToken ct)
+    {
+        await IsPreviewMode.UpdateAsync(_ => false, ct);
+        await SelectedQuote.UpdateAsync(_ => null!, ct);
+    }
+
+    /// <summary>Plans and the upgrade live in Settings.</summary>
+    public async ValueTask OpenSettings(CancellationToken ct)
+    {
+        await _navigator.NavigateRouteAsync(this, "Settings", cancellation: ct);
+    }
+
     public async ValueTask DownloadPdf(CancellationToken ct)
     {
         var quote = await SelectedQuote;

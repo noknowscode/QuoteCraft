@@ -8,9 +8,6 @@ public sealed partial class DashboardPage : Page
     private Border? _selectedQuoteCard;
     private Uno.Toolkit.UI.Chip[] _filterChips = [];
 
-    private static SolidColorBrush AlternateRowBrush =>
-        (SolidColorBrush)Application.Current.Resources["AlternateRowBrush"];
-
     public static readonly DependencyProperty IsEditModeProperty =
         DependencyProperty.Register(
             nameof(IsEditMode), typeof(bool), typeof(DashboardPage),
@@ -74,22 +71,29 @@ public sealed partial class DashboardPage : Page
     {
         if (sender is Border tappedCard)
         {
-            IsEditMode = false;
-
-            // Clear previous selection visual
-            if (_selectedQuoteCard is not null)
-            {
-                _selectedQuoteCard.Background = (SolidColorBrush)Application.Current.Resources["SurfaceBrush"];
-                _selectedQuoteCard.BorderBrush = (SolidColorBrush)Application.Current.Resources["OutlineVariantBrush"];
-            }
-
-            // Highlight new selection
-            tappedCard.Background = (SolidColorBrush)Application.Current.Resources["PrimaryContainerBrush"];
-            tappedCard.BorderBrush = (SolidColorBrush)Application.Current.Resources["PrimaryBrush"];
-            _selectedQuoteCard = tappedCard;
-
+            SelectCard(tappedCard);
             // Model command is invoked via CommandExtensions.Command on the ItemsRepeater
         }
+    }
+
+    // Enter or Space on a focused card: InteractionHelper runs OpenQuote; this marks the card selected.
+    private void QuoteCard_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (sender is Border card && e.Key is Windows.System.VirtualKey.Enter or Windows.System.VirtualKey.Space)
+        {
+            SelectCard(card);
+        }
+    }
+
+    private void SelectCard(Border card)
+    {
+        IsEditMode = false;
+        if (_selectedQuoteCard is not null)
+        {
+            InteractionHelper.SetIsSelected(_selectedQuoteCard, false);
+        }
+        InteractionHelper.SetIsSelected(card, true);
+        _selectedQuoteCard = card;
     }
 
     // -- Inline Edit ------------------------------------------------------------
@@ -131,20 +135,12 @@ public sealed partial class DashboardPage : Page
 
     // -- Alternate Row Styling --------------------------------------------------
 
+    // The stripe's colour is a ThemeResource in XAML; only its visibility (odd rows) is set here.
     private void LineItems_ElementPrepared(Microsoft.UI.Xaml.Controls.ItemsRepeater sender, Microsoft.UI.Xaml.Controls.ItemsRepeaterElementPreparedEventArgs args)
     {
-        if (args.Element is FrameworkElement element)
+        if (args.Element is Panel { Children.Count: > 0 } row && row.Children[0] is Border { Name: "Stripe" } stripe)
         {
-            if (args.Index % 2 == 1)
-            {
-                if (element is Panel panel) panel.Background = AlternateRowBrush;
-                else if (element is Border border) border.Background = AlternateRowBrush;
-            }
-            else
-            {
-                if (element is Panel panel) panel.Background = null;
-                else if (element is Border border) border.Background = null;
-            }
+            stripe.Visibility = args.Index % 2 == 1 ? Visibility.Visible : Visibility.Collapsed;
         }
     }
 
@@ -203,7 +199,14 @@ public sealed partial class DashboardPage : Page
                 featureGate.GetUpgradeMessage("quotes"),
                 closeButtonText: "OK",
                 primaryButtonText: "Upgrade");
-            await limitDialog.ShowAsync();
+            if (await limitDialog.ShowAsync() == ContentDialogResult.Primary)
+            {
+                // Plans and the upgrade live in Settings.
+                if (this.Navigator() is { } navigator)
+                {
+                    await navigator.NavigateRouteAsync(this, "Settings");
+                }
+            }
             return;
         }
 
@@ -222,6 +225,7 @@ public sealed partial class DashboardPage : Page
         {
             Header = "Client Name (optional)",
             PlaceholderText = "Start typing a client name...",
+            TextBoxStyle = (Style)Application.Current.Resources["MaterialOutlinedTextBoxStyle"],
         };
         clientBox.TextChanged += (s, args) =>
         {
@@ -238,9 +242,12 @@ public sealed partial class DashboardPage : Page
             s.Text = args.SelectedItem as string ?? string.Empty;
         };
 
-        var fieldsPanel = new StackPanel { Spacing = 16 };
+        var validation = DialogHelper.BuildValidationText(this);
+
+        var fieldsPanel = new StackPanel { Spacing = (double)Application.Current.Resources["Space16"] };
         fieldsPanel.Children.Add(titleBox);
         fieldsPanel.Children.Add(clientBox);
+        fieldsPanel.Children.Add(validation);
 
         var dialog = Helpers.DialogHelper.BuildBannerDialogWithContent(
             this.XamlRoot,
@@ -256,6 +263,7 @@ public sealed partial class DashboardPage : Page
             var title = titleBox.Text?.Trim() ?? string.Empty;
             if (string.IsNullOrWhiteSpace(title))
             {
+                DialogHelper.ShowValidation(validation, "Enter a title for the quote.");
                 args.Cancel = true;
                 return;
             }
@@ -346,24 +354,24 @@ public sealed partial class DashboardPage : Page
             Text = $"Hi {freshQuote.ClientName ?? "there"},\n\nPlease find attached quote {freshQuote.QuoteNumber} for \"{freshQuote.Title}\".\n\nThe quote is valid until {freshQuote.ValidUntil?.ToString("MMMM d, yyyy") ?? "further notice"}.\n\nPlease don't hesitate to reach out with any questions.\n\nBest regards,\n{businessName}",
             AcceptsReturn = true,
             TextWrapping = TextWrapping.Wrap,
-            MinHeight = 140,
+            MinHeight = (double)Application.Current.Resources["MessageMinHeight"],
         };
         var infoBanner = new Border
         {
-            Background = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["TertiaryContainerBrush"],
-            CornerRadius = new CornerRadius(8),
-            Padding = new Thickness(12, 8, 12, 8),
+            Background = ThemeResources.GetBrush(this, "TertiaryContainerBrush"),
+            CornerRadius = (CornerRadius)Application.Current.Resources["RadiusMd"],
+            Padding = (Thickness)Application.Current.Resources["Inset12x8"],
             Child = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
-                Spacing = 8,
+                Spacing = (double)Application.Current.Resources["Space8"],
                 Children =
                 {
                     new FontIcon
                     {
                         Glyph = "\uE946",
-                        FontSize = 14,
-                        Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["OnTertiaryContainerBrush"],
+                        FontSize = (double)Application.Current.Resources["IconSizeMd"],
+                        Foreground = ThemeResources.GetBrush(this, "OnTertiaryContainerBrush"),
                         VerticalAlignment = VerticalAlignment.Center,
                     },
                     new TextBlock
@@ -372,7 +380,7 @@ public sealed partial class DashboardPage : Page
                             ? "The PDF will be downloaded. Please attach it to the email."
                             : $"{Services.UnsupportedPdfGenerator.UnavailableMessage} The email opens without an attachment.",
                         Style = (Style)Application.Current.Resources["BodySmall"],
-                        Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["OnTertiaryContainerBrush"],
+                        Foreground = ThemeResources.GetBrush(this, "OnTertiaryContainerBrush"),
                         TextWrapping = TextWrapping.Wrap,
                         VerticalAlignment = VerticalAlignment.Center,
                     },
@@ -380,7 +388,7 @@ public sealed partial class DashboardPage : Page
             },
         };
 
-        var fieldsPanel = new StackPanel { Spacing = 12 };
+        var fieldsPanel = new StackPanel { Spacing = (double)Application.Current.Resources["Space12"] };
         fieldsPanel.Children.Add(recipientBox);
         fieldsPanel.Children.Add(subjectBox);
         fieldsPanel.Children.Add(bodyBox);

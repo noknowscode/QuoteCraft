@@ -5,7 +5,6 @@ namespace QuoteCraft.Presentation;
 public sealed partial class ClientsPage : Page
 {
     private IClientRepository? _clientRepo;
-    private ClientEntity? _selectedClientEntity;
 
     /// <summary>Access the underlying MVUX model from the generated ViewModel DataContext.</summary>
     private ClientsModel? Model => MvuxHelper.GetModel<ClientsModel>(DataContext);
@@ -17,17 +16,6 @@ public sealed partial class ClientsPage : Page
 
     private IClientRepository ClientRepo =>
         _clientRepo ??= App.Services.GetRequiredService<IClientRepository>();
-
-    private async void ClientCard_Tapped(object sender, TappedRoutedEventArgs e)
-    {
-        if (sender is FrameworkElement { DataContext: ClientDisplayItem client })
-        {
-            _selectedClientEntity = client.Entity;
-            var model = Model;
-            if (model is not null)
-                await model.SelectClient(client, CancellationToken.None);
-        }
-    }
 
     private async void AddClient_Click(object sender, RoutedEventArgs e)
     {
@@ -41,7 +29,11 @@ public sealed partial class ClientsPage : Page
                 featureGate.GetUpgradeMessage("clients"),
                 closeButtonText: "OK",
                 primaryButtonText: "Upgrade");
-            await limitDialog.ShowAsync();
+            if (await limitDialog.ShowAsync() == ContentDialogResult.Primary && this.Navigator() is { } navigator)
+            {
+                // Plans and the upgrade live in Settings.
+                await navigator.NavigateRouteAsync(this, "Settings");
+            }
             return;
         }
 
@@ -50,10 +42,11 @@ public sealed partial class ClientsPage : Page
 
     private async void EditClient_Click(object sender, RoutedEventArgs e)
     {
-        if (_selectedClientEntity is null) return;
+        // The selection lives in the model (cards select through the list's command, taps and keys alike).
+        if (Model is not { } model || await model.SelectedClient is not { } selected) return;
 
         // Re-fetch to get latest data
-        var fresh = await ClientRepo.GetByIdAsync(_selectedClientEntity.Id);
+        var fresh = await ClientRepo.GetByIdAsync(selected.Id);
         if (fresh is not null)
             await ShowClientEditorDialog(fresh, isNew: false);
     }
@@ -87,14 +80,17 @@ public sealed partial class ClientsPage : Page
             PlaceholderText = "Street, City, State/Province",
             AcceptsReturn = true,
             TextWrapping = TextWrapping.Wrap,
-            MinHeight = 80,
+            MinHeight = (double)Application.Current.Resources["NotesMinHeight"],
         };
 
-        var fieldsPanel = new StackPanel { Spacing = 16 };
+        var validation = DialogHelper.BuildValidationText(this);
+
+        var fieldsPanel = new StackPanel { Spacing = (double)Application.Current.Resources["Space16"] };
         fieldsPanel.Children.Add(nameBox);
         fieldsPanel.Children.Add(emailBox);
         fieldsPanel.Children.Add(phoneBox);
         fieldsPanel.Children.Add(addressBox);
+        fieldsPanel.Children.Add(validation);
 
         var dialog = Helpers.DialogHelper.BuildBannerDialogWithContent(
             this.XamlRoot,
@@ -110,16 +106,40 @@ public sealed partial class ClientsPage : Page
             var name = nameBox.Text?.Trim() ?? string.Empty;
             if (string.IsNullOrWhiteSpace(name))
             {
+                DialogHelper.ShowValidation(validation, "Enter the client's name.");
                 args.Cancel = true;
                 return;
             }
+
+            var email = emailBox.Text?.Trim() ?? string.Empty;
+            if (email.Length > 0 && (!email.Contains('@') || !email.Contains('.')))
+            {
+                DialogHelper.ShowValidation(validation, "Enter a valid email address, or leave it empty.");
+                args.Cancel = true;
+                return;
+            }
+
+            // Saving: the dialog waits for the database before it closes.
+            var deferral = args.GetDeferral();
 
             entity.Name = name;
             entity.Email = emailBox.Text;
             entity.Phone = phoneBox.Text;
             entity.Address = addressBox.Text;
             entity.UpdatedAt = DateTimeOffset.UtcNow;
-            await ClientRepo.SaveAsync(entity);
+            try
+            {
+                await ClientRepo.SaveAsync(entity);
+            }
+            catch (Exception)
+            {
+                DialogHelper.ShowValidation(validation, "The client could not be saved. Try again.");
+                args.Cancel = true;
+            }
+            finally
+            {
+                deferral.Complete();
+            }
         };
 
         var result = await dialog.ShowAsync();
@@ -153,7 +173,6 @@ public sealed partial class ClientsPage : Page
         if (result == ContentDialogResult.Primary)
         {
             await model.DeleteClient(CancellationToken.None);
-            _selectedClientEntity = null;
         }
     }
 
@@ -164,7 +183,16 @@ public sealed partial class ClientsPage : Page
             await model.CreateQuoteForClient(CancellationToken.None);
     }
 
-    private async void QuoteRow_Tapped(object sender, TappedRoutedEventArgs e)
+    private void QuoteRow_KeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key is Windows.System.VirtualKey.Enter or Windows.System.VirtualKey.Space)
+        {
+            e.Handled = true;
+            QuoteRow_Tapped(sender, null);
+        }
+    }
+
+    private async void QuoteRow_Tapped(object sender, TappedRoutedEventArgs? e)
     {
         if (sender is FrameworkElement { DataContext: QuoteEntity quote })
         {

@@ -12,6 +12,15 @@
       xmlns:ctrl="using:QuoteCraft.Controls"
       Background="{ThemeResource BackgroundBrush}">
 
+  <!--
+    Quotes per category:
+      Narrow (below 600)   header on two rows (search under the title); stats, filters and the list scroll as one page;
+                           a tapped quote opens full width over the list with a back button; line items on two lines.
+      Normal (600 to 800)  header on one row; otherwise as Narrow.
+      Wide (800 to 1080)   the three stat cards with sparklines stay above the list; one pane, the detail over the list.
+      Widest (1080 and up) list (380) and detail side by side, content capped at PageMaxWidth. From 1400 (SplitLayout)
+                           the detail's client, details and totals move into a side column.
+  -->
   <Grid utu:SafeArea.Insets="Top">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
@@ -20,108 +29,119 @@
       <RowDefinition />
     </Grid.RowDefinitions>
 
-    <!-- Desktop Header (64px) -->
-    <Grid Padding="32,0" Height="64"
-          Background="{ThemeResource SurfaceBrush}"
-          BorderBrush="{ThemeResource OutlineVariantBrush}"
-          BorderThickness="0,0,0,1">
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="Auto" />
-        <ColumnDefinition Width="Auto" />
-        <ColumnDefinition Width="*" />
-        <ColumnDefinition Width="Auto" />
-      </Grid.ColumnDefinitions>
+    <!-- Header band -->
+    <Border Background="{ThemeResource SurfaceBrush}"
+            BorderBrush="{ThemeResource OutlineVariantBrush}"
+            BorderThickness="0,0,0,1">
+      <Grid MaxWidth="{StaticResource PageMaxWidth}"
+            MinHeight="{StaticResource PageHeaderHeight}"
+            Padding="{utu:Responsive Narrow={StaticResource PageHeaderInsetNarrow}, Normal={StaticResource PageHeaderInsetNormal}, Wide={StaticResource PageHeaderInsetWide}}">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
-      <TextBlock x:Uid="DashboardPage.Label.Title"
-                 Text="Quotes"
-                 Style="{StaticResource TitleLarge}"
-                 FontWeight="Bold"
-                 VerticalAlignment="Center" />
+        <TextBlock x:Uid="DashboardPage.Label.Title"
+                   Text="Quotes"
+                   Style="{StaticResource TitleLargeBold}"
+                   AutomationProperties.HeadingLevel="Level1"
+                   VerticalAlignment="Center" />
 
-      <mvux:FeedView Grid.Column="1" Source="{Binding TotalCount}">
-        <DataTemplate>
-          <TextBlock Style="{StaticResource BodyMedium}"
-                     Foreground="{ThemeResource OnSurfaceVariantBrush}"
+        <mvux:FeedView Grid.Column="1" Source="{Binding TotalCount}" VerticalAlignment="Center">
+          <DataTemplate>
+            <TextBlock Style="{StaticResource BodyMedium}"
+                       Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                       VerticalAlignment="Center"
+                       Margin="{StaticResource GapStart8}">
+              <Run Text="{Binding Data}" />
+              <Run Text=" total" />
+            </TextBlock>
+          </DataTemplate>
+        </mvux:FeedView>
+
+        <!-- Search (under the title row on Narrow) -->
+        <Border Grid.Row="{utu:Responsive Narrow=1, Normal=0}"
+                Grid.Column="{utu:Responsive Narrow=0, Normal=2}"
+                Grid.ColumnSpan="{utu:Responsive Narrow=4, Normal=1}"
+                Background="{ThemeResource SurfaceVariantBrush}"
+                CornerRadius="{StaticResource RadiusMd}"
+                Padding="{StaticResource InsetX12}"
+                Height="{StaticResource SearchHeight}"
+                MinWidth="{utu:Responsive Narrow=0, Normal={StaticResource SearchMinWidth}}"
+                MaxWidth="{utu:Responsive Narrow={StaticResource SearchMaxWidthNarrow}, Normal={StaticResource SearchMaxWidth}}"
+                HorizontalAlignment="{utu:Responsive Narrow=Stretch, Normal=Right}"
+                VerticalAlignment="Center"
+                Margin="{utu:Responsive Narrow={StaticResource InsetY8}, Normal={StaticResource InsetX16}}">
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <FontIcon Glyph="&#xE721;" FontSize="{StaticResource IconSizeMd}"
+                      Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                      VerticalAlignment="Center" Margin="{StaticResource GapEnd8}" />
+            <TextBox Grid.Column="1"
+                     x:Uid="DashboardPage.TextBox.Search"
+                     Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     PlaceholderText="Search quotes..."
+                     AutomationProperties.Name="Search quotes"
+                     BorderThickness="0" Background="Transparent"
+                     Padding="0" MinHeight="0"
                      VerticalAlignment="Center"
-                     Margin="8,0,0,0">
-            <Run Text="{Binding Data}" />
-            <Run Text=" total" />
-          </TextBlock>
-        </DataTemplate>
-      </mvux:FeedView>
+                     VerticalContentAlignment="Center" />
+          </Grid>
+        </Border>
 
-      <!-- Search Bar (in header) -->
-      <Border Grid.Column="2"
-              Background="{ThemeResource SurfaceVariantBrush}"
-              CornerRadius="8"
-              Padding="12,0"
-              Height="36"
-              MaxWidth="360"
-              HorizontalAlignment="Right"
-              VerticalAlignment="Center"
-              Margin="16,0">
-        <Grid>
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="*" />
-          </Grid.ColumnDefinitions>
-          <FontIcon Glyph="&#xE721;" FontSize="14"
-                    Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                    VerticalAlignment="Center" Margin="0,0,8,0" />
-          <TextBox Grid.Column="1"
-                   x:Uid="DashboardPage.TextBox.Search"
-                   Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                   PlaceholderText="Search quotes..."
-                   AutomationProperties.Name="Search quotes"
-                   BorderThickness="0" Background="Transparent"
-                   Padding="0"
-                   MinHeight="0"
-                   VerticalAlignment="Center"
-                   VerticalContentAlignment="Center" />
-        </Grid>
-      </Border>
-
-      <Button Grid.Column="3"
-              x:Uid="DashboardPage.Button.NewQuote"
-              Click="CreateQuote_Click"
-              AutomationProperties.Name="Create new quote"
-              Style="{StaticResource AccentButtonStyle}">
-        <StackPanel Orientation="Horizontal" Spacing="8">
-          <FontIcon Glyph="&#xE710;" FontSize="12" Foreground="{StaticResource AppBarBackgroundBrush}" />
-          <TextBlock Text="New Quote" Foreground="{StaticResource AppBarBackgroundBrush}" Style="{StaticResource LabelLargeSemiBold}" />
-        </StackPanel>
-      </Button>
-    </Grid>
+        <Button Grid.Column="3"
+                x:Uid="DashboardPage.Button.NewQuote"
+                Click="CreateQuote_Click"
+                AutomationProperties.Name="Create new quote"
+                Style="{StaticResource AccentButtonStyle}">
+          <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
+            <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource OnAccentBrush}" />
+            <TextBlock Text="New Quote" Foreground="{StaticResource OnAccentBrush}" Style="{StaticResource LabelLargeSemiBold}" />
+          </StackPanel>
+        </Button>
+      </Grid>
+    </Border>
 
     <!-- Upgrade Prompt Banner (shown when feature gate blocks an action) -->
     <mvux:FeedView Grid.Row="1" Source="{Binding UpgradeMessage}">
       <DataTemplate>
         <Border Background="{StaticResource AppBarBackgroundBrush}"
-                Padding="16,12" Margin="0"
+                Padding="{StaticResource Inset16x12}"
                 Visibility="{Binding Data, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert}">
-          <Grid>
+          <Grid ColumnSpacing="{StaticResource Space8}">
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="Auto" />
               <ColumnDefinition Width="*" />
               <ColumnDefinition Width="Auto" />
               <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <FontIcon Glyph="&#xE7BA;" FontSize="18" Foreground="{StaticResource AppBarForegroundBrush}"
-                      VerticalAlignment="Center" Margin="0,0,12,0" />
+            <FontIcon Glyph="&#xE7BA;" FontSize="{StaticResource IconSizeXl}" Foreground="{StaticResource AppBarForegroundBrush}"
+                      VerticalAlignment="Center" />
             <TextBlock Grid.Column="1" Text="{Binding Data}"
                        Style="{StaticResource BodyMedium}" Foreground="{StaticResource AppBarForegroundBrush}"
                        VerticalAlignment="Center" TextWrapping="Wrap" />
             <Button Grid.Column="2"
+                    Command="{Binding DataContext.OpenSettings, ElementName=DashboardRoot}"
                     Style="{StaticResource AccentButtonStyle}"
-                    Margin="12,0,8,0"
-                    Padding="16,6">
-              <TextBlock Text="Upgrade" FontWeight="SemiBold" Foreground="{StaticResource AppBarBackgroundBrush}" />
+                    Padding="{StaticResource ButtonInsetCompact}">
+              <TextBlock Text="Upgrade" Style="{StaticResource LabelLargeSemiBold}" Foreground="{StaticResource OnAccentBrush}" />
             </Button>
             <Button Grid.Column="3"
-                    Command="{Binding DismissUpgrade}"
-                    Background="Transparent" BorderThickness="0"
-                    MinWidth="0" MinHeight="0" Padding="4">
-              <FontIcon Glyph="&#xE711;" FontSize="12" Foreground="{StaticResource AppBarForegroundBrush}" />
+                    Command="{Binding DataContext.DismissUpgrade, ElementName=DashboardRoot}"
+                    AutomationProperties.Name="Dismiss"
+                    ToolTipService.ToolTip="Dismiss"
+                    Style="{StaticResource MaterialTextButtonStyle}"
+                    MinWidth="{StaticResource TouchTarget}" MinHeight="{StaticResource TouchTarget}">
+              <FontIcon Glyph="&#xE711;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource AppBarForegroundBrush}" />
             </Button>
           </Grid>
         </Border>
@@ -133,463 +153,528 @@
       </mvux:FeedView.NoneTemplate>
     </mvux:FeedView>
 
-    <!-- Analytics Cards -->
-    <mvux:FeedView Grid.Row="2" Source="{Binding Analytics}">
+    <!-- Stat cards with sparklines (Wide and Widest) -->
+    <mvux:FeedView Grid.Row="2" Source="{Binding Analytics}"
+                   Visibility="{utu:Responsive Narrow=Collapsed, Wide=Visible}">
       <DataTemplate>
-        <Grid Padding="32,12" ColumnSpacing="16"
-              Visibility="{utu:Responsive Normal=Collapsed, Wide=Visible}">
+        <Grid MaxWidth="{StaticResource PageMaxWidth}" Padding="{StaticResource BandInsetWide}" ColumnSpacing="{StaticResource Space16}">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="*" />
           </Grid.ColumnDefinitions>
 
-          <!-- Total Quoted (Wide) -->
           <Border Background="{ThemeResource SurfaceBrush}"
                   BorderBrush="{ThemeResource OutlineVariantBrush}"
-                  BorderThickness="1" CornerRadius="12" Padding="16,12">
-            <Grid>
+                  BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource CardInset}">
+            <Grid ColumnSpacing="{StaticResource Space12}">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
               </Grid.ColumnDefinitions>
-              <StackPanel Spacing="4" VerticalAlignment="Center">
+              <StackPanel Spacing="{StaticResource Space4}" VerticalAlignment="Center">
                 <TextBlock Text="QUOTED THIS MONTH" Style="{StaticResource LabelSmall}"
                            Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold" />
                 <TextBlock Text="{Binding Data.TotalQuotedThisMonth, Converter={StaticResource CurrencyFormatConverter}}"
                            Style="{StaticResource HeadlineSmallBold}"
                            FontFamily="{StaticResource MonospaceFontFamily}" />
               </StackPanel>
-              <ctrl:SparklineControl Grid.Column="1" Height="50" Margin="12,0,0,0"
-                                      Values="{Binding Data.QuotedDailyValues}"
-                                      StrokeColor="{StaticResource AppBarButtonBackgroundBrush}" />
+              <ctrl:SparklineControl Grid.Column="1" Height="{StaticResource SparklineHeight}"
+                                     AutomationProperties.AccessibilityView="Raw"
+                                     Values="{Binding Data.QuotedDailyValues}"
+                                     StrokeColor="{ThemeResource TertiaryBrush}" />
             </Grid>
           </Border>
 
-          <!-- Quotes Sent (Wide) -->
           <Border Grid.Column="1"
                   Background="{ThemeResource SurfaceBrush}"
                   BorderBrush="{ThemeResource OutlineVariantBrush}"
-                  BorderThickness="1" CornerRadius="12" Padding="16,12">
-            <Grid>
+                  BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource CardInset}">
+            <Grid ColumnSpacing="{StaticResource Space12}">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
               </Grid.ColumnDefinitions>
-              <StackPanel Spacing="4" VerticalAlignment="Center">
+              <StackPanel Spacing="{StaticResource Space4}" VerticalAlignment="Center">
                 <TextBlock Text="SENT THIS MONTH" Style="{StaticResource LabelSmall}"
                            Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold" />
-                <StackPanel Orientation="Horizontal" Spacing="4">
+                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space4}">
                   <TextBlock Text="{Binding Data.QuotesSentThisMonth}"
                              Style="{StaticResource HeadlineSmallBold}" />
                   <TextBlock Text="quotes" Style="{StaticResource BodyMedium}"
                              Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                             VerticalAlignment="Bottom" Margin="0,0,0,2" />
+                             VerticalAlignment="Bottom" Margin="{StaticResource BaselineNudge}" />
                 </StackPanel>
               </StackPanel>
-              <ctrl:SparklineControl Grid.Column="1" Height="50" Margin="12,0,0,0"
-                                      Values="{Binding Data.SentDailyValues}"
-                                      StrokeColor="{StaticResource AppBarAccentBrush}" />
+              <ctrl:SparklineControl Grid.Column="1" Height="{StaticResource SparklineHeight}"
+                                     AutomationProperties.AccessibilityView="Raw"
+                                     Values="{Binding Data.SentDailyValues}"
+                                     StrokeColor="{StaticResource AppBarAccentBrush}" />
             </Grid>
           </Border>
 
-          <!-- Acceptance Rate (Wide) -->
           <Border Grid.Column="2"
                   Background="{ThemeResource SurfaceBrush}"
                   BorderBrush="{ThemeResource OutlineVariantBrush}"
-                  BorderThickness="1" CornerRadius="12" Padding="16,12">
-            <Grid>
+                  BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource CardInset}">
+            <Grid ColumnSpacing="{StaticResource Space12}">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
               </Grid.ColumnDefinitions>
-              <StackPanel Spacing="4" VerticalAlignment="Center">
+              <StackPanel Spacing="{StaticResource Space4}" VerticalAlignment="Center">
                 <TextBlock Text="ACCEPTANCE RATE" Style="{StaticResource LabelSmall}"
                            Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold" />
-                <StackPanel Orientation="Horizontal" Spacing="2">
+                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space2}">
                   <TextBlock Text="{Binding Data.AcceptanceRate}"
                              Style="{StaticResource HeadlineSmallBold}" />
                   <TextBlock Text="%" Style="{StaticResource HeadlineSmallBold}"
                              Foreground="{ThemeResource OnSurfaceVariantBrush}" />
                 </StackPanel>
               </StackPanel>
-              <ctrl:SparklineControl Grid.Column="1" Height="50" Margin="12,0,0,0"
-                                      Values="{Binding Data.AcceptanceDailyValues}"
-                                      StrokeColor="{ThemeResource PrimaryBrush}" />
+              <ctrl:SparklineControl Grid.Column="1" Height="{StaticResource SparklineHeight}"
+                                     AutomationProperties.AccessibilityView="Raw"
+                                     Values="{Binding Data.AcceptanceDailyValues}"
+                                     StrokeColor="{ThemeResource PrimaryBrush}" />
             </Grid>
           </Border>
         </Grid>
-
-        <!-- Analytics Cards (Narrow: stacked) -->
-        <StackPanel Spacing="8" Padding="16,12"
-                    Visibility="{utu:Responsive Normal=Visible, Wide=Collapsed}">
-          <Border Background="{ThemeResource SurfaceBrush}"
-                  BorderBrush="{ThemeResource OutlineVariantBrush}"
-                  BorderThickness="1" CornerRadius="12" Padding="16,12">
-            <StackPanel Spacing="4">
-              <TextBlock Text="QUOTED THIS MONTH" Style="{StaticResource LabelSmall}"
-                         Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold" />
-              <TextBlock Text="{Binding Data.TotalQuotedThisMonth, Converter={StaticResource CurrencyFormatConverter}}"
-                         Style="{StaticResource HeadlineSmallBold}"
-                         FontFamily="{StaticResource MonospaceFontFamily}" />
-            </StackPanel>
-          </Border>
-          <Grid ColumnSpacing="8">
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="*" />
-              <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <Border Background="{ThemeResource SurfaceBrush}"
-                    BorderBrush="{ThemeResource OutlineVariantBrush}"
-                    BorderThickness="1" CornerRadius="12" Padding="16,12">
-              <StackPanel Spacing="4">
-                <TextBlock Text="SENT" Style="{StaticResource LabelSmall}"
-                           Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold" />
-                <StackPanel Orientation="Horizontal" Spacing="4">
-                  <TextBlock Text="{Binding Data.QuotesSentThisMonth}"
-                             Style="{StaticResource HeadlineSmallBold}" />
-                  <TextBlock Text="quotes" Style="{StaticResource BodyMedium}"
-                             Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                             VerticalAlignment="Bottom" Margin="0,0,0,2" />
-                </StackPanel>
-              </StackPanel>
-            </Border>
-            <Border Grid.Column="1"
-                    Background="{ThemeResource SurfaceBrush}"
-                    BorderBrush="{ThemeResource OutlineVariantBrush}"
-                    BorderThickness="1" CornerRadius="12" Padding="16,12">
-              <StackPanel Spacing="4">
-                <TextBlock Text="ACCEPTANCE" Style="{StaticResource LabelSmall}"
-                           Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold" />
-                <StackPanel Orientation="Horizontal" Spacing="2">
-                  <TextBlock Text="{Binding Data.AcceptanceRate}"
-                             Style="{StaticResource HeadlineSmallBold}" />
-                  <TextBlock Text="%" Style="{StaticResource HeadlineSmallBold}"
-                             Foreground="{ThemeResource OnSurfaceVariantBrush}" />
-                </StackPanel>
-              </StackPanel>
-            </Border>
-          </Grid>
-        </StackPanel>
       </DataTemplate>
+      <mvux:FeedView.NoneTemplate>
+        <DataTemplate>
+          <Border Height="0" />
+        </DataTemplate>
+      </mvux:FeedView.NoneTemplate>
+      <mvux:FeedView.ErrorTemplate>
+        <DataTemplate>
+          <Border Height="0" />
+        </DataTemplate>
+      </mvux:FeedView.ErrorTemplate>
     </mvux:FeedView>
 
-    <!-- Main Content: Master-Detail -->
-    <Grid Grid.Row="3">
+    <!-- Body: the list pane, and the detail (beside it from 1080, over it below) -->
+    <Grid Grid.Row="3" MaxWidth="{StaticResource PageMaxWidth}">
       <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="380" />
+        <ColumnDefinition Width="Auto" />
         <ColumnDefinition Width="*" />
       </Grid.ColumnDefinitions>
 
-      <!-- Left Panel: Quote List -->
-      <Grid BorderBrush="{ThemeResource OutlineVariantBrush}"
-            BorderThickness="{utu:Responsive Normal='0', Wide='0,0,1,0'}">
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto" />
-          <RowDefinition />
-        </Grid.RowDefinitions>
+      <Grid Grid.ColumnSpan="{utu:Responsive Narrow=2, Widest=1}"
+            Width="{utu:Responsive Narrow=NaN, Widest={StaticResource ListPaneWidth}}"
+            BorderBrush="{ThemeResource OutlineVariantBrush}"
+            BorderThickness="{utu:Responsive Narrow='0', Widest='0,0,1,0'}">
+        <!-- Below 800 the stats, filters and list scroll as one page; from 800 only the list scrolls. -->
+        <ScrollViewer VerticalScrollBarVisibility="{utu:Responsive Narrow=Auto, Wide=Disabled}"
+                      VerticalScrollMode="{utu:Responsive Narrow=Auto, Wide=Disabled}"
+                      HorizontalScrollBarVisibility="Disabled">
+          <Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="Auto" />
+              <RowDefinition />
+            </Grid.RowDefinitions>
 
-        <!-- Filter Chips -->
-        <Border Padding="16,8,16,4">
-          <StackPanel Spacing="6">
-            <!-- Status count badges -->
-            <mvux:FeedView Source="{Binding StatusCounts}">
+            <!-- Compact stats (Narrow and Normal) -->
+            <mvux:FeedView Source="{Binding Analytics}"
+                           Visibility="{utu:Responsive Narrow=Visible, Wide=Collapsed}">
               <DataTemplate>
-                <ScrollViewer HorizontalScrollBarVisibility="Hidden"
-                              VerticalScrollBarVisibility="Disabled"
-                              HorizontalScrollMode="Auto"
-                              Margin="0,0,0,4">
-                  <StackPanel Orientation="Horizontal" Spacing="8">
-                    <Border Background="{ThemeResource SurfaceVariantBrush}" CornerRadius="10" Padding="8,2">
-                      <TextBlock Style="{StaticResource LabelSmall}" Foreground="{ThemeResource OnSurfaceVariantBrush}">
-                        <Run Text="Draft: " /><Run Text="{Binding Data.Draft}" FontWeight="SemiBold" />
-                      </TextBlock>
-                    </Border>
-                    <Border Background="{ThemeResource PrimaryContainerBrush}" CornerRadius="10" Padding="8,2">
-                      <TextBlock Style="{StaticResource LabelSmall}" Foreground="{ThemeResource OnPrimaryContainerBrush}">
-                        <Run Text="Sent: " /><Run Text="{Binding Data.Sent}" FontWeight="SemiBold" />
-                      </TextBlock>
-                    </Border>
-                    <Border Background="{ThemeResource TertiaryContainerBrush}" CornerRadius="10" Padding="8,2">
-                      <TextBlock Style="{StaticResource LabelSmall}" Foreground="{ThemeResource OnTertiaryContainerBrush}">
-                        <Run Text="Viewed: " /><Run Text="{Binding Data.Viewed}" FontWeight="SemiBold" />
-                      </TextBlock>
-                    </Border>
-                    <Border Background="{ThemeResource SecondaryContainerBrush}" CornerRadius="10" Padding="8,2">
-                      <TextBlock Style="{StaticResource LabelSmall}" Foreground="{ThemeResource OnSecondaryContainerBrush}">
-                        <Run Text="Accepted: " /><Run Text="{Binding Data.Accepted}" FontWeight="SemiBold" />
-                      </TextBlock>
-                    </Border>
-                    <Border Background="{ThemeResource ErrorContainerBrush}" CornerRadius="10" Padding="8,2">
-                      <TextBlock Style="{StaticResource LabelSmall}" Foreground="{ThemeResource OnErrorContainerBrush}">
-                        <Run Text="Declined: " /><Run Text="{Binding Data.Declined}" FontWeight="SemiBold" />
-                      </TextBlock>
-                    </Border>
-                    <Border Background="{ThemeResource SurfaceVariantBrush}" CornerRadius="10" Padding="8,2">
-                      <TextBlock Style="{StaticResource LabelSmall}" Foreground="{ThemeResource OnSurfaceVariantBrush}">
-                        <Run Text="Expired: " /><Run Text="{Binding Data.Expired}" FontWeight="SemiBold" />
-                      </TextBlock>
-                    </Border>
-                  </StackPanel>
-                </ScrollViewer>
+                <Grid Padding="{utu:Responsive Narrow={StaticResource BandInsetNarrow}, Normal={StaticResource BandInsetNormal}}"
+                      ColumnSpacing="{StaticResource Space8}" RowSpacing="{StaticResource Space8}">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                  </Grid.ColumnDefinitions>
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                  </Grid.RowDefinitions>
+                  <Border Grid.ColumnSpan="2"
+                          Background="{ThemeResource SurfaceBrush}"
+                          BorderBrush="{ThemeResource OutlineVariantBrush}"
+                          BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource CardInset}">
+                    <StackPanel Spacing="{StaticResource Space4}">
+                      <TextBlock Text="QUOTED THIS MONTH" Style="{StaticResource LabelSmall}"
+                                 Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold" />
+                      <TextBlock Text="{Binding Data.TotalQuotedThisMonth, Converter={StaticResource CurrencyFormatConverter}}"
+                                 Style="{StaticResource HeadlineSmallBold}"
+                                 FontFamily="{StaticResource MonospaceFontFamily}" />
+                    </StackPanel>
+                  </Border>
+                  <Border Grid.Row="1"
+                          Background="{ThemeResource SurfaceBrush}"
+                          BorderBrush="{ThemeResource OutlineVariantBrush}"
+                          BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource CardInset}">
+                    <StackPanel Spacing="{StaticResource Space4}">
+                      <TextBlock Text="SENT" Style="{StaticResource LabelSmall}"
+                                 Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold" />
+                      <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space4}">
+                        <TextBlock Text="{Binding Data.QuotesSentThisMonth}"
+                                   Style="{StaticResource HeadlineSmallBold}" />
+                        <TextBlock Text="quotes" Style="{StaticResource BodyMedium}"
+                                   Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                                   VerticalAlignment="Bottom" Margin="{StaticResource BaselineNudge}" />
+                      </StackPanel>
+                    </StackPanel>
+                  </Border>
+                  <Border Grid.Row="1" Grid.Column="1"
+                          Background="{ThemeResource SurfaceBrush}"
+                          BorderBrush="{ThemeResource OutlineVariantBrush}"
+                          BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource CardInset}">
+                    <StackPanel Spacing="{StaticResource Space4}">
+                      <TextBlock Text="ACCEPTANCE" Style="{StaticResource LabelSmall}"
+                                 Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold" />
+                      <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space2}">
+                        <TextBlock Text="{Binding Data.AcceptanceRate}"
+                                   Style="{StaticResource HeadlineSmallBold}" />
+                        <TextBlock Text="%" Style="{StaticResource HeadlineSmallBold}"
+                                   Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                      </StackPanel>
+                    </StackPanel>
+                  </Border>
+                </Grid>
               </DataTemplate>
+              <mvux:FeedView.NoneTemplate>
+                <DataTemplate>
+                  <Border Height="0" />
+                </DataTemplate>
+              </mvux:FeedView.NoneTemplate>
+              <mvux:FeedView.ErrorTemplate>
+                <DataTemplate>
+                  <Border Height="0" />
+                </DataTemplate>
+              </mvux:FeedView.ErrorTemplate>
             </mvux:FeedView>
 
-            <StackPanel Orientation="Horizontal" Spacing="6">
-              <utu:Chip x:Name="FilterAll" Content="All" IsChecked="True" Click="FilterChip_Click" Style="{StaticResource MaterialChipStyle}" />
-              <utu:Chip x:Name="FilterDraft" Content="Draft" Click="FilterChip_Click" Style="{StaticResource MaterialChipStyle}" />
-              <utu:Chip x:Name="FilterSent" Content="Sent" Click="FilterChip_Click" Style="{StaticResource MaterialChipStyle}" />
-              <utu:Chip x:Name="FilterViewed" Content="Viewed" Click="FilterChip_Click" Style="{StaticResource MaterialChipStyle}" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Spacing="6">
-              <utu:Chip x:Name="FilterAccepted" Content="Accepted" Click="FilterChip_Click" Style="{StaticResource MaterialChipStyle}" />
-              <utu:Chip x:Name="FilterDeclined" Content="Declined" Click="FilterChip_Click" Style="{StaticResource MaterialChipStyle}" />
-              <utu:Chip x:Name="FilterExpired" Content="Expired" Click="FilterChip_Click" Style="{StaticResource MaterialChipStyle}" />
-            </StackPanel>
-          </StackPanel>
-        </Border>
+            <!-- Status counts and filter chips -->
+            <StackPanel Grid.Row="1" Spacing="{StaticResource Space8}"
+                        Padding="{utu:Responsive Narrow={StaticResource ChipBandInsetNarrow}, Normal={StaticResource ChipBandInsetNormal}, Widest={StaticResource ChipBandInsetNarrow}}">
+              <mvux:FeedView Source="{Binding StatusCounts}">
+                <DataTemplate>
+                  <ScrollViewer HorizontalScrollBarVisibility="Hidden"
+                                VerticalScrollBarVisibility="Disabled"
+                                HorizontalScrollMode="Auto"
+                                VerticalScrollMode="Disabled">
+                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
+                      <Border Background="{ThemeResource StatusDraftBackgroundBrush}" CornerRadius="{StaticResource RadiusPill}" Padding="{StaticResource PillInset}">
+                        <TextBlock Style="{StaticResource LabelSmall}" Foreground="{ThemeResource StatusDraftForegroundBrush}">
+                          <Run Text="Draft: " /><Run Text="{Binding Data.Draft}" FontWeight="SemiBold" />
+                        </TextBlock>
+                      </Border>
+                      <Border Background="{ThemeResource StatusSentBackgroundBrush}" CornerRadius="{StaticResource RadiusPill}" Padding="{StaticResource PillInset}">
+                        <TextBlock Style="{StaticResource LabelSmall}" Foreground="{ThemeResource StatusSentForegroundBrush}">
+                          <Run Text="Sent: " /><Run Text="{Binding Data.Sent}" FontWeight="SemiBold" />
+                        </TextBlock>
+                      </Border>
+                      <Border Background="{ThemeResource StatusViewedBackgroundBrush}" CornerRadius="{StaticResource RadiusPill}" Padding="{StaticResource PillInset}">
+                        <TextBlock Style="{StaticResource LabelSmall}" Foreground="{ThemeResource StatusViewedForegroundBrush}">
+                          <Run Text="Viewed: " /><Run Text="{Binding Data.Viewed}" FontWeight="SemiBold" />
+                        </TextBlock>
+                      </Border>
+                      <Border Background="{ThemeResource StatusAcceptedBackgroundBrush}" CornerRadius="{StaticResource RadiusPill}" Padding="{StaticResource PillInset}">
+                        <TextBlock Style="{StaticResource LabelSmall}" Foreground="{ThemeResource StatusAcceptedForegroundBrush}">
+                          <Run Text="Accepted: " /><Run Text="{Binding Data.Accepted}" FontWeight="SemiBold" />
+                        </TextBlock>
+                      </Border>
+                      <Border Background="{ThemeResource StatusDeclinedBackgroundBrush}" CornerRadius="{StaticResource RadiusPill}" Padding="{StaticResource PillInset}">
+                        <TextBlock Style="{StaticResource LabelSmall}" Foreground="{ThemeResource StatusDeclinedForegroundBrush}">
+                          <Run Text="Declined: " /><Run Text="{Binding Data.Declined}" FontWeight="SemiBold" />
+                        </TextBlock>
+                      </Border>
+                      <Border Background="{ThemeResource StatusExpiredBackgroundBrush}" CornerRadius="{StaticResource RadiusPill}" Padding="{StaticResource PillInset}">
+                        <TextBlock Style="{StaticResource LabelSmall}" Foreground="{ThemeResource StatusExpiredForegroundBrush}">
+                          <Run Text="Expired: " /><Run Text="{Binding Data.Expired}" FontWeight="SemiBold" />
+                        </TextBlock>
+                      </Border>
+                    </StackPanel>
+                  </ScrollViewer>
+                </DataTemplate>
+              </mvux:FeedView>
 
-        <!-- Quote List -->
-        <mvux:FeedView Grid.Row="1" Source="{Binding Quotes}">
-          <DataTemplate>
-            <ScrollViewer Padding="12,8,12,16">
-              <muxc:ItemsRepeater ItemsSource="{Binding Data}"
-                                  utu:CommandExtensions.Command="{Binding Parent.OpenQuote}">
-                <muxc:ItemsRepeater.Layout>
-                  <muxc:StackLayout Spacing="4" />
-                </muxc:ItemsRepeater.Layout>
-                <muxc:ItemsRepeater.ItemTemplate>
-                  <DataTemplate>
-                    <Border Background="{ThemeResource SurfaceBrush}"
-                            BorderBrush="{ThemeResource OutlineVariantBrush}"
-                            BorderThickness="1"
-                            CornerRadius="8"
-                            Padding="16,12"
-                            Translation="0,0,0"
-                            AutomationProperties.Name="{Binding Title}"
-                            Tapped="QuoteCard_Tapped"
-                            helpers:InteractionHelper.IsInteractive="True">
-                      <Grid>
-                        <Grid.RowDefinitions>
-                          <RowDefinition Height="Auto" />
-                          <RowDefinition Height="Auto" />
-                          <RowDefinition Height="Auto" />
-                          <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-
-                        <!-- Title + Status -->
-                        <Grid>
-                          <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                          </Grid.ColumnDefinitions>
-                          <TextBlock Text="{Binding Title}"
-                                     Style="{StaticResource BodyMedium}"
-                                     FontWeight="SemiBold"
-                                     TextTrimming="CharacterEllipsis" />
-                          <Border Grid.Column="1"
-                                  Background="{Binding Status, Converter={StaticResource StatusBackgroundConverter}}"
-                                  CornerRadius="10" Padding="8,2">
-                            <StackPanel Orientation="Horizontal" Spacing="4">
-                              <FontIcon Glyph="{Binding Status, Converter={StaticResource StatusIconConverter}}" FontSize="10"
-                                        Foreground="{Binding Status, Converter={StaticResource StatusForegroundConverter}}" />
-                              <TextBlock Text="{Binding Status, Converter={StaticResource UpperCaseConverter}}"
-                                         Style="{StaticResource LabelSmall}"
-                                         Foreground="{Binding Status, Converter={StaticResource StatusForegroundConverter}}" />
-                            </StackPanel>
-                          </Border>
-                        </Grid>
-
-                        <!-- Client -->
-                        <TextBlock Grid.Row="1"
-                                   Text="{Binding ClientName}"
-                                   Style="{StaticResource BodySmall}"
-                                   Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                                   Margin="0,2,0,0" />
-
-                        <!-- Divider -->
-                        <Border Grid.Row="2" Height="1"
-                                Background="{ThemeResource OutlineVariantBrush}"
-                                Margin="0,8,0,0" />
-
-                        <!-- Amount + Date -->
-                        <Grid Grid.Row="3" Margin="0,8,0,0">
-                          <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                          </Grid.ColumnDefinitions>
-                          <TextBlock Foreground="{ThemeResource PrimaryBrush}"
-                                     FontFamily="{StaticResource MonospaceFontFamily}"
-                                     Style="{StaticResource BodyMedium}"
-                                     FontWeight="SemiBold"
-                                     Text="{Binding Total, Converter={StaticResource CurrencyFormatConverter}}" />
-                          <TextBlock Grid.Column="1"
-                                     Style="{StaticResource BodySmall}"
-                                     Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                                     Text="{Binding CreatedAt, Converter={StaticResource RelativeDateConverter}}" />
-                        </Grid>
-                      </Grid>
-                    </Border>
-                  </DataTemplate>
-                </muxc:ItemsRepeater.ItemTemplate>
-              </muxc:ItemsRepeater>
-            </ScrollViewer>
-          </DataTemplate>
-
-          <mvux:FeedView.NoneTemplate>
-            <DataTemplate>
-              <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
-                          Spacing="12" Padding="24">
-                <FontIcon Glyph="&#xE1D0;" FontSize="36"
-                          Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                          HorizontalAlignment="Center" />
-                <TextBlock Text="No quotes yet" Style="{StaticResource TitleSmall}"
-                           HorizontalAlignment="Center"
-                           Foreground="{ThemeResource OnSurfaceVariantBrush}" />
-                <TextBlock Text="Create your first quote in 60 seconds."
-                           Style="{StaticResource BodyMedium}"
-                           HorizontalAlignment="Center"
-                           Foreground="{ThemeResource OnSurfaceVariantBrush}" />
-                <Button Click="CreateQuote_Click"
-                        Style="{StaticResource AccentButtonStyle}"
-                        HorizontalAlignment="Center" Margin="0,8,0,0">
-                  <StackPanel Orientation="Horizontal" Spacing="8">
-                    <FontIcon Glyph="&#xE710;" FontSize="12" Foreground="{StaticResource AppBarBackgroundBrush}" />
-                    <TextBlock Text="Create Quote" Foreground="{StaticResource AppBarBackgroundBrush}" FontWeight="SemiBold" />
-                  </StackPanel>
-                </Button>
+              <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
+                <utu:Chip x:Name="FilterAll" Content="All" IsChecked="True" Click="FilterChip_Click" Style="{StaticResource MaterialChipStyle}" />
+                <utu:Chip x:Name="FilterDraft" Content="Draft" Click="FilterChip_Click" Style="{StaticResource MaterialChipStyle}" />
+                <utu:Chip x:Name="FilterSent" Content="Sent" Click="FilterChip_Click" Style="{StaticResource MaterialChipStyle}" />
+                <utu:Chip x:Name="FilterViewed" Content="Viewed" Click="FilterChip_Click" Style="{StaticResource MaterialChipStyle}" />
               </StackPanel>
-            </DataTemplate>
-          </mvux:FeedView.NoneTemplate>
+              <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
+                <utu:Chip x:Name="FilterAccepted" Content="Accepted" Click="FilterChip_Click" Style="{StaticResource MaterialChipStyle}" />
+                <utu:Chip x:Name="FilterDeclined" Content="Declined" Click="FilterChip_Click" Style="{StaticResource MaterialChipStyle}" />
+                <utu:Chip x:Name="FilterExpired" Content="Expired" Click="FilterChip_Click" Style="{StaticResource MaterialChipStyle}" />
+              </StackPanel>
+            </StackPanel>
 
-          <mvux:FeedView.ProgressTemplate>
-            <DataTemplate>
-              <ProgressRing IsActive="True" HorizontalAlignment="Center" VerticalAlignment="Center" />
-            </DataTemplate>
-          </mvux:FeedView.ProgressTemplate>
-        </mvux:FeedView>
+            <!-- Quote List -->
+            <mvux:FeedView Grid.Row="2" Source="{Binding Quotes}">
+              <DataTemplate>
+                <ScrollViewer Padding="{utu:Responsive Narrow={StaticResource ListInsetNarrow}, Normal={StaticResource ListInsetNormal}, Widest={StaticResource ListInsetWidest}}">
+                  <muxc:ItemsRepeater ItemsSource="{Binding Data}"
+                                      utu:CommandExtensions.Command="{Binding Parent.OpenQuote}">
+                    <muxc:ItemsRepeater.Layout>
+                      <muxc:StackLayout Spacing="{StaticResource Space4}" />
+                    </muxc:ItemsRepeater.Layout>
+                    <muxc:ItemsRepeater.ItemTemplate>
+                      <DataTemplate>
+                        <Border Background="{ThemeResource SurfaceBrush}"
+                                BorderBrush="{ThemeResource OutlineVariantBrush}"
+                                BorderThickness="1"
+                                CornerRadius="{StaticResource RadiusMd}"
+                                Padding="{StaticResource CardInset}"
+                                Translation="0,0,0"
+                                AutomationProperties.Name="{Binding Title}"
+                                Tapped="QuoteCard_Tapped"
+                                PreviewKeyDown="QuoteCard_PreviewKeyDown"
+                                helpers:InteractionHelper.Command="{Binding DataContext.OpenQuote, ElementName=DashboardRoot}"
+                                helpers:InteractionHelper.IsInteractive="True">
+                          <Grid>
+                            <Grid.RowDefinitions>
+                              <RowDefinition Height="Auto" />
+                              <RowDefinition Height="Auto" />
+                              <RowDefinition Height="Auto" />
+                              <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Title + Status -->
+                            <Grid ColumnSpacing="{StaticResource Space8}">
+                              <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                              </Grid.ColumnDefinitions>
+                              <TextBlock Text="{Binding Title}"
+                                         Style="{StaticResource BodyMediumSemiBold}"
+                                         TextTrimming="CharacterEllipsis" />
+                              <ctrl:StatusPill Grid.Column="1" Status="{Binding Status}" />
+                            </Grid>
+
+                            <!-- Client -->
+                            <TextBlock Grid.Row="1"
+                                       Text="{Binding ClientName}"
+                                       Style="{StaticResource BodySmall}"
+                                       Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                                       TextTrimming="CharacterEllipsis"
+                                       Margin="{StaticResource GapTop2}" />
+
+                            <!-- Divider -->
+                            <Border Grid.Row="2" Height="{StaticResource HairlineThickness}"
+                                    Background="{ThemeResource OutlineVariantBrush}"
+                                    Margin="{StaticResource GapTop8}" />
+
+                            <!-- Amount + Date -->
+                            <Grid Grid.Row="3" Margin="{StaticResource GapTop8}">
+                              <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                              </Grid.ColumnDefinitions>
+                              <TextBlock Foreground="{ThemeResource PrimaryBrush}"
+                                         FontFamily="{StaticResource MonospaceFontFamily}"
+                                         Style="{StaticResource BodyMediumSemiBold}"
+                                         Text="{Binding Total, Converter={StaticResource CurrencyFormatConverter}}" />
+                              <TextBlock Grid.Column="1"
+                                         Style="{StaticResource BodySmall}"
+                                         Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                                         Text="{Binding CreatedAt, Converter={StaticResource RelativeDateConverter}}" />
+                            </Grid>
+                          </Grid>
+                        </Border>
+                      </DataTemplate>
+                    </muxc:ItemsRepeater.ItemTemplate>
+                  </muxc:ItemsRepeater>
+                </ScrollViewer>
+              </DataTemplate>
+
+              <mvux:FeedView.NoneTemplate>
+                <DataTemplate>
+                  <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                              Spacing="{StaticResource Space12}" Padding="{StaticResource Inset24}">
+                    <FontIcon Glyph="&#xE1D0;" FontSize="{StaticResource IconSizeEmpty}"
+                              Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                              HorizontalAlignment="Center" />
+                    <TextBlock Text="No quotes here" Style="{StaticResource TitleSmall}"
+                               HorizontalAlignment="Center"
+                               Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                    <TextBlock Text="Create a quote, or clear the search and filters."
+                               Style="{StaticResource BodyMedium}"
+                               HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"
+                               Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                    <Button Click="CreateQuote_Click"
+                            Style="{StaticResource AccentButtonStyle}"
+                            HorizontalAlignment="Center" Margin="{StaticResource GapTop8}">
+                      <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
+                        <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource OnAccentBrush}" />
+                        <TextBlock Text="Create Quote" Foreground="{StaticResource OnAccentBrush}" Style="{StaticResource LabelLargeSemiBold}" />
+                      </StackPanel>
+                    </Button>
+                  </StackPanel>
+                </DataTemplate>
+              </mvux:FeedView.NoneTemplate>
+
+              <mvux:FeedView.ProgressTemplate>
+                <DataTemplate>
+                  <ProgressRing IsActive="True" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                Margin="{StaticResource Inset24}" AutomationProperties.Name="Loading quotes" />
+                </DataTemplate>
+              </mvux:FeedView.ProgressTemplate>
+
+              <mvux:FeedView.ErrorTemplate>
+                <DataTemplate>
+                  <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                              Spacing="{StaticResource Space12}" Padding="{StaticResource Inset24}"
+                              AutomationProperties.LiveSetting="Polite">
+                    <FontIcon Glyph="&#xE783;" FontSize="{StaticResource IconSizeEmpty}"
+                              Foreground="{ThemeResource ErrorBrush}" HorizontalAlignment="Center" />
+                    <TextBlock Text="Quotes could not be loaded." Style="{StaticResource TitleSmall}"
+                               HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
+                    <Button Content="Retry"
+                            Command="{Binding DataContext.RefreshDetail, ElementName=DashboardRoot}"
+                            Style="{StaticResource MaterialOutlinedButtonStyle}"
+                            HorizontalAlignment="Center" />
+                  </StackPanel>
+                </DataTemplate>
+              </mvux:FeedView.ErrorTemplate>
+            </mvux:FeedView>
+          </Grid>
+        </ScrollViewer>
       </Grid>
 
-      <!-- Right Panel: Detail / Preview toggle (Wide only) -->
-      <Grid Grid.Column="1"
-            Visibility="{utu:Responsive Normal=Collapsed, Wide=Visible}">
+      <!-- Detail and preview: beside the list from 1080, over it (full width) below -->
+      <Grid Grid.Column="{utu:Responsive Narrow=0, Widest=1}"
+            Grid.ColumnSpan="{utu:Responsive Narrow=2, Widest=1}">
 
         <!-- === DETAIL VIEW === -->
         <mvux:FeedView Source="{Binding SelectedQuoteDetail}"
                        Visibility="{Binding IsPreviewMode, Converter={StaticResource InverseBoolConverter}, FallbackValue=Visible}">
           <DataTemplate>
-            <ScrollViewer Padding="36,28,36,32">
-              <StackPanel Spacing="20" HorizontalAlignment="Stretch">
+            <ScrollViewer Background="{ThemeResource BackgroundBrush}"
+                          Padding="{utu:Responsive Narrow={StaticResource PaneInsetNarrow}, Normal={StaticResource PaneInsetNormal}, Wide={StaticResource PaneInsetWide}, Widest={StaticResource PaneInsetWidest}}">
+              <StackPanel Spacing="{StaticResource Space20}" HorizontalAlignment="Stretch">
 
-                <!-- Title + Actions -->
-                <Grid>
+                <!-- Back to the list (one-pane layouts) -->
+                <Button Command="{Binding DataContext.BackToList, ElementName=DashboardRoot}"
+                        Visibility="{utu:Responsive Narrow=Visible, Widest=Collapsed}"
+                        Style="{StaticResource MaterialTextButtonStyle}"
+                        MinHeight="{StaticResource TouchTarget}"
+                        Margin="{StaticResource LeadingIconNudge}"
+                        AutomationProperties.Name="Back to quotes">
+                  <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
+                    <FontIcon Glyph="&#xE72B;" FontSize="{StaticResource IconSizeMd}" />
+                    <TextBlock Text="Quotes" />
+                  </StackPanel>
+                </Button>
+
+                <!-- Title + Actions (actions under the title until the detail is wide) -->
+                <Grid ColumnSpacing="{StaticResource Space16}"
+                      RowSpacing="{utu:Responsive Narrowest={StaticResource Space12}, Widest=0, Layout={StaticResource SplitLayout}}">
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
                   </Grid.ColumnDefinitions>
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                  </Grid.RowDefinitions>
 
                   <TextBlock Text="{Binding Data.Quote.Title}"
-                             Style="{StaticResource HeadlineMedium}"
-                             FontWeight="Bold"
+                             Grid.ColumnSpan="{utu:Responsive Narrowest=2, Widest=1, Layout={StaticResource SplitLayout}}"
+                             Style="{StaticResource HeadlineMediumBold}"
+                             AutomationProperties.HeadingLevel="Level2"
+                             TextWrapping="Wrap" MaxLines="2"
                              TextTrimming="CharacterEllipsis" />
 
-                  <!-- Edit button (visible when NOT editing) -->
-                  <Button Grid.Column="1"
-                          Click="EditQuote_Click"
-                          AutomationProperties.Name="Edit quote"
-                          Style="{StaticResource MaterialOutlinedButtonStyle}"
-                          CornerRadius="8" Margin="0,0,8,0"
-                          Visibility="{Binding IsEditMode, ElementName=DashboardRoot, Converter={StaticResource InverseBoolConverter}}">
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                      <FontIcon Glyph="&#xE70F;" FontSize="14" />
-                      <TextBlock Text="Edit" />
-                    </StackPanel>
-                  </Button>
+                  <StackPanel Grid.Row="{utu:Responsive Narrowest=1, Widest=0, Layout={StaticResource SplitLayout}}"
+                              Grid.Column="{utu:Responsive Narrowest=0, Widest=1, Layout={StaticResource SplitLayout}}"
+                              Orientation="Horizontal" Spacing="{StaticResource Space8}"
+                              VerticalAlignment="Center">
+                    <!-- Edit button (visible when NOT editing) -->
+                    <Button Click="EditQuote_Click"
+                            AutomationProperties.Name="Edit quote"
+                            Style="{StaticResource MaterialOutlinedButtonStyle}"
+                            CornerRadius="{StaticResource RadiusMd}"
+                            MinHeight="{StaticResource TouchTarget}"
+                            Visibility="{Binding IsEditMode, ElementName=DashboardRoot, Converter={StaticResource InverseBoolConverter}}">
+                      <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
+                        <FontIcon Glyph="&#xE70F;" FontSize="{StaticResource IconSizeMd}" />
+                        <TextBlock Text="Edit" Visibility="{utu:Responsive Narrow=Collapsed, Normal=Visible}" />
+                      </StackPanel>
+                    </Button>
 
-                  <!-- Done button (visible when editing) -->
-                  <Button Grid.Column="1"
-                          Click="DoneEditing_Click"
-                          AutomationProperties.Name="Done editing"
-                          Style="{StaticResource AccentButtonStyle}"
-                          Margin="0,0,8,0"
-                          Visibility="{Binding IsEditMode, ElementName=DashboardRoot}">
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                      <FontIcon Glyph="&#xE73E;" FontSize="14" Foreground="{StaticResource AppBarBackgroundBrush}" />
-                      <TextBlock Text="Done" Foreground="{StaticResource AppBarBackgroundBrush}" FontWeight="SemiBold" />
-                    </StackPanel>
-                  </Button>
+                    <!-- Done button (visible when editing) -->
+                    <Button Click="DoneEditing_Click"
+                            AutomationProperties.Name="Done editing"
+                            Style="{StaticResource AccentButtonStyle}"
+                            Visibility="{Binding IsEditMode, ElementName=DashboardRoot, Converter={StaticResource BoolToVisibilityConverter}}">
+                      <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
+                        <FontIcon Glyph="&#xE73E;" FontSize="{StaticResource IconSizeMd}" Foreground="{StaticResource OnAccentBrush}" />
+                        <TextBlock Text="Done" Foreground="{StaticResource OnAccentBrush}" Style="{StaticResource LabelLargeSemiBold}" />
+                      </StackPanel>
+                    </Button>
 
-                  <Button Grid.Column="2"
-                          Command="{Binding DataContext.PreviewQuote, ElementName=DashboardRoot}"
-                          AutomationProperties.Name="Preview quote"
-                          Background="{ThemeResource SurfaceBrush}"
-                          BorderBrush="{ThemeResource PrimaryBrush}"
-                          BorderThickness="1.5" CornerRadius="8"
-                          Padding="20,10" Margin="0,0,8,0"
-                          Visibility="{Binding IsEditMode, ElementName=DashboardRoot, Converter={StaticResource InverseBoolConverter}}">
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                      <FontIcon Glyph="&#xE8FF;" FontSize="14"
-                                Foreground="{ThemeResource PrimaryBrush}" />
-                      <TextBlock Text="Preview"
-                                 Foreground="{ThemeResource PrimaryBrush}" FontWeight="SemiBold" />
-                    </StackPanel>
-                  </Button>
+                    <Button Command="{Binding DataContext.PreviewQuote, ElementName=DashboardRoot}"
+                            AutomationProperties.Name="Preview quote"
+                            Style="{StaticResource MaterialOutlinedButtonStyle}"
+                            BorderBrush="{ThemeResource PrimaryBrush}"
+                            CornerRadius="{StaticResource RadiusMd}"
+                            MinHeight="{StaticResource TouchTarget}"
+                            Visibility="{Binding IsEditMode, ElementName=DashboardRoot, Converter={StaticResource InverseBoolConverter}}">
+                      <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
+                        <FontIcon Glyph="&#xE8FF;" FontSize="{StaticResource IconSizeMd}"
+                                  Foreground="{ThemeResource PrimaryBrush}" />
+                        <TextBlock Text="Preview"
+                                   Foreground="{ThemeResource PrimaryBrush}" Style="{StaticResource LabelLargeSemiBold}" />
+                      </StackPanel>
+                    </Button>
 
-                  <Button Grid.Column="3"
-                          Click="SendQuote_Click"
-                          AutomationProperties.Name="Send quote"
-                          Style="{StaticResource AccentButtonStyle}"
-                          Visibility="{Binding IsEditMode, ElementName=DashboardRoot, Converter={StaticResource InverseBoolConverter}}">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                      <TextBlock Text="Send" Foreground="{StaticResource AppBarBackgroundBrush}" FontWeight="SemiBold" />
-                      <FontIcon Glyph="&#xE724;" FontSize="12" Foreground="{StaticResource AppBarBackgroundBrush}" />
-                    </StackPanel>
-                  </Button>
+                    <Button Click="SendQuote_Click"
+                            AutomationProperties.Name="Send quote"
+                            Style="{StaticResource AccentButtonStyle}"
+                            Visibility="{Binding IsEditMode, ElementName=DashboardRoot, Converter={StaticResource InverseBoolConverter}}">
+                      <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
+                        <TextBlock Text="Send" Foreground="{StaticResource OnAccentBrush}" Style="{StaticResource LabelLargeSemiBold}" />
+                        <FontIcon Glyph="&#xE724;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource OnAccentBrush}" />
+                      </StackPanel>
+                    </Button>
+                  </StackPanel>
                 </Grid>
 
-                <!-- Metadata line -->
-                <StackPanel Orientation="Horizontal" Spacing="16">
-                  <StackPanel Orientation="Horizontal" Spacing="4">
-                    <FontIcon Glyph="&#xE77B;" FontSize="12" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                <!-- Metadata line (stacked until the detail is wide) -->
+                <StackPanel Orientation="{utu:Responsive Narrowest=Vertical, Widest=Horizontal, Layout={StaticResource SplitLayout}}"
+                            Spacing="{utu:Responsive Narrowest={StaticResource Space8}, Widest={StaticResource Space16}, Layout={StaticResource SplitLayout}}">
+                  <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space4}">
+                    <FontIcon Glyph="&#xE77B;" FontSize="{StaticResource IconSizeSm}" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
                     <TextBlock Text="{Binding Data.Quote.ClientName}" Style="{StaticResource BodySmall}"
-                               Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                               Foreground="{ThemeResource OnSurfaceVariantBrush}" TextTrimming="CharacterEllipsis" />
                   </StackPanel>
-                  <StackPanel Orientation="Horizontal" Spacing="4">
-                    <FontIcon Glyph="&#xE1D0;" FontSize="12" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                  <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space4}">
+                    <FontIcon Glyph="&#xE1D0;" FontSize="{StaticResource IconSizeSm}" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
                     <TextBlock Text="{Binding Data.Quote.QuoteNumber}" Style="{StaticResource BodySmall}"
                                Foreground="{ThemeResource OnSurfaceVariantBrush}" />
                   </StackPanel>
-                  <StackPanel Orientation="Horizontal" Spacing="4">
-                    <FontIcon Glyph="&#xE787;" FontSize="12" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                  <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space4}">
+                    <FontIcon Glyph="&#xE787;" FontSize="{StaticResource IconSizeSm}" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
                     <TextBlock Style="{StaticResource BodySmall}"
                                Foreground="{ThemeResource OnSurfaceVariantBrush}">
-                      <Run Text="Valid " /><Run Text="{Binding Data.Quote.ValidUntil, Converter={StaticResource RelativeDateConverter}}" />
+                      <Run Text="Valid until " /><Run Text="{Binding Data.Quote.ValidUntil, Converter={StaticResource ShortDateConverter}}" />
                     </TextBlock>
                   </StackPanel>
-                  <Border Background="{Binding Data.Quote.Status, Converter={StaticResource StatusBackgroundConverter}}"
-                          CornerRadius="10" Padding="8,2">
-                    <StackPanel Orientation="Horizontal" Spacing="4">
-                      <FontIcon Glyph="{Binding Data.Quote.Status, Converter={StaticResource StatusIconConverter}}" FontSize="10"
-                                Foreground="{Binding Data.Quote.Status, Converter={StaticResource StatusForegroundConverter}}" />
-                      <TextBlock Text="{Binding Data.Quote.Status, Converter={StaticResource UpperCaseConverter}}" Style="{StaticResource LabelSmall}"
-                                 Foreground="{Binding Data.Quote.Status, Converter={StaticResource StatusForegroundConverter}}" />
-                    </StackPanel>
-                  </Border>
+                  <ctrl:StatusPill Status="{Binding Data.Quote.Status}" />
                 </StackPanel>
 
-                <!-- Content: Line Items + Sidebar -->
+                <!-- Content: Line Items + side column (client, details, totals) -->
                 <Grid>
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="340" />
+                    <!-- Auto, not 340: a fixed column would still take its width when the side column is stacked below -->
+                    <ColumnDefinition Width="Auto" />
                   </Grid.ColumnDefinitions>
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                  </Grid.RowDefinitions>
 
-                  <StackPanel Spacing="16" Margin="0,0,24,0">
+                  <StackPanel Spacing="{StaticResource Space16}"
+                              Grid.ColumnSpan="{utu:Responsive Narrowest=2, Widest=1, Layout={StaticResource SplitLayout}}"
+                              Margin="{utu:Responsive Narrowest='0', Widest={StaticResource GapEnd24}, Layout={StaticResource SplitLayout}}">
                     <Border Background="{ThemeResource SurfaceBrush}"
                             BorderBrush="{ThemeResource OutlineVariantBrush}"
-                            BorderThickness="1" CornerRadius="12" Padding="0"
+                            BorderThickness="1" CornerRadius="{StaticResource RadiusLg}"
                             Translation="0,0,8">
                       <Border.Shadow>
                         <ThemeShadow />
@@ -597,8 +682,8 @@
                       <StackPanel>
                         <TextBlock Text="LINE ITEMS" Style="{StaticResource LabelSmall}"
                                    Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                                   FontWeight="SemiBold" Margin="16,16,16,8" />
-                        <Grid Padding="16,8" Background="{ThemeResource SurfaceVariantBrush}">
+                                   FontWeight="SemiBold" Margin="{StaticResource SectionLabelInset}" />
+                        <Grid Padding="{StaticResource TableHeaderInset}" Background="{ThemeResource SurfaceVariantBrush}">
                           <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="60" />
@@ -606,6 +691,7 @@
                             <ColumnDefinition Width="90" />
                           </Grid.ColumnDefinitions>
                           <TextBlock Text="DESCRIPTION" Style="{StaticResource LabelSmall}"
+                                     Visibility="{utu:Responsive Narrow=Collapsed, Normal=Visible}"
                                      Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold" />
                           <TextBlock Grid.Column="1" Text="QTY" Style="{StaticResource LabelSmall}"
                                      Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold"
@@ -617,7 +703,7 @@
                                      Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold"
                                      HorizontalAlignment="Right" />
                         </Grid>
-                        <Border Height="2" Background="{ThemeResource OnSurfaceBrush}" />
+                        <Border Height="{StaticResource RuleThickness}" Background="{ThemeResource OnSurfaceBrush}" />
                         <muxc:ItemsRepeater x:Name="LineItemsRepeater"
                                             ItemsSource="{Binding Data.LineItems}"
                                             ElementPrepared="LineItems_ElementPrepared">
@@ -626,48 +712,59 @@
                           </muxc:ItemsRepeater.Layout>
                           <muxc:ItemsRepeater.ItemTemplate>
                             <DataTemplate>
-                              <Grid Padding="16,14"
-                                    MinHeight="48"
+                              <Grid MinHeight="{StaticResource TouchTargetComfortable}"
                                     BorderBrush="{ThemeResource OutlineVariantBrush}"
                                     BorderThickness="0,0,0,1"
                                     Tapped="InlineLineItem_Tapped">
-                                <Grid.ColumnDefinitions>
-                                  <ColumnDefinition Width="*" />
-                                  <ColumnDefinition Width="60" />
-                                  <ColumnDefinition Width="90" />
-                                  <ColumnDefinition Width="90" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="{Binding Description}" Style="{StaticResource BodySmall}" />
-                                <TextBlock Grid.Column="1" Text="{Binding Quantity}" Style="{StaticResource BodySmall}"
-                                           HorizontalAlignment="Right" />
-                                <TextBlock Grid.Column="2"
-                                           Text="{Binding UnitPrice, Converter={StaticResource CurrencyFormatConverter}}"
-                                           Style="{StaticResource BodySmall}" FontFamily="{StaticResource MonospaceFontFamily}"
-                                           HorizontalAlignment="Right" />
-                                <TextBlock Grid.Column="3"
-                                           Text="{Binding LineTotal, Converter={StaticResource CurrencyFormatConverter}}"
-                                           Style="{StaticResource BodySmall}" FontFamily="{StaticResource MonospaceFontFamily}"
-                                           FontWeight="SemiBold" HorizontalAlignment="Right" />
+                                <!-- Alternate-row stripe: shown on odd rows from code, coloured by the theme here -->
+                                <Border x:Name="Stripe" Background="{ThemeResource AlternateRowBrush}" Visibility="Collapsed" />
+                                <Grid Padding="{StaticResource TableCellInset}" RowSpacing="{StaticResource Space4}">
+                                  <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="60" />
+                                    <ColumnDefinition Width="90" />
+                                    <ColumnDefinition Width="90" />
+                                  </Grid.ColumnDefinitions>
+                                  <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                  </Grid.RowDefinitions>
+                                  <TextBlock Text="{Binding Description}" Style="{StaticResource BodySmall}"
+                                             Grid.ColumnSpan="{utu:Responsive Narrow=4, Normal=1}"
+                                             TextWrapping="Wrap" />
+                                  <TextBlock Grid.Row="{utu:Responsive Narrow=1, Normal=0}" Grid.Column="1"
+                                             Text="{Binding Quantity}" Style="{StaticResource BodySmall}"
+                                             HorizontalAlignment="Right" />
+                                  <TextBlock Grid.Row="{utu:Responsive Narrow=1, Normal=0}" Grid.Column="2"
+                                             Text="{Binding UnitPrice, Converter={StaticResource CurrencyFormatConverter}}"
+                                             Style="{StaticResource BodySmall}" FontFamily="{StaticResource MonospaceFontFamily}"
+                                             HorizontalAlignment="Right" />
+                                  <TextBlock Grid.Row="{utu:Responsive Narrow=1, Normal=0}" Grid.Column="3"
+                                             Text="{Binding LineTotal, Converter={StaticResource CurrencyFormatConverter}}"
+                                             Style="{StaticResource BodySmallSemiBold}" FontFamily="{StaticResource MonospaceFontFamily}"
+                                             HorizontalAlignment="Right" />
+                                </Grid>
                               </Grid>
                             </DataTemplate>
                           </muxc:ItemsRepeater.ItemTemplate>
                         </muxc:ItemsRepeater>
 
                         <!-- Inline Edit Buttons (visible when editing) -->
-                        <StackPanel Orientation="Horizontal" Spacing="8"
-                                    Padding="16,12"
-                                    Visibility="{Binding IsEditMode, ElementName=DashboardRoot}">
+                        <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}"
+                                    Padding="{StaticResource CardInset}"
+                                    Visibility="{Binding IsEditMode, ElementName=DashboardRoot, Converter={StaticResource BoolToVisibilityConverter}}">
                           <!-- Add Line Item with dashed border -->
                           <Grid>
-                            <Rectangle RadiusX="8" RadiusY="8"
+                            <Rectangle RadiusX="{StaticResource RadiusMdValue}" RadiusY="{StaticResource RadiusMdValue}"
                                        StrokeDashArray="4,3"
                                        Stroke="{ThemeResource OutlineBrush}"
                                        StrokeThickness="1" Fill="Transparent" />
                             <Button Click="InlineAddLineItem_Click"
-                                    Background="Transparent" BorderThickness="0"
-                                    CornerRadius="8" Padding="12,6">
-                              <StackPanel Orientation="Horizontal" Spacing="6">
-                                <FontIcon Glyph="&#xE710;" FontSize="12" />
+                                    Style="{StaticResource MaterialTextButtonStyle}"
+                                    MinHeight="{StaticResource TouchTarget}"
+                                    CornerRadius="{StaticResource RadiusMd}" Padding="{StaticResource Inset12x4}">
+                              <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
+                                <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" />
                                 <TextBlock Text="Add Line Item" />
                               </StackPanel>
                             </Button>
@@ -676,9 +773,10 @@
                           <Button Click="InlineCatalogBrowser_Click"
                                   Style="{StaticResource MaterialOutlinedButtonStyle}"
                                   BorderBrush="{StaticResource AppBarAccentBrush}"
-                                  CornerRadius="8" Padding="12,6">
-                            <StackPanel Orientation="Horizontal" Spacing="6">
-                              <FontIcon Glyph="&#xE8F1;" FontSize="12" />
+                                  MinHeight="{StaticResource TouchTarget}"
+                                  CornerRadius="{StaticResource RadiusMd}" Padding="{StaticResource Inset12x4}">
+                            <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
+                              <FontIcon Glyph="&#xE8F1;" FontSize="{StaticResource IconSizeSm}" />
                               <TextBlock Text="From Catalog" />
                             </StackPanel>
                           </Button>
@@ -688,7 +786,7 @@
 
                     <Border Background="{ThemeResource SurfaceBrush}"
                             BorderBrush="{ThemeResource OutlineVariantBrush}"
-                            BorderThickness="1" CornerRadius="12" Padding="0"
+                            BorderThickness="1" CornerRadius="{StaticResource RadiusLg}"
                             Translation="0,0,8">
                       <Border.Shadow>
                         <ThemeShadow />
@@ -696,39 +794,42 @@
                       <StackPanel>
                         <TextBlock Text="NOTES" Style="{StaticResource LabelSmall}"
                                    Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold"
-                                   Margin="16,14,16,14" />
-                        <Border Height="1" Background="{ThemeResource OutlineVariantBrush}" />
-                        <!-- Notes display (when not editing) -->
-                        <TextBlock Text="{Binding Data.Quote.Notes}"
-                                   Style="{StaticResource BodyMedium}"
-                                   Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                                   TextWrapping="Wrap" Margin="16,16,16,16"
-                                   Visibility="{Binding IsEditMode, ElementName=DashboardRoot, Converter={StaticResource InverseBoolConverter}}" />
-                        <TextBlock Text="Add notes for the client..."
-                                   Style="{StaticResource BodyMedium}"
-                                   Foreground="{ThemeResource OutlineBrush}"
-                                   FontStyle="Italic"
-                                   Visibility="{Binding IsEditMode, ElementName=DashboardRoot, Converter={StaticResource InverseBoolConverter}}"
-                                   Margin="16,0,16,16" />
+                                   Margin="{StaticResource CardInset}" />
+                        <Border Height="{StaticResource HairlineThickness}" Background="{ThemeResource OutlineVariantBrush}" />
+                        <!-- Notes (when not editing), or a hint when there are none -->
+                        <Grid Margin="{StaticResource Inset16}"
+                              Visibility="{Binding IsEditMode, ElementName=DashboardRoot, Converter={StaticResource InverseBoolConverter}}">
+                          <TextBlock Text="{Binding Data.Quote.Notes}"
+                                     Style="{StaticResource BodyMedium}"
+                                     Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                                     TextWrapping="Wrap" />
+                          <TextBlock Text="No notes. Use Edit to add notes for the client."
+                                     Style="{StaticResource BodyMedium}"
+                                     Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                                     FontStyle="Italic" TextWrapping="Wrap"
+                                     Visibility="{Binding Data.Quote.Notes, Converter={StaticResource EmptyToVisibleConverter}}" />
+                        </Grid>
 
                         <!-- Notes editor (when editing) -->
                         <TextBox Text="{Binding EditingNotes, ElementName=DashboardRoot, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 Header="Notes for the client"
                                  PlaceholderText="Add notes for the client..."
                                  TextWrapping="Wrap"
                                  AcceptsReturn="True"
-                                 MinHeight="80"
-                                 Margin="16,8,16,16"
-                                 Visibility="{Binding IsEditMode, ElementName=DashboardRoot}" />
+                                 MinHeight="{StaticResource NotesMinHeight}"
+                                 Margin="{StaticResource Inset16}"
+                                 Visibility="{Binding IsEditMode, ElementName=DashboardRoot, Converter={StaticResource BoolToVisibilityConverter}}" />
                       </StackPanel>
                     </Border>
 
                     <!-- Secondary actions -->
-                    <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,8,0,0">
+                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space12}" Margin="{StaticResource GapTop8}">
                       <Button Command="{Binding DataContext.DuplicateQuote, ElementName=DashboardRoot}"
                               AutomationProperties.Name="Duplicate quote"
+                              MinHeight="{StaticResource TouchTarget}"
                               Style="{StaticResource MaterialTextButtonStyle}">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                          <FontIcon Glyph="&#xE8C8;" FontSize="14"
+                        <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
+                          <FontIcon Glyph="&#xE8C8;" FontSize="{StaticResource IconSizeMd}"
                                     Foreground="{ThemeResource PrimaryBrush}" />
                           <TextBlock Text="Duplicate"
                                      Foreground="{ThemeResource PrimaryBrush}" />
@@ -736,9 +837,10 @@
                       </Button>
                       <Button Click="DeleteQuote_Click"
                               AutomationProperties.Name="Delete quote"
+                              MinHeight="{StaticResource TouchTarget}"
                               Style="{StaticResource MaterialTextButtonStyle}">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                          <FontIcon Glyph="&#xE74D;" FontSize="14"
+                        <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
+                          <FontIcon Glyph="&#xE74D;" FontSize="{StaticResource IconSizeMd}"
                                     Foreground="{ThemeResource ErrorBrush}" />
                           <TextBlock Text="Delete"
                                      Foreground="{ThemeResource ErrorBrush}" />
@@ -747,136 +849,137 @@
                     </StackPanel>
                   </StackPanel>
 
-                  <!-- Right Sidebar -->
-                  <StackPanel Grid.Column="1" Spacing="24" Margin="8,0,16,0">
-                    <StackPanel Spacing="8" Padding="0,4">
+                  <!-- Side column (below the line items until the detail is wide) -->
+                  <StackPanel Grid.Row="{utu:Responsive Narrowest=1, Widest=0, Layout={StaticResource SplitLayout}}"
+                              Grid.Column="{utu:Responsive Narrowest=0, Widest=1, Layout={StaticResource SplitLayout}}"
+                              Grid.ColumnSpan="{utu:Responsive Narrowest=2, Widest=1, Layout={StaticResource SplitLayout}}"
+                              Margin="{utu:Responsive Narrowest={StaticResource GapTop24}, Widest={StaticResource SideColumnMargin}, Layout={StaticResource SplitLayout}}"
+                              Width="{utu:Responsive Narrowest=NaN, Widest={StaticResource DetailSideColumnWidth}, Layout={StaticResource SplitLayout}}"
+                              Spacing="{StaticResource Space24}">
+                    <StackPanel Spacing="{StaticResource Space8}" Padding="{StaticResource InsetY4}">
                       <TextBlock Text="CLIENT" Style="{StaticResource LabelSmall}"
                                  Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold" />
-                      <StackPanel Orientation="Horizontal" Spacing="12">
-                        <Border Width="36" Height="36" CornerRadius="18"
-                                Background="{ThemeResource PrimaryContainerBrush}">
+                      <Grid ColumnSpacing="{StaticResource Space12}">
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition Width="Auto" />
+                          <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Border Width="{StaticResource AvatarSizeSm}" Height="{StaticResource AvatarSizeSm}" CornerRadius="{StaticResource RadiusCircle36}"
+                                Background="{ThemeResource PrimaryContainerBrush}"
+                                AutomationProperties.AccessibilityView="Raw">
                           <TextBlock Text="{Binding Data.Quote.ClientName, Converter={StaticResource InitialsConverter}}"
                                      Style="{StaticResource LabelMedium}"
-                                     Foreground="{ThemeResource PrimaryBrush}"
+                                     Foreground="{ThemeResource OnPrimaryContainerBrush}"
                                      HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
-                        <StackPanel VerticalAlignment="Center" Spacing="2">
-                          <TextBlock Text="{Binding Data.Quote.ClientName}" Style="{StaticResource BodyMedium}"
-                                     FontWeight="Medium" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="{StaticResource Space2}">
+                          <TextBlock Text="{Binding Data.Quote.ClientName}" Style="{StaticResource BodyMediumWeightMedium}"
+                                     TextWrapping="Wrap" />
                           <TextBlock Text="{Binding Data.Client.Email}" Style="{StaticResource BodySmall}"
-                                     Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                                     Foreground="{ThemeResource OnSurfaceVariantBrush}" TextTrimming="CharacterEllipsis" />
                           <TextBlock Text="{Binding Data.Client.Phone}" Style="{StaticResource BodySmall}"
                                      Foreground="{ThemeResource OnSurfaceVariantBrush}" />
                         </StackPanel>
-                      </StackPanel>
+                      </Grid>
                     </StackPanel>
 
                     <StackPanel>
-                        <TextBlock Text="QUOTE DETAILS" Style="{StaticResource LabelSmall}"
-                                   Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold"
-                                   Margin="0,0,0,8" />
-                        <Border Height="1" Background="{ThemeResource OutlineVariantBrush}" />
-                        <Grid Padding="0,10">
-                          <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                          </Grid.ColumnDefinitions>
-                          <TextBlock Text="Quote #" Style="{StaticResource BodyMediumWeightMedium}"
-                                     Foreground="{ThemeResource OnSurfaceVariantBrush}" />
-                          <TextBlock Grid.Column="1" Text="{Binding Data.Quote.QuoteNumber}"
-                                     Style="{StaticResource BodyMediumWeightMedium}" />
-                        </Grid>
-                        <Border Height="1" Background="{ThemeResource OutlineVariantBrush}" />
-                        <Grid Padding="0,10">
-                          <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                          </Grid.ColumnDefinitions>
-                          <TextBlock Text="Created" Style="{StaticResource BodyMediumWeightMedium}"
-                                     Foreground="{ThemeResource OnSurfaceVariantBrush}" />
-                          <TextBlock Grid.Column="1"
-                                     Text="{Binding Data.Quote.CreatedAt, Converter={StaticResource RelativeDateConverter}}"
-                                     Style="{StaticResource BodyMediumWeightMedium}" />
-                        </Grid>
-                        <Border Height="1" Background="{ThemeResource OutlineVariantBrush}" />
-                        <Grid Padding="0,10">
-                          <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                          </Grid.ColumnDefinitions>
-                          <TextBlock Text="Valid Until" Style="{StaticResource BodyMediumWeightMedium}"
-                                     Foreground="{ThemeResource OnSurfaceVariantBrush}" />
-                          <TextBlock Grid.Column="1"
-                                     Text="{Binding Data.Quote.ValidUntil, Converter={StaticResource RelativeDateConverter}}"
-                                     Style="{StaticResource BodyMediumWeightMedium}" />
-                        </Grid>
-                        <Border Height="1" Background="{ThemeResource OutlineVariantBrush}" />
-                        <Grid Padding="0,10">
-                          <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                          </Grid.ColumnDefinitions>
-                          <TextBlock Text="Status" Style="{StaticResource BodyMediumWeightMedium}"
-                                     Foreground="{ThemeResource OnSurfaceVariantBrush}" />
-                          <Border Grid.Column="1"
-                                  Background="{Binding Data.Quote.Status, Converter={StaticResource StatusBackgroundConverter}}"
-                                  CornerRadius="10" Padding="8,2">
-                            <StackPanel Orientation="Horizontal" Spacing="4">
-                              <FontIcon Glyph="{Binding Data.Quote.Status, Converter={StaticResource StatusIconConverter}}" FontSize="10"
-                                        Foreground="{Binding Data.Quote.Status, Converter={StaticResource StatusForegroundConverter}}" />
-                              <TextBlock Text="{Binding Data.Quote.Status, Converter={StaticResource UpperCaseConverter}}" Style="{StaticResource LabelSmall}"
-                                         Foreground="{Binding Data.Quote.Status, Converter={StaticResource StatusForegroundConverter}}" />
-                            </StackPanel>
-                          </Border>
-                        </Grid>
-                      </StackPanel>
+                      <TextBlock Text="QUOTE DETAILS" Style="{StaticResource LabelSmall}"
+                                 Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold"
+                                 Margin="{StaticResource GapBottom8}" />
+                      <Border Height="{StaticResource HairlineThickness}" Background="{ThemeResource OutlineVariantBrush}" />
+                      <Grid Padding="{StaticResource InsetY12}">
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition Width="*" />
+                          <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Quote #" Style="{StaticResource BodyMediumWeightMedium}"
+                                   Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                        <TextBlock Grid.Column="1" Text="{Binding Data.Quote.QuoteNumber}"
+                                   Style="{StaticResource BodyMediumWeightMedium}" />
+                      </Grid>
+                      <Border Height="{StaticResource HairlineThickness}" Background="{ThemeResource OutlineVariantBrush}" />
+                      <Grid Padding="{StaticResource InsetY12}">
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition Width="*" />
+                          <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Created" Style="{StaticResource BodyMediumWeightMedium}"
+                                   Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding Data.Quote.CreatedAt, Converter={StaticResource RelativeDateConverter}}"
+                                   Style="{StaticResource BodyMediumWeightMedium}" />
+                      </Grid>
+                      <Border Height="{StaticResource HairlineThickness}" Background="{ThemeResource OutlineVariantBrush}" />
+                      <Grid Padding="{StaticResource InsetY12}">
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition Width="*" />
+                          <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Valid Until" Style="{StaticResource BodyMediumWeightMedium}"
+                                   Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding Data.Quote.ValidUntil, Converter={StaticResource RelativeDateConverter}}"
+                                   Style="{StaticResource BodyMediumWeightMedium}" />
+                      </Grid>
+                      <Border Height="{StaticResource HairlineThickness}" Background="{ThemeResource OutlineVariantBrush}" />
+                      <Grid Padding="{StaticResource InsetY12}">
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition Width="*" />
+                          <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Status" Style="{StaticResource BodyMediumWeightMedium}"
+                                   Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                        <ctrl:StatusPill Grid.Column="1" Status="{Binding Data.Quote.Status}" />
+                      </Grid>
+                    </StackPanel>
 
                     <StackPanel>
-                        <TextBlock Text="TOTALS" Style="{StaticResource LabelSmall}"
-                                   Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold"
-                                   Margin="0,14,0,8" />
-                        <Border Height="1" Background="{ThemeResource OutlineVariantBrush}" />
-                        <StackPanel Spacing="8" Margin="0,12,0,16">
-                          <Grid>
-                            <Grid.ColumnDefinitions>
-                              <ColumnDefinition Width="*" />
-                              <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Subtotal" Style="{StaticResource BodyMedium}"
-                                       Foreground="{ThemeResource OnSurfaceVariantBrush}" />
-                            <TextBlock Grid.Column="1"
-                                       Text="{Binding Data.Quote.Subtotal, Converter={StaticResource CurrencyFormatConverter}}"
-                                       FontFamily="{StaticResource MonospaceFontFamily}" Style="{StaticResource BodyMedium}" />
-                          </Grid>
-                          <Grid>
-                            <Grid.ColumnDefinitions>
-                              <ColumnDefinition Width="*" />
-                              <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Style="{StaticResource BodyMedium}"
-                                       Foreground="{ThemeResource OnSurfaceVariantBrush}">
-                              <Run Text="Tax (" /><Run Text="{Binding Data.Quote.TaxRate}" /><Run Text="%)" />
-                            </TextBlock>
-                            <TextBlock Grid.Column="1"
-                                       Text="{Binding Data.Quote.TaxAmount, Converter={StaticResource CurrencyFormatConverter}}"
-                                       FontFamily="{StaticResource MonospaceFontFamily}" Style="{StaticResource BodyMedium}" />
-                          </Grid>
-                          <Border Height="1" Background="{ThemeResource PrimaryBrush}" Margin="0,4" />
-                          <Grid>
-                            <Grid.ColumnDefinitions>
-                              <ColumnDefinition Width="*" />
-                              <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Total" Style="{StaticResource TitleMediumBold}" />
-                            <TextBlock Grid.Column="1"
-                                       Text="{Binding Data.Quote.Total, Converter={StaticResource CurrencyFormatConverter}}"
-                                       FontFamily="{StaticResource MonospaceFontFamily}"
-                                       Style="{StaticResource TitleMedium}"
-                                       Foreground="{ThemeResource PrimaryBrush}" FontWeight="Bold" />
-                          </Grid>
-                        </StackPanel>
+                      <TextBlock Text="TOTALS" Style="{StaticResource LabelSmall}"
+                                 Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold"
+                                 Margin="{StaticResource GapBottom8}" />
+                      <Border Height="{StaticResource HairlineThickness}" Background="{ThemeResource OutlineVariantBrush}" />
+                      <StackPanel Spacing="{StaticResource Space8}" Margin="{StaticResource InsetY12}">
+                        <Grid>
+                          <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                          </Grid.ColumnDefinitions>
+                          <TextBlock Text="Subtotal" Style="{StaticResource BodyMedium}"
+                                     Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                          <TextBlock Grid.Column="1"
+                                     Text="{Binding Data.Quote.Subtotal, Converter={StaticResource CurrencyFormatConverter}}"
+                                     FontFamily="{StaticResource MonospaceFontFamily}" Style="{StaticResource BodyMedium}" />
+                        </Grid>
+                        <Grid>
+                          <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                          </Grid.ColumnDefinitions>
+                          <TextBlock Style="{StaticResource BodyMedium}"
+                                     Foreground="{ThemeResource OnSurfaceVariantBrush}">
+                            <Run Text="Tax (" /><Run Text="{Binding Data.Quote.TaxRate}" /><Run Text="%)" />
+                          </TextBlock>
+                          <TextBlock Grid.Column="1"
+                                     Text="{Binding Data.Quote.TaxAmount, Converter={StaticResource CurrencyFormatConverter}}"
+                                     FontFamily="{StaticResource MonospaceFontFamily}" Style="{StaticResource BodyMedium}" />
+                        </Grid>
+                        <Border Height="{StaticResource HairlineThickness}" Background="{ThemeResource PrimaryBrush}" Margin="{StaticResource InsetY4}" />
+                        <Grid>
+                          <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                          </Grid.ColumnDefinitions>
+                          <TextBlock Text="Total" Style="{StaticResource TitleMediumBold}" />
+                          <TextBlock Grid.Column="1"
+                                     Text="{Binding Data.Quote.Total, Converter={StaticResource CurrencyFormatConverter}}"
+                                     FontFamily="{StaticResource MonospaceFontFamily}"
+                                     Style="{StaticResource TitleMediumBold}"
+                                     Foreground="{ThemeResource PrimaryBrush}" />
+                        </Grid>
                       </StackPanel>
                     </StackPanel>
+                  </StackPanel>
                 </Grid>
               </StackPanel>
             </ScrollViewer>
@@ -884,9 +987,11 @@
 
           <mvux:FeedView.NoneTemplate>
             <DataTemplate>
+              <!-- Only beside the list: in the one-pane layouts the list shows until a quote is picked. -->
               <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
-                          Spacing="12" Padding="32">
-                <FontIcon Glyph="&#xE1D0;" FontSize="48"
+                          Visibility="{utu:Responsive Narrow=Collapsed, Widest=Visible}"
+                          Spacing="{StaticResource Space12}" Padding="{StaticResource Inset32}">
+                <FontIcon Glyph="&#xE1D0;" FontSize="{StaticResource IconSizeHero}"
                           Foreground="{ThemeResource OnSurfaceVariantBrush}" HorizontalAlignment="Center" />
                 <TextBlock Text="Select a quote" Style="{StaticResource TitleSmall}"
                            HorizontalAlignment="Center"
@@ -894,15 +999,45 @@
                 <TextBlock Text="Choose a quote from the list to view details, or create a new one."
                            Style="{StaticResource BodyMedium}" HorizontalAlignment="Center"
                            Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                           TextAlignment="Center" TextWrapping="Wrap" MaxWidth="320" />
+                           TextAlignment="Center" TextWrapping="Wrap" MaxWidth="{StaticResource HintMaxWidth}" />
               </StackPanel>
             </DataTemplate>
           </mvux:FeedView.NoneTemplate>
+
+          <mvux:FeedView.ProgressTemplate>
+            <DataTemplate>
+              <ProgressRing IsActive="True" HorizontalAlignment="Center" VerticalAlignment="Center"
+                            Visibility="{utu:Responsive Narrow=Collapsed, Widest=Visible}"
+                            AutomationProperties.Name="Loading quote" />
+            </DataTemplate>
+          </mvux:FeedView.ProgressTemplate>
+
+          <mvux:FeedView.ErrorTemplate>
+            <DataTemplate>
+              <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                          Background="{ThemeResource BackgroundBrush}"
+                          Spacing="{StaticResource Space12}" Padding="{StaticResource Inset32}"
+                          AutomationProperties.LiveSetting="Polite">
+                <FontIcon Glyph="&#xE783;" FontSize="{StaticResource IconSizeHero}"
+                          Foreground="{ThemeResource ErrorBrush}" HorizontalAlignment="Center" />
+                <TextBlock Text="This quote could not be loaded." Style="{StaticResource TitleSmall}"
+                           HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
+                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}" HorizontalAlignment="Center">
+                  <Button Content="Back"
+                          Command="{Binding DataContext.BackToList, ElementName=DashboardRoot}"
+                          Style="{StaticResource MaterialTextButtonStyle}" />
+                  <Button Content="Retry"
+                          Command="{Binding DataContext.RefreshDetail, ElementName=DashboardRoot}"
+                          Style="{StaticResource MaterialOutlinedButtonStyle}" />
+                </StackPanel>
+              </StackPanel>
+            </DataTemplate>
+          </mvux:FeedView.ErrorTemplate>
         </mvux:FeedView>
 
         <!-- === PREVIEW VIEW === -->
         <mvux:FeedView Source="{Binding PreviewData}"
-                       Visibility="{Binding IsPreviewMode, FallbackValue=Collapsed}">
+                       Visibility="{Binding IsPreviewMode, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
           <DataTemplate>
             <Grid Background="{ThemeResource SurfaceVariantBrush}">
               <Grid.RowDefinitions>
@@ -910,49 +1045,56 @@
                 <RowDefinition />
               </Grid.RowDefinitions>
 
-              <!-- Preview Action Bar -->
+              <!-- Preview Action Bar (icon-only Back and Download on Narrow) -->
               <Border Background="{ThemeResource SurfaceBrush}"
                       BorderBrush="{ThemeResource OutlineVariantBrush}"
-                      BorderThickness="0,0,0,1" Padding="24,12">
-                <Grid>
+                      BorderThickness="0,0,0,1"
+                      Padding="{utu:Responsive Narrow={StaticResource Inset12x8}, Normal={StaticResource Inset24x12}}">
+                <Grid ColumnSpacing="{StaticResource Space8}">
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
                   </Grid.ColumnDefinitions>
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                  </Grid.RowDefinitions>
 
                   <Button Command="{Binding DataContext.BackToDetail, ElementName=DashboardRoot}"
                           AutomationProperties.Name="Back to detail view"
+                          ToolTipService.ToolTip="Back to detail view"
                           Style="{StaticResource MaterialOutlinedButtonStyle}"
-                          CornerRadius="8">
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                      <FontIcon Glyph="&#xE72B;" FontSize="14" />
-                      <TextBlock Text="Back to Detail" />
+                          MinHeight="{StaticResource TouchTarget}" MinWidth="{StaticResource TouchTarget}"
+                          CornerRadius="{StaticResource RadiusMd}">
+                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
+                      <FontIcon Glyph="&#xE72B;" FontSize="{StaticResource IconSizeMd}" />
+                      <TextBlock Text="Back to Detail" Visibility="{utu:Responsive Narrow=Collapsed, Normal=Visible}" />
                     </StackPanel>
                   </Button>
 
-                  <TextBlock Grid.Column="1"
+                  <TextBlock Grid.Row="{utu:Responsive Narrow=1, Normal=0}"
+                             Grid.Column="{utu:Responsive Narrow=0, Normal=1}"
+                             Grid.ColumnSpan="{utu:Responsive Narrow=4, Normal=1}"
                              Text="{Binding DataContext.PdfUnavailableNote, ElementName=DashboardRoot}"
                              Visibility="{Binding DataContext.PdfUnavailableNote, ElementName=DashboardRoot, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert}"
                              Style="{StaticResource BodySmall}"
                              Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                             TextWrapping="Wrap" TextAlignment="Right"
-                             VerticalAlignment="Center" Margin="12,0" />
+                             TextWrapping="Wrap" TextAlignment="{utu:Responsive Narrow=Left, Normal=Right}"
+                             VerticalAlignment="Center" Margin="{utu:Responsive Narrow={StaticResource GapTop8}, Normal={StaticResource InsetX12}}" />
 
                   <Button Grid.Column="2"
                           Command="{Binding DataContext.DownloadPdf, ElementName=DashboardRoot}"
                           Visibility="{Binding DataContext.PdfUnavailableNote, ElementName=DashboardRoot, Converter={StaticResource EmptyToVisibleConverter}}"
                           AutomationProperties.Name="Download PDF"
-                          Background="{ThemeResource PrimaryBrush}"
-                          Foreground="{ThemeResource OnPrimaryBrush}"
-                          CornerRadius="8" Padding="20,10" BorderThickness="0"
-                          Margin="0,0,8,0">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                      <FontIcon Glyph="&#xE896;" FontSize="14"
-                                Foreground="{ThemeResource OnPrimaryBrush}" />
-                      <TextBlock Text="Download PDF"
-                                 Foreground="{ThemeResource OnPrimaryBrush}" FontWeight="SemiBold" />
+                          ToolTipService.ToolTip="Download PDF"
+                          Style="{StaticResource MaterialFilledButtonStyle}"
+                          MinHeight="{StaticResource TouchTarget}" MinWidth="{StaticResource TouchTarget}"
+                          CornerRadius="{StaticResource RadiusMd}">
+                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
+                      <FontIcon Glyph="&#xE896;" FontSize="{StaticResource IconSizeMd}" />
+                      <TextBlock Text="Download PDF" Visibility="{utu:Responsive Narrow=Collapsed, Normal=Visible}" />
                     </StackPanel>
                   </Button>
 
@@ -960,21 +1102,21 @@
                           Click="SendQuote_Click"
                           AutomationProperties.Name="Send quote to client"
                           Style="{StaticResource AccentButtonStyle}">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                      <FontIcon Glyph="&#xE724;" FontSize="14"
-                                Foreground="{StaticResource AppBarBackgroundBrush}" />
+                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
+                      <FontIcon Glyph="&#xE724;" FontSize="{StaticResource IconSizeMd}"
+                                Foreground="{StaticResource OnAccentBrush}" />
                       <TextBlock Text="Send Quote"
-                                 Foreground="{StaticResource AppBarBackgroundBrush}" FontWeight="SemiBold" />
+                                 Foreground="{StaticResource OnAccentBrush}" Style="{StaticResource LabelLargeSemiBold}" />
                     </StackPanel>
                   </Button>
                 </Grid>
               </Border>
 
-              <!-- Preview Document -->
-              <ScrollViewer Grid.Row="1" Padding="40,32">
+              <!-- Preview Document (white paper in both themes is a print preview; it follows the theme like the app) -->
+              <ScrollViewer Grid.Row="1" Padding="{utu:Responsive Narrow={StaticResource PreviewGutterNarrow}, Normal={StaticResource PreviewGutterWide}}">
                 <Border Background="{ThemeResource SurfaceBrush}"
-                        CornerRadius="12"
-                        MaxWidth="720" HorizontalAlignment="Center"
+                        CornerRadius="{StaticResource RadiusLg}"
+                        MaxWidth="{StaticResource ReadingMaxWidth}" HorizontalAlignment="Center"
                         Translation="0,0,16">
                   <Border.Shadow>
                     <ThemeShadow />
@@ -983,110 +1125,113 @@
 
                     <!-- Blue Header -->
                     <Border Background="{StaticResource AppBarBackgroundBrush}"
-                            CornerRadius="12,12,0,0" Padding="32,24">
-                      <StackPanel Spacing="20">
+                            CornerRadius="{StaticResource RadiusTopLg}"
+                            Padding="{utu:Responsive Narrow={StaticResource DocumentInsetNarrow}, Normal={StaticResource DocumentInsetWide}}">
+                      <StackPanel Spacing="{StaticResource Space20}">
                         <!-- Company Row -->
-                        <Grid>
+                        <Grid ColumnSpacing="{StaticResource Space12}">
                           <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
                           </Grid.ColumnDefinitions>
 
                           <!-- Logo or Initials badge -->
-                          <Grid Width="48" Height="48">
-                            <Border CornerRadius="8"
+                          <Grid Width="{StaticResource LogoSize}" Height="{StaticResource LogoSize}">
+                            <Border CornerRadius="{StaticResource RadiusMd}"
                                     Background="{StaticResource AppBarButtonBackgroundBrush}"
                                     Visibility="{Binding Data.Profile.LogoPath, Converter={StaticResource EmptyToVisibleConverter}}">
                               <TextBlock Text="{Binding Data.Profile.BusinessName, Converter={StaticResource InitialsConverter}}"
-                                         Foreground="{StaticResource AppBarForegroundBrush}" FontWeight="Bold"
-                                         Style="{StaticResource TitleMedium}"
+                                         Foreground="{StaticResource AppBarForegroundBrush}"
+                                         Style="{StaticResource TitleMediumBold}"
                                          HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <Image Source="{Binding Data.Profile.LogoPath}"
-                                   Stretch="UniformToFill" Width="48" Height="48"
+                                   Stretch="UniformToFill" Width="{StaticResource LogoSize}" Height="{StaticResource LogoSize}"
+                                   AutomationProperties.Name="Business logo"
                                    Visibility="{Binding Data.Profile.LogoPath, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert}" />
                           </Grid>
 
                           <!-- Company info -->
-                          <StackPanel Grid.Column="1" HorizontalAlignment="Right" Spacing="2">
+                          <StackPanel Grid.Column="1" HorizontalAlignment="Right" Spacing="{StaticResource Space2}">
                             <TextBlock Text="{Binding Data.Profile.BusinessName}"
-                                       Foreground="{StaticResource AppBarForegroundBrush}" FontWeight="Bold"
-                                       Style="{StaticResource TitleMedium}"
+                                       Foreground="{StaticResource AppBarForegroundBrush}"
+                                       Style="{StaticResource TitleMediumBold}"
+                                       TextWrapping="Wrap" TextAlignment="Right"
                                        HorizontalAlignment="Right" />
                             <TextBlock Text="{Binding Data.Profile.Phone}"
                                        Foreground="{StaticResource UpgradeBannerSubtitleBrush}" Style="{StaticResource BodySmall}"
                                        HorizontalAlignment="Right" />
                             <TextBlock Text="{Binding Data.Profile.Email}"
                                        Foreground="{StaticResource UpgradeBannerSubtitleBrush}" Style="{StaticResource BodySmall}"
-                                       HorizontalAlignment="Right" />
+                                       HorizontalAlignment="Right" TextTrimming="CharacterEllipsis" />
                           </StackPanel>
                         </Grid>
 
                         <!-- Quote meta row -->
-                        <Grid>
+                        <Grid ColumnSpacing="{StaticResource Space8}">
                           <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
                           </Grid.ColumnDefinitions>
 
-                          <StackPanel Spacing="2">
+                          <StackPanel Spacing="{StaticResource Space2}">
                             <TextBlock Text="Quote #" Foreground="{StaticResource UpgradeBannerSubtitleBrush}"
                                        Style="{StaticResource LabelSmall}" />
                             <TextBlock Text="{Binding Data.Quote.QuoteNumber}"
-                                       Foreground="{StaticResource AppBarForegroundBrush}" FontWeight="SemiBold"
-                                       Style="{StaticResource BodyMedium}" />
+                                       Foreground="{StaticResource AppBarForegroundBrush}"
+                                       Style="{StaticResource BodySmallSemiBold}" TextWrapping="Wrap" />
                           </StackPanel>
 
-                          <StackPanel Grid.Column="1" HorizontalAlignment="Center" Spacing="2">
+                          <StackPanel Grid.Column="1" HorizontalAlignment="Center" Spacing="{StaticResource Space2}">
                             <TextBlock Text="Date" Foreground="{StaticResource UpgradeBannerSubtitleBrush}"
                                        Style="{StaticResource LabelSmall}"
                                        HorizontalAlignment="Center" />
                             <TextBlock Text="{Binding Data.Quote.CreatedAt, Converter={StaticResource ShortDateConverter}}"
-                                       Foreground="{StaticResource AppBarForegroundBrush}" FontWeight="SemiBold"
-                                       Style="{StaticResource BodyMedium}"
+                                       Foreground="{StaticResource AppBarForegroundBrush}"
+                                       Style="{StaticResource BodySmallSemiBold}"
                                        HorizontalAlignment="Center" />
                           </StackPanel>
 
-                          <StackPanel Grid.Column="2" HorizontalAlignment="Right" Spacing="2">
+                          <StackPanel Grid.Column="2" HorizontalAlignment="Right" Spacing="{StaticResource Space2}">
                             <TextBlock Text="Valid Until" Foreground="{StaticResource UpgradeBannerSubtitleBrush}"
                                        Style="{StaticResource LabelSmall}"
                                        HorizontalAlignment="Right" />
                             <TextBlock Text="{Binding Data.Quote.ValidUntil, Converter={StaticResource ShortDateConverter}}"
-                                       Foreground="{StaticResource AppBarForegroundBrush}" FontWeight="SemiBold"
-                                       Style="{StaticResource BodyMedium}"
+                                       Foreground="{StaticResource AppBarForegroundBrush}"
+                                       Style="{StaticResource BodySmallSemiBold}"
                                        HorizontalAlignment="Right" />
                           </StackPanel>
                         </Grid>
                       </StackPanel>
                     </Border>
 
-                    <!-- White Content Area -->
-                    <StackPanel Padding="32,24" Spacing="24">
+                    <!-- Content Area -->
+                    <StackPanel Padding="{utu:Responsive Narrow={StaticResource DocumentInsetNarrow}, Normal={StaticResource DocumentInsetWide}}" Spacing="{StaticResource Space24}">
 
                       <!-- Prepared For -->
-                      <StackPanel Spacing="4">
+                      <StackPanel Spacing="{StaticResource Space4}">
                         <TextBlock Text="PREPARED FOR" Style="{StaticResource LabelSmall}"
                                    Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold" />
                         <TextBlock Text="{Binding Data.Quote.ClientName}"
-                                   Style="{StaticResource TitleMediumBold}" />
+                                   Style="{StaticResource TitleMediumBold}" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding Data.Client.Address}"
                                    Style="{StaticResource BodySmall}"
-                                   Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                                   Foreground="{ThemeResource OnSurfaceVariantBrush}" TextWrapping="Wrap" />
                       </StackPanel>
 
                       <!-- Quote Title -->
                       <TextBlock Text="{Binding Data.Quote.Title}"
-                                 Style="{StaticResource TitleLargeBold}" />
+                                 Style="{StaticResource TitleLargeBold}" TextWrapping="Wrap" />
 
                       <!-- Line Items Table -->
                       <Border BorderBrush="{ThemeResource OutlineVariantBrush}"
-                              BorderThickness="1" CornerRadius="8">
+                              BorderThickness="1" CornerRadius="{StaticResource RadiusMd}">
                         <StackPanel>
                           <!-- Table Header -->
-                          <Grid Padding="16,10"
+                          <Grid Padding="{StaticResource TableHeaderInset}"
                                 Background="{ThemeResource SurfaceVariantBrush}"
-                                CornerRadius="8,8,0,0">
+                                CornerRadius="{StaticResource RadiusTopMd}">
                             <Grid.ColumnDefinitions>
                               <ColumnDefinition Width="*" />
                               <ColumnDefinition Width="60" />
@@ -1094,6 +1239,7 @@
                               <ColumnDefinition Width="90" />
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="DESCRIPTION" Style="{StaticResource LabelSmall}"
+                                       Visibility="{utu:Responsive Narrow=Collapsed, Normal=Visible}"
                                        Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="Bold" />
                             <TextBlock Grid.Column="1" Text="QTY" Style="{StaticResource LabelSmall}"
                                        Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="Bold"
@@ -1105,7 +1251,7 @@
                                        Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="Bold"
                                        HorizontalAlignment="Right" />
                           </Grid>
-                          <Border Height="2" Background="{ThemeResource OnSurfaceBrush}" />
+                          <Border Height="{StaticResource RuleThickness}" Background="{ThemeResource OnSurfaceBrush}" />
 
                           <muxc:ItemsRepeater ItemsSource="{Binding Data.LineItems}">
                             <muxc:ItemsRepeater.Layout>
@@ -1113,7 +1259,7 @@
                             </muxc:ItemsRepeater.Layout>
                             <muxc:ItemsRepeater.ItemTemplate>
                               <DataTemplate>
-                                <Grid Padding="16,12"
+                                <Grid Padding="{StaticResource TableCellInset}" RowSpacing="{StaticResource Space4}"
                                       BorderBrush="{ThemeResource OutlineVariantBrush}"
                                       BorderThickness="0,0,0,1">
                                   <Grid.ColumnDefinitions>
@@ -1122,21 +1268,25 @@
                                     <ColumnDefinition Width="90" />
                                     <ColumnDefinition Width="90" />
                                   </Grid.ColumnDefinitions>
+                                  <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                  </Grid.RowDefinitions>
                                   <TextBlock Text="{Binding Description}"
-                                             Style="{StaticResource BodyMedium}" />
-                                  <TextBlock Grid.Column="1" Text="{Binding Quantity}"
+                                             Grid.ColumnSpan="{utu:Responsive Narrow=4, Normal=1}"
+                                             Style="{StaticResource BodyMedium}" TextWrapping="Wrap" />
+                                  <TextBlock Grid.Row="{utu:Responsive Narrow=1, Normal=0}" Grid.Column="1" Text="{Binding Quantity}"
                                              Style="{StaticResource BodyMedium}"
                                              HorizontalAlignment="Right" />
-                                  <TextBlock Grid.Column="2"
+                                  <TextBlock Grid.Row="{utu:Responsive Narrow=1, Normal=0}" Grid.Column="2"
                                              Text="{Binding UnitPrice, Converter={StaticResource CurrencyFormatConverter}}"
                                              Style="{StaticResource BodyMedium}"
                                              FontFamily="{StaticResource MonospaceFontFamily}"
                                              HorizontalAlignment="Right" />
-                                  <TextBlock Grid.Column="3"
+                                  <TextBlock Grid.Row="{utu:Responsive Narrow=1, Normal=0}" Grid.Column="3"
                                              Text="{Binding LineTotal, Converter={StaticResource CurrencyFormatConverter}}"
-                                             Style="{StaticResource BodyMedium}"
+                                             Style="{StaticResource BodyMediumSemiBold}"
                                              FontFamily="{StaticResource MonospaceFontFamily}"
-                                             FontWeight="Bold"
                                              Foreground="{ThemeResource PrimaryBrush}"
                                              HorizontalAlignment="Right" />
                                 </Grid>
@@ -1147,7 +1297,7 @@
                       </Border>
 
                       <!-- Totals -->
-                      <StackPanel HorizontalAlignment="Right" Spacing="4" MinWidth="240">
+                      <StackPanel HorizontalAlignment="Right" Spacing="{StaticResource Space4}">
                         <Grid>
                           <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -1155,7 +1305,7 @@
                           </Grid.ColumnDefinitions>
                           <TextBlock Text="Subtotal" Style="{StaticResource BodyMedium}"
                                      Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                                     HorizontalAlignment="Right" Margin="0,0,16,0" />
+                                     HorizontalAlignment="Right" Margin="{StaticResource GapEnd16}" />
                           <TextBlock Grid.Column="1"
                                      Text="{Binding Data.Quote.Subtotal, Converter={StaticResource CurrencyFormatConverter}}"
                                      FontFamily="{StaticResource MonospaceFontFamily}"
@@ -1169,7 +1319,7 @@
                           </Grid.ColumnDefinitions>
                           <TextBlock Style="{StaticResource BodyMedium}"
                                      Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                                     HorizontalAlignment="Right" Margin="0,0,16,0">
+                                     HorizontalAlignment="Right" Margin="{StaticResource GapEnd16}">
                             <Run Text="Tax (" /><Run Text="{Binding Data.Quote.TaxRate}" /><Run Text="%)" />
                           </TextBlock>
                           <TextBlock Grid.Column="1"
@@ -1178,29 +1328,29 @@
                                      Style="{StaticResource BodyMedium}"
                                      HorizontalAlignment="Right" />
                         </Grid>
-                        <Border Height="2" Background="{ThemeResource PrimaryBrush}" Margin="0,4" />
+                        <Border Height="{StaticResource RuleThickness}" Background="{ThemeResource PrimaryBrush}" Margin="{StaticResource InsetY4}" />
                         <Grid>
                           <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="120" />
                           </Grid.ColumnDefinitions>
-                          <TextBlock Text="Total" Style="{StaticResource TitleMedium}"
-                                     FontWeight="Bold" HorizontalAlignment="Right" Margin="0,0,16,0" />
+                          <TextBlock Text="Total" Style="{StaticResource TitleMediumBold}"
+                                     HorizontalAlignment="Right" Margin="{StaticResource GapEnd16}" />
                           <TextBlock Grid.Column="1"
                                      Text="{Binding Data.Quote.Total, Converter={StaticResource CurrencyFormatConverter}}"
                                      FontFamily="{StaticResource MonospaceFontFamily}"
-                                     Style="{StaticResource TitleLarge}"
-                                     Foreground="{ThemeResource PrimaryBrush}" FontWeight="Bold"
+                                     Style="{StaticResource TitleLargeBold}"
+                                     Foreground="{ThemeResource PrimaryBrush}"
                                      HorizontalAlignment="Right" />
                         </Grid>
                       </StackPanel>
 
                       <!-- Notes -->
                       <Border Background="{ThemeResource SurfaceVariantBrush}"
-                              CornerRadius="8" Padding="20,16"
+                              CornerRadius="{StaticResource RadiusMd}" Padding="{StaticResource BannerInset}"
                               BorderBrush="{ThemeResource OutlineVariantBrush}"
                               BorderThickness="0,3,0,0">
-                        <StackPanel Spacing="6">
+                        <StackPanel Spacing="{StaticResource Space8}">
                           <TextBlock Text="NOTES" Style="{StaticResource LabelSmall}"
                                      FontWeight="Bold" />
                           <TextBlock Text="{Binding Data.Quote.Notes}"
@@ -1213,7 +1363,7 @@
                     </StackPanel>
 
                     <!-- Footer -->
-                    <Border Padding="32,16"
+                    <Border Padding="{StaticResource Inset32x16}"
                             BorderBrush="{ThemeResource OutlineVariantBrush}"
                             BorderThickness="0,1,0,0">
                       <TextBlock Text="Created with QuoteCraft"
@@ -1229,13 +1379,34 @@
 
           <mvux:FeedView.NoneTemplate>
             <DataTemplate>
-              <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
-                <ProgressRing IsActive="True" />
+              <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="{StaticResource Space12}">
+                <ProgressRing IsActive="True" AutomationProperties.Name="Generating preview" />
                 <TextBlock Text="Generating preview..." Style="{StaticResource BodyMedium}"
                            Foreground="{ThemeResource OnSurfaceVariantBrush}" />
               </StackPanel>
             </DataTemplate>
           </mvux:FeedView.NoneTemplate>
+
+          <mvux:FeedView.ErrorTemplate>
+            <DataTemplate>
+              <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                          Spacing="{StaticResource Space12}" Padding="{StaticResource Inset32}"
+                          AutomationProperties.LiveSetting="Polite">
+                <FontIcon Glyph="&#xE783;" FontSize="{StaticResource IconSizeHero}"
+                          Foreground="{ThemeResource ErrorBrush}" HorizontalAlignment="Center" />
+                <TextBlock Text="The preview could not be made." Style="{StaticResource TitleSmall}"
+                           HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
+                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}" HorizontalAlignment="Center">
+                  <Button Content="Back to Detail"
+                          Command="{Binding DataContext.BackToDetail, ElementName=DashboardRoot}"
+                          Style="{StaticResource MaterialTextButtonStyle}" />
+                  <Button Content="Retry"
+                          Command="{Binding DataContext.RefreshDetail, ElementName=DashboardRoot}"
+                          Style="{StaticResource MaterialOutlinedButtonStyle}" />
+                </StackPanel>
+              </StackPanel>
+            </DataTemplate>
+          </mvux:FeedView.ErrorTemplate>
         </mvux:FeedView>
 
       </Grid>

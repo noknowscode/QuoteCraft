@@ -41,6 +41,18 @@ public sealed partial class CatalogPage : Page
         }
     }
 
+    private async void CatalogItem_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key is Windows.System.VirtualKey.Enter or Windows.System.VirtualKey.Space
+            && sender is FrameworkElement { DataContext: CatalogDisplayItem item })
+        {
+            e.Handled = true;
+            var entity = await CatalogRepo.GetByIdAsync(item.Id);
+            if (entity is not null)
+                await ShowCatalogEditorDialog(entity, isNew: false);
+        }
+    }
+
     private async void AddItem_Click(object sender, RoutedEventArgs e)
     {
         await ShowCatalogEditorDialog(new CatalogItemEntity(), isNew: true);
@@ -98,40 +110,13 @@ public sealed partial class CatalogPage : Page
                 categoryBox.Text = currentCategory;
         }
 
-        var fieldsPanel = new StackPanel { Spacing = 16 };
+        var validation = DialogHelper.BuildValidationText(this);
+
+        var fieldsPanel = new StackPanel { Spacing = (double)Application.Current.Resources["Space16"] };
         fieldsPanel.Children.Add(descBox);
         fieldsPanel.Children.Add(priceBox);
         fieldsPanel.Children.Add(categoryBox);
-
-        if (!isNew)
-        {
-            var deleteBtn = new Button
-            {
-                Content = "Delete Item",
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["ErrorBrush"],
-                Style = (Style)Application.Current.Resources["MaterialOutlinedButtonStyle"],
-                Margin = new Thickness(0, 8, 0, 0),
-            };
-            deleteBtn.Click += async (s, args) =>
-            {
-                var confirmDialog = Helpers.DialogHelper.BuildBannerDialog(
-                    this.XamlRoot,
-                    "\uE74D",
-                    "Delete Catalog Item?",
-                    "This item will be permanently removed from your catalog.",
-                    closeButtonText: "Cancel",
-                    primaryButtonText: "Delete");
-
-                var confirmResult = await confirmDialog.ShowAsync();
-                if (confirmResult == ContentDialogResult.Primary)
-                {
-                    await CatalogRepo.DeleteAsync(entity.Id);
-                    RefreshCatalog();
-                }
-            };
-            fieldsPanel.Children.Add(deleteBtn);
-        }
+        fieldsPanel.Children.Add(validation);
 
         var dialog = Helpers.DialogHelper.BuildBannerDialogWithContent(
             this.XamlRoot,
@@ -142,11 +127,26 @@ public sealed partial class CatalogPage : Page
             primaryButtonText: "Save",
             closeButtonText: "Cancel");
 
+        // Delete is the dialog's own button: a second dialog cannot open while this one is up.
+        if (!isNew)
+        {
+            dialog.SecondaryButtonText = "Delete Item";
+        }
+
         dialog.PrimaryButtonClick += async (s, args) =>
         {
             var desc = descBox.Text?.Trim() ?? string.Empty;
             if (string.IsNullOrWhiteSpace(desc))
             {
+                DialogHelper.ShowValidation(validation, "Enter a description.");
+                args.Cancel = true;
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(priceBox.Text)
+                && (!decimal.TryParse(priceBox.Text, out var enteredPrice) || enteredPrice < 0))
+            {
+                DialogHelper.ShowValidation(validation, "Enter the unit price as a number, for example 125.00.");
                 args.Cancel = true;
                 return;
             }
@@ -171,6 +171,22 @@ public sealed partial class CatalogPage : Page
         if (result == ContentDialogResult.Primary)
         {
             RefreshCatalog();
+        }
+        else if (result == ContentDialogResult.Secondary && !isNew)
+        {
+            var confirmDialog = Helpers.DialogHelper.BuildBannerDialog(
+                this.XamlRoot,
+                "\uE74D",
+                "Delete Catalog Item?",
+                "This item will be permanently removed from your catalog.",
+                closeButtonText: "Cancel",
+                primaryButtonText: "Delete");
+
+            if (await confirmDialog.ShowAsync() == ContentDialogResult.Primary)
+            {
+                await CatalogRepo.DeleteAsync(entity.Id);
+                RefreshCatalog();
+            }
         }
     }
 

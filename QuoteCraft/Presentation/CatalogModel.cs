@@ -53,7 +53,7 @@ public partial record CatalogModel
     public IState<string> SelectedCategory => State<string>.Empty(this);
     public IState<int> Version => State<int>.Value(this, () => 0);
 
-    public IFeed<int> CatalogItemCount => Feed.Async(async ct => await _catalogRepo.GetItemCountAsync());
+    public IFeed<int> CatalogItemCount => Version.SelectAsync(async (_, ct) => await _catalogRepo.GetItemCountAsync());
 
     public IListFeed<string> Categories => Feed.Async(async ct =>
         (IImmutableList<string>)(await _catalogRepo.GetCategoriesAsync()).ToImmutableList()
@@ -101,6 +101,12 @@ public partial record CatalogModel
     public async ValueTask RefreshList(CancellationToken ct)
     {
         await Version.UpdateAsync(v => v + 1, ct);
+    }
+
+    /// <summary>One-pane layouts (below 1080): close the category and show the cards again.</summary>
+    public async ValueTask BackToList(CancellationToken ct)
+    {
+        await SelectedCategory.UpdateAsync(_ => null!, ct);
     }
 
     public async ValueTask SelectCategoryCard(CatalogCategoryCard card, CancellationToken ct)

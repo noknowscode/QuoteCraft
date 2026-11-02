@@ -85,14 +85,25 @@ public partial record ClientsModel
             return new ClientsAnalytics(totalClients, (double)totalRevenue, (double)avgPerClient, newThisMonth);
         });
 
-    // Combined detail feed: client + quotes (avoids nested FeedView with ElementName)
-    public IFeed<ClientDetail> SelectedClientDetail => SelectedClient
-        .SelectAsync(async (client, ct) =>
+    // Combined detail feed: client + quotes (avoids nested FeedView with ElementName). Read again on every Version
+    // bump, so an edit shows in the detail and Retry reloads it.
+    public IFeed<ClientDetail> SelectedClientDetail => Feed.Combine(SelectedClient, Version)
+        .SelectAsync(async (inputs, ct) =>
         {
+            var (client, _) = inputs;
+            var entity = await _clientRepo.GetByIdAsync(client.Id) ?? client.Entity;
             var all = await _quoteRepo.GetAllAsync();
             var quotes = all.Where(q => q.ClientId == client.Id).ToImmutableList();
-            return new ClientDetail(client, quotes);
+            var item = new ClientDisplayItem(entity.Id, entity.Name, GetInitials(entity.Name), quotes.Count,
+                ParseCity(entity.Address), (double)quotes.Sum(q => q.Total), entity);
+            return new ClientDetail(item, quotes);
         });
+
+    /// <summary>One-pane layouts (below 1080): close the detail and show the list again.</summary>
+    public async ValueTask BackToList(CancellationToken ct)
+    {
+        await SelectedClient.UpdateAsync(_ => null!, ct);
+    }
 
     public async ValueTask SelectClient(ClientDisplayItem item, CancellationToken ct)
     {
