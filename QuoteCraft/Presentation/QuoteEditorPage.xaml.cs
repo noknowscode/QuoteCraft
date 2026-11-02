@@ -1,4 +1,6 @@
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 
 namespace QuoteCraft.Presentation;
 
@@ -58,7 +60,9 @@ public sealed partial class QuoteEditorPage : Page
 
     private async void LineItemCard_Tapped(object sender, TappedRoutedEventArgs? e)
     {
-        if (sender is not FrameworkElement { DataContext: LineItemEntity item }) return;
+        // Move up and Move down sit inside the card: a tap on them moves the item without opening it too.
+        if (sender is not FrameworkElement { DataContext: LineItemEntity item } card
+            || IsInsideButton(e?.OriginalSource as DependencyObject, card)) return;
 
         await ErrorReporter.RunAsync(this, "The line item could not be saved.", async () =>
         {
@@ -72,6 +76,16 @@ public sealed partial class QuoteEditorPage : Page
             else if (result == ContentDialogResult.Secondary && dialog.WasDeleted)
                 await model.DeleteLineItem(new LineItemEntity { Id = dialog.EditingItemId ?? string.Empty }, CancellationToken.None);
         });
+    }
+
+    private static bool IsInsideButton(DependencyObject? element, DependencyObject container)
+    {
+        for (; element is not null && element != container; element = VisualTreeHelper.GetParent(element))
+        {
+            if (element is ButtonBase)
+                return true;
+        }
+        return false;
     }
 
     // -- Catalog Browser Dialog -------------------------------------------------
