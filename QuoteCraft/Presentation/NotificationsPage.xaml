@@ -15,7 +15,7 @@
     </Grid.RowDefinitions>
 
     <!-- Header -->
-    <Grid Padding="16,0" Height="64"
+    <Grid Padding="{StaticResource InsetX16}" Height="{StaticResource PageHeaderHeight}"
           Background="{ThemeResource SurfaceBrush}"
           BorderBrush="{ThemeResource OutlineVariantBrush}"
           BorderThickness="0,0,0,1">
@@ -29,14 +29,14 @@
               Style="{StaticResource MaterialTextButtonStyle}"
               AutomationProperties.Name="Go back"
               VerticalAlignment="Center">
-        <FontIcon Glyph="&#xE72B;" FontSize="18" />
+        <FontIcon Glyph="&#xE72B;" FontSize="{StaticResource IconSizeXl}" />
       </Button>
 
       <TextBlock Grid.Column="1" Text="Notifications"
                  Style="{StaticResource TitleLarge}"
                  FontWeight="Bold"
                  VerticalAlignment="Center"
-                 Margin="8,0,0,0" />
+                 Margin="{StaticResource GapStart8}" />
 
       <Button Grid.Column="2"
               Command="{Binding MarkAllRead}"
@@ -54,10 +54,10 @@
       <DataTemplate>
         <ListView ItemsSource="{Binding Data}"
                   SelectionMode="None"
-                  Padding="0,8">
+                  Padding="{StaticResource InsetY8}">
           <ListView.ItemTemplate>
             <DataTemplate>
-              <Grid Padding="20,16" Margin="0,0,0,1"
+              <Grid Padding="{StaticResource BannerInset}" Margin="{StaticResource RowSeparatorGap}"
                     Background="{ThemeResource SurfaceBrush}">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="Auto" />
@@ -66,12 +66,12 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Unread indicator -->
-                <Ellipse Width="8" Height="8"
+                <Ellipse Width="{StaticResource DotSize}" Height="{StaticResource DotSize}"
                          Fill="{ThemeResource PrimaryBrush}"
-                         VerticalAlignment="Top" Margin="0,6,12,0"
+                         VerticalAlignment="Top" Margin="{StaticResource DotMargin}"
                          Visibility="{Binding IsRead, Converter={StaticResource InverseBoolConverter}}" />
 
-                <StackPanel Grid.Column="1" Spacing="4">
+                <StackPanel Grid.Column="1" Spacing="{StaticResource Space4}">
                   <TextBlock Text="{Binding Title}"
                              Style="{StaticResource BodyMedium}"
                              FontWeight="SemiBold" />
@@ -94,8 +94,8 @@
 
       <mvux:FeedView.NoneTemplate>
         <DataTemplate>
-          <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12" Padding="32">
-            <FontIcon Glyph="&#xEA8F;" FontSize="48"
+          <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="{StaticResource Space12}" Padding="{StaticResource Inset32}">
+            <FontIcon Glyph="&#xEA8F;" FontSize="{StaticResource IconSizeHero}"
                       Foreground="{ThemeResource OnSurfaceVariantBrush}" Opacity="0.5"
                       HorizontalAlignment="Center" />
             <TextBlock Text="No notifications yet"

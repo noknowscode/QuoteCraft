@@ -5,19 +5,24 @@
       xmlns:mvux="using:Uno.Extensions.Reactive.UI"
       Background="{ThemeResource BackgroundBrush}">
 
-  <Grid utu:SafeArea.Insets="Top,Bottom">
-
-    <!-- Step container -->
+  <!--
+    Onboarding: one centred column (WelcomeMaxWidth) at every size, scrolling when the window is short.
+      Narrow   16 px sides; the two number fields of step 3 stack.
+      Normal and up   32 px sides; the number fields sit side by side.
+  -->
+  <ScrollViewer utu:SafeArea.Insets="Top,Bottom" HorizontalScrollBarVisibility="Disabled">
     <Grid HorizontalAlignment="Center" VerticalAlignment="Center"
-          MaxWidth="520" Padding="32">
+          MaxWidth="{StaticResource WelcomeMaxWidth}"
+          Padding="{utu:Responsive Narrow={StaticResource Inset16}, Normal={StaticResource Inset32}}">
 
       <!-- Step 1: Welcome -->
-      <StackPanel Spacing="24" HorizontalAlignment="Center"
+      <StackPanel Spacing="{StaticResource Space24}" HorizontalAlignment="Center"
                   Visibility="{Binding CurrentStep, Converter={StaticResource StepVisibilityConverter}, ConverterParameter=1}">
         <!-- Logo badge -->
-        <Border Width="80" Height="80" CornerRadius="16"
+        <Border Width="{StaticResource LogoSizeHero}" Height="{StaticResource LogoSizeHero}" CornerRadius="{StaticResource RadiusXl}"
                 Background="{StaticResource AppBarBackgroundBrush}"
                 HorizontalAlignment="Center"
+                AutomationProperties.AccessibilityView="Raw"
                 Translation="0,0,16">
           <Border.Shadow>
             <ThemeShadow />
@@ -29,49 +34,55 @@
 
         <TextBlock Text="Welcome to QuoteCraft"
                    Style="{StaticResource HeadlineMediumBold}"
+                   AutomationProperties.HeadingLevel="Level1"
+                   TextAlignment="Center" TextWrapping="Wrap"
                    HorizontalAlignment="Center" />
         <TextBlock Text="Set up your business in 60 seconds and start sending professional quotes today."
                    Style="{StaticResource BodyLarge}"
                    Foreground="{ThemeResource OnSurfaceVariantBrush}"
                    TextAlignment="Center" TextWrapping="Wrap"
-                   HorizontalAlignment="Center" MaxWidth="400" />
+                   HorizontalAlignment="Center" />
 
         <Button Command="{Binding NextStep}"
                 Style="{StaticResource AccentButtonStyle}"
                 HorizontalAlignment="Center"
-                Padding="32,12" Margin="0,8,0,0">
-          <StackPanel Orientation="Horizontal" Spacing="8">
-            <TextBlock Text="Get Started" FontWeight="SemiBold"
-                       Foreground="{StaticResource AppBarBackgroundBrush}" />
-            <FontIcon Glyph="&#xE72A;" FontSize="14"
-                      Foreground="{StaticResource AppBarBackgroundBrush}" />
+                Padding="{StaticResource ButtonInsetWide}" Margin="{StaticResource GapTop8}">
+          <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
+            <TextBlock Text="Get Started" Style="{StaticResource LabelLargeSemiBold}"
+                       Foreground="{StaticResource OnAccentBrush}" />
+            <FontIcon Glyph="&#xE72A;" FontSize="{StaticResource IconSizeMd}"
+                      Foreground="{StaticResource OnAccentBrush}" />
           </StackPanel>
         </Button>
 
         <Button Command="{Binding Skip}"
                 Style="{StaticResource MaterialTextButtonStyle}"
+                MinHeight="{StaticResource TouchTarget}"
                 HorizontalAlignment="Center"
                 Content="Skip for now" />
       </StackPanel>
 
       <!-- Step 2: Business Info -->
-      <StackPanel Spacing="20"
+      <StackPanel Spacing="{StaticResource Space20}"
                   Visibility="{Binding CurrentStep, Converter={StaticResource StepVisibilityConverter}, ConverterParameter=2}">
-        <StackPanel Spacing="4">
+        <StackPanel Spacing="{StaticResource Space4}">
           <TextBlock Text="Your Business"
-                     Style="{StaticResource TitleLargeBold}" />
+                     Style="{StaticResource TitleLargeBold}"
+                     AutomationProperties.HeadingLevel="Level1" />
           <TextBlock Text="This info appears on every quote you send."
                      Style="{StaticResource BodyMedium}"
-                     Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                     Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                     TextWrapping="Wrap" />
         </StackPanel>
 
-        <!-- Progress: Step 1 of 3 -->
-        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
-          <Border Width="40" Height="4" CornerRadius="2"
+        <!-- Progress: step 1 of 2 (bars and a name, so it isn't colour alone) -->
+        <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}" HorizontalAlignment="Center"
+                    AutomationProperties.Name="Step 1 of 2">
+          <Border Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" CornerRadius="{StaticResource RadiusXs}"
                   Background="{StaticResource AppBarAccentBrush}" />
-          <Border Width="40" Height="4" CornerRadius="2"
+          <Border Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" CornerRadius="{StaticResource RadiusXs}"
                   Background="{ThemeResource OutlineVariantBrush}" />
-          <Border Width="40" Height="4" CornerRadius="2"
+          <Border Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" CornerRadius="{StaticResource RadiusXs}"
                   Background="{ThemeResource OutlineVariantBrush}" />
         </StackPanel>
 
@@ -96,60 +107,75 @@
             <TextBlock Text="{Binding Data}"
                        Foreground="{ThemeResource ErrorBrush}"
                        Style="{StaticResource BodySmall}"
+                       TextWrapping="Wrap"
+                       AutomationProperties.LiveSetting="Assertive"
                        Visibility="{Binding Data, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert}" />
           </DataTemplate>
         </mvux:FeedView>
 
-        <Grid>
+        <Grid ColumnSpacing="{StaticResource Space12}">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
           </Grid.ColumnDefinitions>
           <Button Command="{Binding PreviousStep}"
                   Style="{StaticResource MaterialOutlinedButtonStyle}"
-                  CornerRadius="8" Content="Back" />
+                  MinHeight="{StaticResource TouchTarget}"
+                  CornerRadius="{StaticResource RadiusMd}" Content="Back" />
           <Button Grid.Column="1" Command="{Binding NextStep}"
                   Style="{StaticResource AccentButtonStyle}">
-            <StackPanel Orientation="Horizontal" Spacing="8">
-              <TextBlock Text="Next" FontWeight="SemiBold"
-                         Foreground="{StaticResource AppBarBackgroundBrush}" />
-              <FontIcon Glyph="&#xE72A;" FontSize="14"
-                        Foreground="{StaticResource AppBarBackgroundBrush}" />
+            <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
+              <TextBlock Text="Next" Style="{StaticResource LabelLargeSemiBold}"
+                         Foreground="{StaticResource OnAccentBrush}" />
+              <FontIcon Glyph="&#xE72A;" FontSize="{StaticResource IconSizeMd}"
+                        Foreground="{StaticResource OnAccentBrush}" />
             </StackPanel>
           </Button>
         </Grid>
       </StackPanel>
 
       <!-- Step 3: Quote Settings -->
-      <StackPanel Spacing="20"
+      <StackPanel Spacing="{StaticResource Space20}"
                   Visibility="{Binding CurrentStep, Converter={StaticResource StepVisibilityConverter}, ConverterParameter=3}">
-        <StackPanel Spacing="4">
+        <StackPanel Spacing="{StaticResource Space4}">
           <TextBlock Text="Quote Settings"
-                     Style="{StaticResource TitleLargeBold}" />
+                     Style="{StaticResource TitleLargeBold}"
+                     AutomationProperties.HeadingLevel="Level1" />
           <TextBlock Text="Set your defaults. You can change these anytime in Settings."
                      Style="{StaticResource BodyMedium}"
-                     Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                     Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                     TextWrapping="Wrap" />
         </StackPanel>
 
-        <!-- Progress: Step 2 of 3 -->
-        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
-          <Border Width="40" Height="4" CornerRadius="2"
+        <!-- Progress: step 2 of 2 -->
+        <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}" HorizontalAlignment="Center"
+                    AutomationProperties.Name="Step 2 of 2">
+          <Border Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" CornerRadius="{StaticResource RadiusXs}"
                   Background="{StaticResource AppBarAccentBrush}" />
-          <Border Width="40" Height="4" CornerRadius="2"
+          <Border Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" CornerRadius="{StaticResource RadiusXs}"
                   Background="{StaticResource AppBarAccentBrush}" />
-          <Border Width="40" Height="4" CornerRadius="2"
+          <Border Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" CornerRadius="{StaticResource RadiusXs}"
                   Background="{ThemeResource OutlineVariantBrush}" />
         </StackPanel>
 
-        <Grid ColumnSpacing="16">
+        <!-- The two number fields stack on Narrow -->
+        <Grid ColumnSpacing="{utu:Responsive Narrow=0, Normal={StaticResource Space16}}"
+              RowSpacing="{utu:Responsive Narrow={StaticResource Space20}, Normal=0}">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="*" />
           </Grid.ColumnDefinitions>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
           <TextBox Header="Default Tax Rate (%)"
+                   Grid.ColumnSpan="{utu:Responsive Narrow=2, Normal=1}"
                    Text="{Binding TaxRate, Mode=TwoWay}"
                    InputScope="Number" />
-          <TextBox Grid.Column="1"
+          <TextBox Grid.Row="{utu:Responsive Narrow=1, Normal=0}"
+                   Grid.Column="{utu:Responsive Narrow=0, Normal=1}"
+                   Grid.ColumnSpan="{utu:Responsive Narrow=2, Normal=1}"
                    Header="Quote Valid For (days)"
                    Text="{Binding ValidDays, Mode=TwoWay}"
                    InputScope="Number" />
@@ -159,14 +185,18 @@
                  Text="{Binding QuotePrefix, Mode=TwoWay}"
                  PlaceholderText="QC-" />
 
-        <!-- Catalog note -->
+        <!-- Catalog note (a Grid, so the text wraps: a horizontal StackPanel gives it unlimited width) -->
         <Border Background="{ThemeResource SurfaceVariantBrush}"
-                CornerRadius="8" Padding="16,12">
-          <StackPanel Orientation="Horizontal" Spacing="12">
-            <FontIcon Glyph="&#xE82D;" FontSize="18"
+                CornerRadius="{StaticResource RadiusMd}" Padding="{StaticResource Inset16x12}">
+          <Grid ColumnSpacing="{StaticResource Space12}">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <FontIcon Glyph="&#xE82D;" FontSize="{StaticResource IconSizeXl}"
                       Foreground="{ThemeResource PrimaryBrush}"
                       VerticalAlignment="Top" />
-            <StackPanel Spacing="4">
+            <StackPanel Grid.Column="1" Spacing="{StaticResource Space4}">
               <TextBlock Text="Pre-loaded catalog"
                          Style="{StaticResource BodyMediumSemiBold}" />
               <TextBlock Text="We've loaded a Plumbing catalog with suggested prices. Review and adjust them in the Catalog tab to match your market rates."
@@ -174,7 +204,7 @@
                          Foreground="{ThemeResource OnSurfaceVariantBrush}"
                          TextWrapping="Wrap" />
             </StackPanel>
-          </StackPanel>
+          </Grid>
         </Border>
 
         <!-- Validation Error -->
@@ -183,29 +213,32 @@
             <TextBlock Text="{Binding Data}"
                        Foreground="{ThemeResource ErrorBrush}"
                        Style="{StaticResource BodySmall}"
+                       TextWrapping="Wrap"
+                       AutomationProperties.LiveSetting="Assertive"
                        Visibility="{Binding Data, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert}" />
           </DataTemplate>
         </mvux:FeedView>
 
-        <Grid>
+        <Grid ColumnSpacing="{StaticResource Space12}">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
           </Grid.ColumnDefinitions>
           <Button Command="{Binding PreviousStep}"
                   Style="{StaticResource MaterialOutlinedButtonStyle}"
-                  CornerRadius="8" Content="Back" />
+                  MinHeight="{StaticResource TouchTarget}"
+                  CornerRadius="{StaticResource RadiusMd}" Content="Back" />
           <Button Grid.Column="1" Command="{Binding Complete}"
                   Style="{StaticResource AccentButtonStyle}">
-            <StackPanel Orientation="Horizontal" Spacing="8">
-              <TextBlock Text="Create First Quote" FontWeight="SemiBold"
-                         Foreground="{StaticResource AppBarBackgroundBrush}" />
-              <FontIcon Glyph="&#xE710;" FontSize="14"
-                        Foreground="{StaticResource AppBarBackgroundBrush}" />
+            <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
+              <TextBlock Text="Create First Quote" Style="{StaticResource LabelLargeSemiBold}"
+                         Foreground="{StaticResource OnAccentBrush}" />
+              <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeMd}"
+                        Foreground="{StaticResource OnAccentBrush}" />
             </StackPanel>
           </Button>
         </Grid>
       </StackPanel>
     </Grid>
-  </Grid>
+  </ScrollViewer>
 </Page>

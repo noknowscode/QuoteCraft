@@ -9,16 +9,16 @@
 
   <Grid utu:SafeArea.Insets="All"
         HorizontalAlignment="Center" VerticalAlignment="Center"
-        MaxWidth="400" Padding="32">
+        MaxWidth="{StaticResource DialogMinWidth}" Padding="{utu:Responsive Narrow={StaticResource Inset16}, Normal={StaticResource Inset32}}">
 
-    <StackPanel Spacing="24">
+    <StackPanel Spacing="{StaticResource Space24}">
 
       <!-- Brand -->
-      <StackPanel Spacing="8" HorizontalAlignment="Center">
+      <StackPanel Spacing="{StaticResource Space8}" HorizontalAlignment="Center">
         <Border Background="{StaticResource AppBarBackgroundBrush}"
-                Width="64" Height="64" CornerRadius="16">
+                Width="{StaticResource LogoSizeLarge}" Height="{StaticResource LogoSizeLarge}" CornerRadius="{StaticResource RadiusXl}">
           <TextBlock Text="QC" Foreground="{StaticResource AppBarForegroundBrush}"
-                     FontWeight="Bold" FontSize="24"
+                     Style="{StaticResource HeadlineSmallBold}"
                      HorizontalAlignment="Center" VerticalAlignment="Center" />
         </Border>
         <TextBlock Text="QuoteCraft"
@@ -48,8 +48,8 @@
       <mvux:FeedView Source="{Binding MagicLinkSent}">
         <DataTemplate>
           <Border Background="{ThemeResource TertiaryContainerBrush}"
-                  CornerRadius="8" Padding="16"
-                  Visibility="{Binding Data}">
+                  CornerRadius="{StaticResource RadiusMd}" Padding="{StaticResource Inset16}"
+                  Visibility="{Binding Data, Converter={StaticResource BoolToVisibilityConverter}}">
             <TextBlock Text="Check your email for a sign-in link."
                        Style="{StaticResource BodyMedium}"
                        Foreground="{ThemeResource OnTertiaryContainerBrush}"
@@ -85,7 +85,7 @@
       </mvux:FeedView>
 
       <!-- Primary action buttons -->
-      <StackPanel Spacing="12">
+      <StackPanel Spacing="{StaticResource Space12}">
         <Button Command="{Binding SignIn}"
                 HorizontalAlignment="Stretch"
                 Style="{StaticResource MaterialFilledButtonStyle}"

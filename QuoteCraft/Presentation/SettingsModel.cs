@@ -1,3 +1,5 @@
+using Uno.Extensions.Toolkit;
+
 namespace QuoteCraft.Presentation;
 
 public partial record SettingsModel
@@ -10,6 +12,7 @@ public partial record SettingsModel
     private readonly Services.IAuthService _authService;
     private readonly Data.Remote.SupabaseConfig _supabase;
     private readonly ILogger<SettingsModel> _logger;
+    private readonly IThemeService _theme;
 
     public SettingsModel(
         INavigator navigator,
@@ -19,8 +22,10 @@ public partial record SettingsModel
         Services.ISubscriptionService subscriptionService,
         Services.IAuthService authService,
         Data.Remote.SupabaseConfig supabase,
+        IThemeService theme,
         ILogger<SettingsModel> logger)
     {
+        _theme = theme;
         _navigator = navigator;
         _profileRepo = profileRepo;
         _catalogRepo = catalogRepo;
@@ -41,7 +46,34 @@ public partial record SettingsModel
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to initialize settings");
+            await LoadError.UpdateAsync(_ => "Your settings could not be loaded.", CancellationToken.None);
         }
+    }
+
+    /// <summary>Set when the profile could not be read; the page shows it with Retry.</summary>
+    public IState<string> LoadError => State<string>.Value(this, () => string.Empty);
+
+    /// <summary>What a Save found wrong, or empty.</summary>
+    public IState<string> ValidationError => State<string>.Value(this, () => string.Empty);
+
+    /// <summary>"Settings saved." after a successful Save, until the next one.</summary>
+    public IState<string> SavedMessage => State<string>.Value(this, () => string.Empty);
+
+    public IState<bool> IsSaving => State<bool>.Value(this, () => false);
+
+    /// <summary>0 System (the default), 1 Light, 2 Dark: the window's theme service applies and saves it.</summary>
+    public IState<int> ThemeIndex => State.Value(this, () => _theme.Theme switch { AppTheme.Light => 1, AppTheme.Dark => 2, _ => 0 })
+        .ForEach(async (index, ct) => await _theme.SetThemeAsync(index switch { 1 => AppTheme.Light, 2 => AppTheme.Dark, _ => AppTheme.System }));
+
+    public async ValueTask Reload(CancellationToken ct)
+    {
+        await LoadError.UpdateAsync(_ => string.Empty, ct);
+        await InitializeAsync();
+    }
+
+    public async ValueTask OpenCatalog(CancellationToken ct)
+    {
+        await _navigator.NavigateRouteAsync(this, "Catalog", cancellation: ct);
     }
 
     public IFeed<BusinessProfileEntity> Profile => Feed.Async(async ct =>
@@ -109,6 +141,33 @@ public partial record SettingsModel
     }
 
     public async ValueTask Save(CancellationToken ct)
+    {
+        await SavedMessage.UpdateAsync(_ => string.Empty, ct);
+        var error = SettingsValidation.Validate(await DefaultTaxRate, await DefaultMarkup, await QuoteValidDays);
+        await ValidationError.UpdateAsync(_ => error ?? string.Empty, ct);
+        if (error is not null)
+        {
+            return;
+        }
+
+        await IsSaving.UpdateAsync(_ => true, ct);
+        try
+        {
+            await SaveProfileAsync();
+            await SavedMessage.UpdateAsync(_ => "Settings saved.", ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to save settings");
+            await ValidationError.UpdateAsync(_ => "Your settings could not be saved. Try again.", ct);
+        }
+        finally
+        {
+            await IsSaving.UpdateAsync(_ => false, ct);
+        }
+    }
+
+    private async Task SaveProfileAsync()
     {
         var profile = await _profileRepo.GetAsync();
 

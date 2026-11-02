@@ -21,10 +21,10 @@
     </utu:NavigationBar>
 
     <ScrollViewer Grid.Row="1">
-      <utu:AutoLayout Padding="24"
-                      Spacing="16"
+      <utu:AutoLayout Padding="{StaticResource Inset24}"
+                      Spacing="{StaticResource Space16}"
                       Orientation="Vertical"
-                      MaxWidth="600"
+                      MaxWidth="{StaticResource FormMaxWidth}"
                       HorizontalAlignment="Stretch">
 
         <TextBox x:Uid="ClientEditorPage.TextBox.Name"
@@ -50,7 +50,7 @@
                  PlaceholderText="Street, City, State/Province"
                  AcceptsReturn="True"
                  TextWrapping="Wrap"
-                 MinHeight="80" />
+                 MinHeight="{StaticResource NotesMinHeight}" />
 
         <mvux:FeedView Source="{Binding ValidationError}">
           <DataTemplate>
@@ -58,7 +58,7 @@
                        Foreground="{ThemeResource ErrorBrush}"
                        Style="{StaticResource BodyMedium}"
                        Visibility="{Binding Data, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert}"
-                       Margin="0,0,0,4" />
+                       Margin="{StaticResource GapBottom4}" />
           </DataTemplate>
         </mvux:FeedView>
 
@@ -66,7 +66,7 @@
                 Command="{Binding Save}"
                 HorizontalAlignment="Stretch"
                 Style="{StaticResource MaterialFilledButtonStyle}"
-                Margin="0,8,0,0" />
+                Margin="{StaticResource GapTop8}" />
 
       </utu:AutoLayout>
     </ScrollViewer>
