@@ -62,7 +62,11 @@ public class FeatureGateService : IFeatureGateService
 
     public bool HasPdfWatermark => IsFreePlan;
 
-    public bool HasCloudSync => HasPlans && CurrentTier >= SubscriptionTier.Pro;
+    /// <summary>
+    /// Off for every plan in this version: sync would send quotes without their line items, and the catalog and
+    /// business profile not at all (docs/DECISIONS-production-readiness.md, D8). SyncService stays unstarted.
+    /// </summary>
+    public bool HasCloudSync => false;
 
     public bool HasAllCatalogs => HasPaidFeatures;
 
@@ -108,7 +112,6 @@ public class FeatureGateService : IFeatureGateService
         "clients" => $"You've reached the {MaxClients} client limit. Upgrade to Pro for unlimited clients at $15/mo.",
         "branding" => "Remove the QuoteCraft watermark and add your logo. Upgrade to Pro at $15/mo.",
         "catalogs" => "Unlock all trade catalogs (Plumbing, Electrical, HVAC, Painting). Upgrade to Pro at $15/mo.",
-        "sync" => "Sync your quotes across all devices. Upgrade to Pro at $15/mo.",
         _ => "Upgrade to QuoteCraft Pro for the full experience at $15/mo."
     };
 }

@@ -559,13 +559,17 @@
           </Border>
         </StackPanel>
 
-        <!-- ACCOUNT -->
+        <!-- ACCOUNT (a Supabase project is configured; cloud sync is still off: DECISIONS D8) -->
         <StackPanel Spacing="{StaticResource Space8}"
                     Visibility="{Binding LocalModeNote, Converter={StaticResource EmptyToVisibleConverter}}">
           <TextBlock Text="ACCOUNT"
                      Style="{StaticResource LabelSmall}"
                      Foreground="{ThemeResource OnSurfaceVariantBrush}"
                      FontWeight="Bold" Margin="{StaticResource GapStart4}" AutomationProperties.HeadingLevel="Level2" />
+          <TextBlock Text="Cloud sync is off in this version: your quotes, clients and settings stay on this device. Your account is used for your plan."
+                     Style="{StaticResource BodySmall}"
+                     Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                     TextWrapping="Wrap" Margin="{StaticResource GapStart4}" />
 
           <Border Background="{ThemeResource SurfaceBrush}"
                   BorderBrush="{ThemeResource OutlineVariantBrush}"

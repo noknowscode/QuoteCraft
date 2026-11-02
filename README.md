@@ -38,7 +38,7 @@ QuoteCraft helps service professionals create, manage, and send quotes to client
 - **Dependency Injection:** Microsoft.Extensions.Hosting
 - **Database:** SQLite, encrypted with SQLCipher (Microsoft.Data.Sqlite + SQLitePCLRaw), local-first
 - **PDF:** QuestPDF (desktop and Windows)
-- **Cloud (optional):** Supabase auth, sync and Stripe billing; see [Local-first, with optional cloud sync](#local-first-with-optional-cloud-sync)
+- **Cloud (optional):** Supabase sign-in and Stripe billing (cloud sync is off in this version); see [Local-first, with optional sign-in and billing](#local-first-with-optional-sign-in-and-billing)
 
 ## Project Structure
 
@@ -142,7 +142,7 @@ Spacing, insets, widths, radii and touch sizes are tokens in `QuoteCraft/Styles/
 resources (`Styles/ColorPaletteOverride.xaml`, `Styles/StatusColors.xaml`, `App.xaml`). Screenshots of each page at
 360, 599, 600, 800, 1080 and 1920 px in Light and Dark are in [docs/evidence](docs/evidence).
 
-## Local-first, with optional cloud sync
+## Local-first, with optional sign-in and billing
 
 QuoteCraft runs entirely on the device: quotes, clients, the catalog and settings live in the local database, and no
 account is needed. Without a Supabase project there are no plans, so no quote or client limits and no watermark;
@@ -165,8 +165,12 @@ Sign-in, plans and billing appear only when the app is given a Supabase project:
 The anon key is meant for clients (row-level security protects the data). Never put the service-role key in the
 app: it bypasses row-level security and belongs to the Edge Functions only. Keep real values out of commits.
 
-Known gaps with a project configured: the sync service exists but the app does not start it yet, and the sign-in page
-is reachable only through Sign Out (see the decisions file).
+**Cloud sync is off in this version, with or without a project:** quotes, clients, the catalog and settings stay on the
+device, and Settings says so. The sync service would upload quotes without their line items (so they arrive at $0),
+and never the catalog or the business profile; what it needs before it is turned on is in
+[docs/DECISIONS-production-readiness.md](docs/DECISIONS-production-readiness.md) (D8). Other gaps with a project
+configured: the sign-in page is reachable only through Sign Out, and the sign-in refresh token is kept in a plain
+file in the app's data folder, not in the platform's secure store.
 
 ## UnoFeatures
 

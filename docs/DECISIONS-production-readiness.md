@@ -94,10 +94,10 @@ Owner decision (round 2 plan): QuoteCraft runs fully on local data with no accou
   prompts then need a non-billing message.
 
 Open points for the next phases (behaviour with a Supabase project configured, unchanged here):
-- `ISyncService.StartAsync` is never called, so sync never runs.
+- `ISyncService.StartAsync` is never called, so sync never runs. Since round 2 this is the decision (D8), not a gap.
 - The Auth page is reachable only through Sign Out; there is no Sign In entry point.
 - The refresh token is stored in a plain file (`.auth_token`), not in platform secure storage as the Architecture Brief
-  says.
+  says (still open; see D8).
 - The trimmed WebAssembly build serializes the Supabase payloads by reflection (IL2026, suppressed because
   `LinkerConfig.xml` preserves the assembly); cloud mode in the browser has not been run.
 
@@ -170,3 +170,34 @@ Theme button opens the same three choices; the old toggle flipped Light/Dark and
 - **States:** every list and detail feed has Progress, None and Error templates, and Retry reaches the page model by
   `ElementName` (the error template's DataContext is the exception). The editors show validation messages (dialogs
   no longer just refuse to close), Settings and the quote editor show a saving bar, and Settings says when it saved.
+
+# Round 2 code review (2026-11-02)
+
+## D8. Cloud sync is off, even with a Supabase project
+
+Decision: `FeatureGateService.HasCloudSync` is false for every plan and nothing starts `SyncService`. Settings says
+"Cloud sync is off in this version" in the account section (a project configured), and the local-mode note says the
+data stays on the device (none configured); the offline banner no longer promises a sync.
+
+Reason: syncing what the review asked for (line items, the catalog and the business profile, beside the quotes and
+clients it pushes now) is not a contained change, and none of it could be run against a project here:
+- **Line items** are hard-deleted locally and the remote `line_items` table has no `is_deleted`, so a deleted item
+  could never reach another device. That needs a tombstone column, or "replace the quote's items" on every push, in
+  both schemas. Without line items a synced quote arrives on another device at $0.
+- **Business profile**: the remote `business_profile` key is `id TEXT PRIMARY KEY DEFAULT 'default'`, so a second user
+  could not store one; the key has to become the user id (a server migration).
+- **Catalog**: every install seeds its 70 items with new random ids, so two devices would merge into 140. The seed
+  needs stable ids first.
+- **Churn**, to fix in the same pass: `SaveAsync` stamps `UpdatedAt` on every save (the push marks rows synced through
+  it, so they look changed again and re-push every 30 seconds), `ReadClient` never reads `synced_at`, and pulled rows
+  are saved with a new `UpdatedAt`. A sync pass should mark rows synced with their own `UpdatedAt`, save pulled rows
+  as they are, and push only rows whose `updated_at` is later than `synced_at`.
+- Quote numbers: each device has its own per-year counter, so two devices can hand out the same number; the
+  unique index would refuse the second on pull. Synced numbering needs a device part or a server-side counter.
+
+Token: the refresh token stays in a plain file in the app's data folder. The app uses no platform secure store
+(Keychain, Android Keystore, DPAPI, the WinAppSDK PasswordVault), and adding one per head is part of the same pass.
+
+What stays: sign-in, plans and billing work as before when a project is configured (D3). `SyncService`, the
+connectivity check and the Supabase tables are kept for that pass.
+

@@ -71,11 +71,11 @@ public class FeatureGateServiceTests
     }
 
     [Fact]
-    public void ProTier_HasCloudSync_IsTrue()
+    public void ProTier_HasCloudSync_IsFalse_SyncIsOffInThisVersion()
     {
         _subscriptionService.CurrentTier.Returns(SubscriptionTier.Pro);
         var svc = CreateService();
-        Assert.True(svc.HasCloudSync);
+        Assert.False(svc.HasCloudSync);
     }
 
     [Fact]

@@ -3,6 +3,8 @@ using QuoteCraft.Data.Remote;
 namespace QuoteCraft.Services;
 
 /// <summary>
+/// NOT STARTED in this version: cloud sync is off, with or without a Supabase project
+/// (docs/DECISIONS-production-readiness.md, D8 lists what it needs first).
 /// Background sync service that pushes local changes to Supabase
 /// and pulls remote changes for Pro+ users.
 /// Uses change tracking: records where updated_at > synced_at are dirty.

@@ -34,7 +34,7 @@
                   HorizontalAlignment="Center" VerticalAlignment="Center">
         <FontIcon Glyph="&#xEB5E;" FontSize="{StaticResource IconSizeMd}"
                   Foreground="{ThemeResource OnErrorContainerBrush}" />
-        <TextBlock Text="You're offline. Quotes will sync when connected."
+        <TextBlock Text="You're offline. Your work is saved on this device; sign-in and billing need a connection."
                    Style="{StaticResource BodySmall}"
                    TextWrapping="Wrap"
                    Foreground="{ThemeResource OnErrorContainerBrush}" />
