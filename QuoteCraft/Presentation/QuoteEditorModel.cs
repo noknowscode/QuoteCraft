@@ -280,7 +280,12 @@ public partial record QuoteEditorModel
 
         existing.Title = await Title ?? "Untitled";
         existing.Notes = await Notes;
-        existing.ClientName = await ClientName;
+
+        // A changed name links the quote to the client with that name (or to none), so the client's counts and the
+        // Send address follow the name on the quote.
+        var clientName = (await ClientName)?.Trim();
+        existing.ClientId = ClientLink.Resolve(clientName, existing.ClientName, existing.ClientId, await _clientRepo.GetAllAsync());
+        existing.ClientName = string.IsNullOrEmpty(clientName) ? null : clientName;
         existing.UpdatedAt = DateTimeOffset.UtcNow;
 
         if (Money.TryParseRate(await TaxRate, out var tax))

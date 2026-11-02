@@ -289,15 +289,12 @@ public sealed partial class DashboardPage : Page
                 ValidUntil = DateTimeOffset.UtcNow.AddDays(profile.QuoteValidDays),
             };
 
-            // Match client if name was provided
+            // Link the client with that name, if there is one
             var clientName = clientBox.Text?.Trim() ?? string.Empty;
             if (!string.IsNullOrEmpty(clientName))
             {
                 quote.ClientName = clientName;
-                var match = allClients.FirstOrDefault(c =>
-                    c.Name.Equals(clientName, StringComparison.OrdinalIgnoreCase));
-                if (match is not null)
-                    quote.ClientId = match.Id;
+                quote.ClientId = ClientLink.Resolve(clientName, null, null, allClients);
             }
 
             await quoteRepo.SaveAsync(quote);
