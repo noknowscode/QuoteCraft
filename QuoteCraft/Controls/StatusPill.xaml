@@ -1,0 +1,85 @@
+<!--
+  A quote status: icon, name and colour together, so the status never rests on colour alone. Colours come from
+  Styles/StatusColors.xaml through ThemeResource setters, so they follow a theme change.
+-->
+<UserControl x:Class="QuoteCraft.Controls.StatusPill"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             HorizontalAlignment="Left"
+             VerticalAlignment="Center"
+             IsTabStop="False">
+  <Grid x:Name="Pill"
+        CornerRadius="{StaticResource RadiusPill}"
+        Padding="{StaticResource PillInset}"
+        ColumnSpacing="{StaticResource Space4}"
+        Background="{ThemeResource StatusDraftBackgroundBrush}">
+    <VisualStateManager.VisualStateGroups>
+      <VisualStateGroup x:Name="StatusStates">
+        <VisualState x:Name="Draft">
+          <VisualState.Setters>
+            <Setter Target="Pill.Background" Value="{ThemeResource StatusDraftBackgroundBrush}" />
+            <Setter Target="Glyph.Foreground" Value="{ThemeResource StatusDraftForegroundBrush}" />
+            <Setter Target="Label.Foreground" Value="{ThemeResource StatusDraftForegroundBrush}" />
+            <Setter Target="Glyph.Glyph" Value="&#xE70F;" />
+          </VisualState.Setters>
+        </VisualState>
+        <VisualState x:Name="Sent">
+          <VisualState.Setters>
+            <Setter Target="Pill.Background" Value="{ThemeResource StatusSentBackgroundBrush}" />
+            <Setter Target="Glyph.Foreground" Value="{ThemeResource StatusSentForegroundBrush}" />
+            <Setter Target="Label.Foreground" Value="{ThemeResource StatusSentForegroundBrush}" />
+            <Setter Target="Glyph.Glyph" Value="&#xE724;" />
+          </VisualState.Setters>
+        </VisualState>
+        <VisualState x:Name="Viewed">
+          <VisualState.Setters>
+            <Setter Target="Pill.Background" Value="{ThemeResource StatusViewedBackgroundBrush}" />
+            <Setter Target="Glyph.Foreground" Value="{ThemeResource StatusViewedForegroundBrush}" />
+            <Setter Target="Label.Foreground" Value="{ThemeResource StatusViewedForegroundBrush}" />
+            <Setter Target="Glyph.Glyph" Value="&#xE7B3;" />
+          </VisualState.Setters>
+        </VisualState>
+        <VisualState x:Name="Accepted">
+          <VisualState.Setters>
+            <Setter Target="Pill.Background" Value="{ThemeResource StatusAcceptedBackgroundBrush}" />
+            <Setter Target="Glyph.Foreground" Value="{ThemeResource StatusAcceptedForegroundBrush}" />
+            <Setter Target="Label.Foreground" Value="{ThemeResource StatusAcceptedForegroundBrush}" />
+            <Setter Target="Glyph.Glyph" Value="&#xE73E;" />
+          </VisualState.Setters>
+        </VisualState>
+        <VisualState x:Name="Declined">
+          <VisualState.Setters>
+            <Setter Target="Pill.Background" Value="{ThemeResource StatusDeclinedBackgroundBrush}" />
+            <Setter Target="Glyph.Foreground" Value="{ThemeResource StatusDeclinedForegroundBrush}" />
+            <Setter Target="Label.Foreground" Value="{ThemeResource StatusDeclinedForegroundBrush}" />
+            <Setter Target="Glyph.Glyph" Value="&#xE711;" />
+          </VisualState.Setters>
+        </VisualState>
+        <VisualState x:Name="Expired">
+          <VisualState.Setters>
+            <Setter Target="Pill.Background" Value="{ThemeResource StatusExpiredBackgroundBrush}" />
+            <Setter Target="Glyph.Foreground" Value="{ThemeResource StatusExpiredForegroundBrush}" />
+            <Setter Target="Label.Foreground" Value="{ThemeResource StatusExpiredForegroundBrush}" />
+            <Setter Target="Glyph.Glyph" Value="&#xE823;" />
+          </VisualState.Setters>
+        </VisualState>
+      </VisualStateGroup>
+    </VisualStateManager.VisualStateGroups>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="Auto" />
+      <ColumnDefinition Width="Auto" />
+    </Grid.ColumnDefinitions>
+    <FontIcon x:Name="Glyph"
+              Glyph="&#xE70F;"
+              FontSize="{StaticResource IconSizeXs}"
+              VerticalAlignment="Center"
+              Foreground="{ThemeResource StatusDraftForegroundBrush}"
+              AutomationProperties.AccessibilityView="Raw" />
+    <TextBlock x:Name="Label"
+               Grid.Column="1"
+               Text="DRAFT"
+               Style="{StaticResource LabelSmall}"
+               VerticalAlignment="Center"
+               Foreground="{ThemeResource StatusDraftForegroundBrush}" />
+  </Grid>
+</UserControl>

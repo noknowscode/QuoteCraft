@@ -31,7 +31,7 @@
       <Color x:Key="SurfaceColor">#FFFFFF</Color>
       <Color x:Key="OnSurfaceColor">#1F2937</Color>
       <Color x:Key="SurfaceVariantColor">#F3F4F6</Color>
-      <Color x:Key="OnSurfaceVariantColor">#6B7280</Color>
+      <Color x:Key="OnSurfaceVariantColor">#5F6673</Color>
       <Color x:Key="OutlineColor">#D1D5DB</Color>
       <Color x:Key="OutlineVariantColor">#E5E7EB</Color>
 
@@ -72,7 +72,7 @@
       <Color x:Key="SurfaceColor">#1F2937</Color>
       <Color x:Key="OnSurfaceColor">#E5E7EB</Color>
       <Color x:Key="SurfaceVariantColor">#374151</Color>
-      <Color x:Key="OnSurfaceVariantColor">#9CA3AF</Color>
+      <Color x:Key="OnSurfaceVariantColor">#AAB1BD</Color>
       <Color x:Key="OutlineColor">#6B7280</Color>
       <Color x:Key="OutlineVariantColor">#4B5563</Color>
 
