@@ -40,12 +40,10 @@ public partial record CategoryDetail(
 
 public partial record CatalogModel
 {
-    private readonly INavigator _navigator;
     private readonly ICatalogItemRepository _catalogRepo;
 
-    public CatalogModel(INavigator navigator, ICatalogItemRepository catalogRepo)
+    public CatalogModel(ICatalogItemRepository catalogRepo)
     {
-        _navigator = navigator;
         _catalogRepo = catalogRepo;
     }
 
@@ -134,18 +132,5 @@ public partial record CatalogModel
     {
         await _catalogRepo.DeleteAsync(id);
         await Version.UpdateAsync(v => v + 1, CancellationToken.None);
-    }
-
-    public async ValueTask OpenItem(CatalogDisplayItem item, CancellationToken ct)
-    {
-        if (item.IsHeader) return;
-        var entity = await _catalogRepo.GetByIdAsync(item.Id);
-        if (entity is not null)
-            await _navigator.NavigateRouteAsync(this, "CatalogEditor", data: entity);
-    }
-
-    public async ValueTask AddItem(CancellationToken ct)
-    {
-        await _navigator.NavigateRouteAsync(this, "CatalogEditor", data: new CatalogItemEntity());
     }
 }

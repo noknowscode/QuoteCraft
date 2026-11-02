@@ -29,9 +29,6 @@ public partial record ClientsModel
     public IState<ClientDisplayItem> SelectedClient => State<ClientDisplayItem>.Empty(this);
     public IState<int> Version => State<int>.Value(this, () => 0);
 
-    // Feature gate state
-    public IState<string> UpgradeMessage => State<string>.Value(this, () => string.Empty);
-
     public IListFeed<ClientDisplayItem> Clients =>
         Feed.Combine(SearchText, Version).SelectAsync(async (inputs, ct) =>
         {
@@ -148,37 +145,15 @@ public partial record ClientsModel
         await _navigator.NavigateRouteAsync(this, "Settings", cancellation: ct);
     }
 
-    public async ValueTask AddClient(CancellationToken ct)
-    {
-        if (!await _featureGate.CanAddClientAsync())
-        {
-            await UpgradeMessage.UpdateAsync(_ => _featureGate.GetUpgradeMessage("clients"), ct);
-            return;
-        }
-        await _navigator.NavigateRouteAsync(this, "ClientEditor", data: new ClientEntity());
-    }
-
-    public async ValueTask DismissUpgrade(CancellationToken ct)
-    {
-        await UpgradeMessage.UpdateAsync(_ => string.Empty, ct);
-    }
-
-    public async ValueTask EditClient(CancellationToken ct)
-    {
-        var client = await SelectedClient;
-        if (client is not null)
-            await _navigator.NavigateRouteAsync(this, "ClientEditor", data: client!.Entity);
-    }
-
     public async ValueTask CreateQuoteForClient(CancellationToken ct)
     {
         var client = await SelectedClient;
         if (client is null) return;
 
+        // A plan limit (only where plans exist) is reported like any failure: the page's handler shows it.
         if (!await _featureGate.CanCreateQuoteAsync())
         {
-            await UpgradeMessage.UpdateAsync(_ => _featureGate.GetUpgradeMessage("quotes"), ct);
-            return;
+            throw new InvalidOperationException(_featureGate.GetUpgradeMessage("quotes"));
         }
 
         var profile = await _profileRepo.GetAsync();

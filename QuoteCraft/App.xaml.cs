@@ -441,10 +441,9 @@ public partial class App : Application
             new ViewMap<ClientsPage, ClientsModel>(),
             new ViewMap<CatalogPage, CatalogModel>(),
             new ViewMap<SettingsPage, SettingsModel>(),
-            // NotificationsPage is now an overlay panel in MainPage (not a routed page)
-            new DataViewMap<ClientEditorPage, ClientEditorModel, ClientEntity>(),
-            new DataViewMap<QuoteEditorPage, QuoteEditorModel, QuoteEntity>(),
-            new DataViewMap<CatalogEditorPage, CatalogEditorModel, CatalogItemEntity>()
+            // NotificationsPage is now an overlay panel in MainPage (not a routed page). Clients and catalog items are
+            // added and edited in dialogs on their pages.
+            new DataViewMap<QuoteEditorPage, QuoteEditorModel, QuoteEntity>()
         );
 
         routes.Register(
@@ -460,9 +459,7 @@ public partial class App : Application
                             new ("Clients", View: views.FindByViewModel<ClientsModel>()),
                             new ("Catalog", View: views.FindByViewModel<CatalogModel>()),
                             new ("Settings", View: views.FindByViewModel<SettingsModel>()),
-                            new ("ClientEditor", View: views.FindByViewModel<ClientEditorModel>()),
                             new ("QuoteEditor", View: views.FindByViewModel<QuoteEditorModel>()),
-                            new ("CatalogEditor", View: views.FindByViewModel<CatalogEditorModel>()),
                         ]),
                 ]
             )

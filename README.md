@@ -59,9 +59,7 @@ QuoteCraft helps service professionals create, manage, and send quotes to client
     │   ├── ClientsPage.xaml             # Client directory
     │   ├── CatalogPage.xaml             # Service/material catalog
     │   ├── SettingsPage.xaml            # Business profile & quote config
-    │   ├── QuoteEditorPage.xaml         # Line-item quote editor
-    │   ├── ClientEditorPage.xaml        # Add/edit client
-    │   ├── CatalogEditorPage.xaml       # Add/edit catalog item
+    │   ├── QuoteEditorPage.xaml         # Line-item quote editor (clients and catalog items edit in dialogs)
     │   └── OnboardingPage.xaml          # First-run setup wizard
     ├── Models/                          # Data entities
     ├── Data/                            # SQLite database & repositories
