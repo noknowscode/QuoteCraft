@@ -14,23 +14,53 @@ public class RelativeDateConverter : IValueConverter
         else
             return string.Empty;
 
-        var now = DateTimeOffset.UtcNow;
-        var diff = now - date;
-
-        if (diff.TotalMinutes < 1) return "Just now";
-        if (diff.TotalHours < 1) return $"{(int)diff.TotalMinutes}m ago";
-        if (diff.TotalHours < 24 && date.Date == now.Date) return "Today";
-        if (diff.TotalHours < 48 && date.Date == now.Date.AddDays(-1)) return "Yesterday";
-        var days = (int)diff.TotalDays;
-        if (days < 7) return $"{days} {(days == 1 ? "day" : "days")} ago";
-        var weeks = (int)(diff.TotalDays / 7);
-        if (diff.TotalDays < 30) return $"{weeks} {(weeks == 1 ? "week" : "weeks")} ago";
-        var months = (int)(diff.TotalDays / 30);
-        if (diff.TotalDays < 365) return $"{months} {(months == 1 ? "month" : "months")} ago";
-
-        return date.ToString("MMM d, yyyy");
+        return RelativeDate.Format(date, DateTimeOffset.Now);
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, string language)
         => throw new NotSupportedException();
+}
+
+/// <summary>
+/// "Just now", "3 days ago", "Tomorrow", "In 2 weeks": a date relative to now, in the past or the future (a quote's
+/// valid-until date is usually ahead). Calendar words (Today, Yesterday, Tomorrow) use the day in <paramref name="now"/>'s
+/// time zone.
+/// </summary>
+public static class RelativeDate
+{
+    public static string Format(DateTimeOffset date, DateTimeOffset now)
+    {
+        var diff = now - date;
+        var days = (date.ToOffset(now.Offset).Date - now.Date).Days; // calendar days ahead (negative: behind)
+
+        if (diff < TimeSpan.Zero)
+        {
+            return days switch
+            {
+                0 => "Today",
+                1 => "Tomorrow",
+                < 7 => $"In {days} days",
+                < 30 => Plural("In", days / 7, "week"),
+                < 365 => Plural("In", days / 30, "month"),
+                _ => date.ToString("MMM d, yyyy"),
+            };
+        }
+
+        if (diff.TotalMinutes < 1) return "Just now";
+        if (diff.TotalHours < 1) return $"{(int)diff.TotalMinutes}m ago";
+        if (days == 0) return "Today";
+        if (days == -1) return "Yesterday";
+        if (-days < 7) return $"{-days} days ago";
+        var ago = (int)diff.TotalDays;
+        if (diff.TotalDays < 30) return Plural(null, ago / 7, "week") + " ago";
+        if (diff.TotalDays < 365) return Plural(null, ago / 30, "month") + " ago";
+
+        return date.ToString("MMM d, yyyy");
+    }
+
+    private static string Plural(string? prefix, int count, string unit)
+    {
+        var text = $"{count} {unit}{(count == 1 ? string.Empty : "s")}";
+        return prefix is null ? text : $"{prefix} {text}";
+    }
 }
