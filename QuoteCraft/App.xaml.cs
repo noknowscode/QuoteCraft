@@ -188,7 +188,8 @@ public partial class App : Application
     /// Screenshot-matrix hooks (docs/evidence). <c>--qc-theme=light|dark</c> sets the theme through the theme service, as
     /// the app's own selector does. <c>--qc-route=&lt;route&gt;[:detail]</c> opens Dashboard (the quotes list), Clients,
     /// Catalog, Settings, Onboarding or QuoteEditor (the seeded quote with the most line items, opened from the
-    /// dashboard like a tap does); <c>:detail</c> also selects the first quote, client or category. Each step prints a
+    /// dashboard like a tap does); <c>:detail</c> also selects the first quote, client or category, and
+    /// <c>Onboarding:complete</c> runs onboarding through Create First Quote. Each step prints a
     /// <c>VERIFY</c> line to stderr.
     /// </summary>
     private async Task ApplyVerificationViewAsync()
@@ -225,6 +226,16 @@ public partial class App : Application
             {
                 var response = await root.Navigator()!.NavigateRouteAsync(this, "Onboarding", qualifier: Qualifiers.ClearBackStack);
                 VerificationArgs.Log($"route={spec} success={response?.Success}");
+                // Onboarding:complete walks the steps and presses Create First Quote, as a first-run user would.
+                if (parts.Length == 2 && parts[1] == "complete"
+                    && await WaitForAsync<OnboardingPage>(root) is { } onboarding
+                    && MvuxHelper.GetModel<OnboardingModel>(onboarding.DataContext) is { } model)
+                {
+                    await model.NextStep(CancellationToken.None);
+                    await model.NextStep(CancellationToken.None);
+                    await model.Complete(CancellationToken.None);
+                    VerificationArgs.Log($"route={spec} completed editor={await WaitForAsync<QuoteEditorPage>(root) is not null}");
+                }
                 return;
             }
 
@@ -237,8 +248,15 @@ public partial class App : Application
 
             if (route is "Clients" or "Catalog" or "Settings")
             {
-                var response = await main.Navigator()!.NavigateRouteAsync(main, route);
-                VerificationArgs.Log($"route={spec} success={response?.Success}");
+                // Select the tab, as a tap does: navigating the region from here left the window unpainted after a
+                // resize under Xvfb (the tab route repaints normally).
+                var tab = Descendants<Uno.Toolkit.UI.TabBarItem>(main)
+                    .FirstOrDefault(t => Uno.Extensions.Navigation.UI.Region.GetName(t) == route && t.ActualWidth > 0);
+                if (tab is not null)
+                {
+                    tab.IsSelected = true;
+                }
+                VerificationArgs.Log($"route={spec} tab={tab is not null}");
             }
 
             if (route == "QuoteEditor")
@@ -310,6 +328,22 @@ public partial class App : Application
             await Task.Delay(100);
         }
         return null;
+    }
+
+    private static IEnumerable<T> Descendants<T>(DependencyObject parent) where T : DependencyObject
+    {
+        for (var i = 0; i < Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
+        {
+            var child = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(parent, i);
+            if (child is T match)
+            {
+                yield return match;
+            }
+            foreach (var nested in Descendants<T>(child))
+            {
+                yield return nested;
+            }
+        }
     }
 
     private static T? Find<T>(DependencyObject parent) where T : DependencyObject
