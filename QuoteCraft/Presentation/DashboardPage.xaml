@@ -620,16 +620,33 @@
                               Grid.Column="{utu:Responsive Narrowest=0, Widest=1, Layout={StaticResource SplitLayout}}"
                               Orientation="Horizontal" Spacing="{StaticResource Space8}"
                               VerticalAlignment="Center">
+                    <!-- Edit and Full editor drop their labels (tooltips stay) where the detail is narrow: below 600, and
+                         from 800 to 1400, where the list sits beside it -->
                     <!-- Edit button (visible when NOT editing) -->
                     <Button Click="EditQuote_Click"
                             AutomationProperties.Name="Edit quote"
+                            ToolTipService.ToolTip="Edit line items and notes"
                             Style="{StaticResource MaterialOutlinedButtonStyle}"
                             CornerRadius="{StaticResource RadiusMd}"
                             MinHeight="{StaticResource TouchTarget}"
                             Visibility="{Binding IsEditMode, ElementName=DashboardRoot, Converter={StaticResource InverseBoolConverter}}">
                       <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
                         <FontIcon Glyph="&#xE70F;" FontSize="{StaticResource IconSizeMd}" />
-                        <TextBlock Text="Edit" Visibility="{utu:Responsive Narrow=Collapsed, Normal=Visible}" />
+                        <TextBlock Text="Edit" Visibility="{utu:Responsive Narrowest=Collapsed, Normal=Visible, Wide=Collapsed, Widest=Visible, Layout={StaticResource SplitLayout}}" />
+                      </StackPanel>
+                    </Button>
+
+                    <!-- Full editor: title, client, dates, tax rate and markup (Edit above covers line items and notes) -->
+                    <Button Command="{Binding DataContext.EditQuote, ElementName=DashboardRoot}"
+                            AutomationProperties.Name="Open quote in the full editor"
+                            ToolTipService.ToolTip="Open in the full editor"
+                            Style="{StaticResource MaterialOutlinedButtonStyle}"
+                            CornerRadius="{StaticResource RadiusMd}"
+                            MinHeight="{StaticResource TouchTarget}"
+                            Visibility="{Binding IsEditMode, ElementName=DashboardRoot, Converter={StaticResource InverseBoolConverter}}">
+                      <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
+                        <FontIcon Glyph="&#xE8A7;" FontSize="{StaticResource IconSizeMd}" />
+                        <TextBlock Text="Full editor" Visibility="{utu:Responsive Narrowest=Collapsed, Normal=Visible, Wide=Collapsed, Widest=Visible, Layout={StaticResource SplitLayout}}" />
                       </StackPanel>
                     </Button>
 
@@ -646,6 +663,7 @@
 
                     <Button Command="{Binding DataContext.PreviewQuote, ElementName=DashboardRoot}"
                             AutomationProperties.Name="Preview quote"
+                            ToolTipService.ToolTip="Preview"
                             Style="{StaticResource MaterialOutlinedButtonStyle}"
                             BorderBrush="{ThemeResource PrimaryBrush}"
                             CornerRadius="{StaticResource RadiusMd}"
@@ -654,7 +672,7 @@
                       <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
                         <FontIcon Glyph="&#xE8FF;" FontSize="{StaticResource IconSizeMd}"
                                   Foreground="{ThemeResource PrimaryBrush}" />
-                        <TextBlock Text="Preview"
+                        <TextBlock Text="Preview" Visibility="{utu:Responsive Narrow=Collapsed, Normal=Visible}"
                                    Foreground="{ThemeResource PrimaryBrush}" Style="{StaticResource LabelLargeSemiBold}" />
                       </StackPanel>
                     </Button>
