@@ -1,5 +1,4 @@
 using Microsoft.Data.Sqlite;
-using QuoteCraft.Data;
 using QuoteCraft.Helpers;
 using QuoteCraft.Models;
 using QuoteCraft.Tests.Data;
@@ -82,7 +81,7 @@ public class QuoteNumberGeneratorTests
         using var test = new TestDatabase();
 
         // Put the database back to version 5, with two quotes that share a number, as the count-based numbering left it.
-        await ExecuteAsync(test.Database, """
+        await test.ExecuteAsync("""
             DROP INDEX ux_quotes_quote_number;
             DROP TABLE quote_counters;
             DELETE FROM schema_version WHERE version >= 6;
@@ -95,10 +94,7 @@ public class QuoteNumberGeneratorTests
             await test.Quotes.SaveAsync(quote);
         }
 
-        // A new AppDatabase on the same file runs the migrations again from version 5.
-        SqliteConnection.ClearAllPools();
-        var reopened = new AppDatabase(test.Folder);
-        var quotes = new QuoteRepository(reopened, NSubstitute.Substitute.For<QuoteCraft.Services.IPhotoService>());
+        var quotes = test.Reopen();
 
         Assert.Equal("QC-2026-0002", (await quotes.GetByIdAsync(older.Id))!.QuoteNumber);
         Assert.Equal("QC-2026-0003", (await quotes.GetByIdAsync(newer.Id))!.QuoteNumber);
@@ -122,13 +118,5 @@ public class QuoteNumberGeneratorTests
     public void A_number_in_another_shape_does_not_parse()
     {
         Assert.False(QuoteNumberGenerator.TryParse("Kitchen job", out _, out _, out _));
-    }
-
-    private static async Task ExecuteAsync(AppDatabase database, string sql)
-    {
-        await using var connection = await database.OpenConnectionAsync();
-        var cmd = connection.CreateCommand();
-        cmd.CommandText = sql;
-        await cmd.ExecuteNonQueryAsync();
     }
 }

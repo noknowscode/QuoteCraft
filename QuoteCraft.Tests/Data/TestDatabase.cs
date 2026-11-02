@@ -27,9 +27,30 @@ public sealed class TestDatabase : IDisposable
     public BusinessProfileRepository Profiles { get; }
     public StatusHistoryRepository History { get; }
 
+    /// <summary>Runs SQL straight on the database (to put it back to an older shape).</summary>
+    public async Task ExecuteAsync(string sql)
+    {
+        await using var connection = await Database.OpenConnectionAsync();
+        var cmd = connection.CreateCommand();
+        cmd.CommandText = sql;
+        await cmd.ExecuteNonQueryAsync();
+    }
+
+    /// <summary>
+    /// A new <see cref="AppDatabase"/> on the same file, as the next app start would open it: migrations missing from
+    /// schema_version run again.
+    /// </summary>
+    public QuoteRepository Reopen() => new(new AppDatabase(Folder), Substitute.For<IPhotoService>());
+
     public void Dispose()
     {
-        SqliteConnection.ClearAllPools();
+        // Close this database's pooled connections only: clearing every pool would make the tests running beside this
+        // one derive their SQLCipher keys again.
+        using (var connection = Database.OpenConnectionAsync().GetAwaiter().GetResult())
+        {
+            SqliteConnection.ClearPool(connection);
+        }
+
         try
         {
             Directory.Delete(Folder, recursive: true);
