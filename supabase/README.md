@@ -4,7 +4,8 @@ Edge functions and migrations for QuoteCraft's hosted mode. Restored from the pr
 
 - `migrations/`: tables (`001`) and row-level security (`002`).
 - `functions/create-checkout-session`, `functions/stripe-webhook`: Stripe subscription checkout and webhook.
-- `functions/quote-view`: public quote view.
+- `functions/quote-view`: public quote view. The app links to it no more: it shows quotes stored in Supabase, and
+  cloud sync is off for now (docs/DECISIONS-production-readiness.md, D8).
 
 Secrets are read from the function environment, never from source. Set these in Supabase:
 
