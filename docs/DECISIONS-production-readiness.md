@@ -120,3 +120,53 @@ Open points for the next phases (behaviour with a Supabase project configured, u
 - **WebAssembly splash.** Toolkit 11's `ExtendedSplashScreen` requests `appmanifest.js` in lower case while the bootstrapper
   serves `AppManifest.js`. On a case-sensitive host it logs "Error while getting native splash screen" and shows its
   loading template instead; the app is unaffected.
+
+# Phase B: UI hardening (2026-11-02)
+
+## D5. Four layouts with the default breakpoints; one pane below 1080
+
+Every page answers the four `utu:Responsive` categories (Narrow below 600, Normal 600 to 800, Wide 800 to 1080, Widest
+1080 and up); the table is in the README under Layouts.
+
+- **Quotes, Clients and Catalog are one pane below 1080.** The list fills the page; picking an item opens it over the
+  list, with a back button (`BackToList` in each model clears the selection). Before, the detail pane was simply hidden
+  below 800, so a tap on a quote or client did nothing on a phone, and the 380 px list column clipped at 360 px.
+- **Side by side from 1080.** At 800 the rail leaves 644 px; a 380 px list would leave the detail 264 px, too little
+  for the action row or the line-item table.
+- **One custom layout, `SplitLayout` (Widest at 1400), for splits inside a pane**: the quote's client/details/totals
+  column and the client's summary sit beside the main column, and Settings shows its live preview, only from 1400.
+  At 1080 the detail is about 470 px wide, and a 340 px side column left the line-item table below 130 px. Below 1400
+  these stack.
+- **Navigation:** bottom tabs below 800, the side rail from 800 (unchanged). Notifications and the rail's theme menu
+  are rail-only; below 800 the theme is in Settings. Notifications have no entry point on phones (open point).
+
+## D6. Theme: System by default, Light or Dark by choice, through the Uno.Extensions theme service
+
+`UseThemeSwitching()` (already in Uno.Extensions.Hosting, no new package) registers the window's `IThemeService`,
+which applies the theme and saves it. Settings has an Appearance row (System default, Light, Dark) and the rail's
+Theme button opens the same three choices; the old toggle flipped Light/Dark and was forgotten at the next launch.
+
+- Colours set from code read the element's theme (`Helpers/ThemeResources`) and are set again on
+  `ActualThemeChanged` (card hover/selection in `InteractionHelper`). The status pills are a control whose colours are
+  `ThemeResource` setters; the old converters cached the first theme's brushes, so pills kept Light colours in Dark.
+- Contrast: text on the amber accent is now `OnAccentBrush` #1A365D (5.6:1; the slate band colour gave 4.0:1), and
+  hover/pressed ambers are lighter so the label stays above 4.5:1. `OnSurfaceVariant` moved from #6B7280 to #5F6673
+  (Light) and from #9CA3AF to #AAB1BD (Dark) to reach 4.5:1 on the search fields and surface-variant panels. Draft
+  and Expired pill text moved to #4B5563 (Light) and #D1D5DB (Dark); Expired was 2.3:1.
+- Hex left on purpose: the palettes themselves (`ColorPaletteOverride.xaml`, `StatusColors.xaml`, brand colours in
+  `App.xaml`) and QuestPDF's colours in `Services/PdfGenerator.cs`, which draw a printed page, not the UI.
+
+## D7. Smaller Phase B fixes
+
+- **Quote editor back arrow** is an explicit action on the navigation bar and falls back to the quotes list when
+  there is no page to go back to (the editor opened straight from onboarding had none). Tapping the selected tab now
+  navigates to it, so the Quotes tab works after the editor (the editor is not a tab, so Quotes stayed selected).
+- **Relative dates** handle the future: a valid-until date four weeks ahead read "Just now"; it reads "In 4 weeks"
+  (`Helpers/RelativeDate`, tested). Day words (Today, Tomorrow) use the local day.
+- **Dead or broken controls:** Edit client did nothing (it read a selection only an unwired tap handler set); the
+  catalog item dialog opened a second dialog for Delete, which a ContentDialog cannot do (Delete is now the dialog's
+  own button); "+ Add Catalog" in Settings was text with no action (now "Manage catalog", which opens Catalog); the
+  dashboard's Upgrade buttons had no action (they open Settings, where plans live).
+- **States:** every list and detail feed has Progress, None and Error templates, and Retry reaches the page model by
+  `ElementName` (the error template's DataContext is the exception). The editors show validation messages (dialogs
+  no longer just refuse to close), Settings and the quote editor show a saving bar, and Settings says when it saved.

@@ -15,8 +15,8 @@ QuoteCraft helps service professionals create, manage, and send quotes to client
 - **Email Integration** — Send quotes directly to clients via email
 - **Dashboard Analytics** — At-a-glance metrics including monthly totals, send counts, and acceptance rates with sparkline charts
 - **Quote Editor** — Line-item editor with quantity, pricing, tax rate, markup, and custom footer support
-- **Dark Mode** — Toggle between light and dark themes from the side rail
-- **Responsive Layout** — Adaptive navigation with a side rail on desktop and bottom tab bar on mobile
+- **Light, Dark or System theme** — Follows the system by default; choose Light or Dark in Settings (Appearance) or from the side rail's Theme menu, and the choice is remembered
+- **Responsive Layout** — Four layouts, from a 360 px phone to a wide desktop: bottom tabs and one pane below 800 px, the side rail from 800 px, list and detail side by side from 1080 px (see [Layouts](#layouts))
 - **Business Profile** — Configure company name, phone, email, address, logo, and default quote settings
 - **Onboarding Flow** — Guided setup for new users to configure their business profile
 
@@ -48,7 +48,7 @@ QuoteCraft helps service professionals create, manage, and send quotes to client
 ├── Directory.Build.props
 ├── Directory.Packages.props
 ├── docs/                                # PRD, architecture, design and revenue-model briefs; production-readiness decisions
-├── QuoteCraft.Tests/                    # xUnit tests (quote numbering, feature gates, quote entity, Supabase config)
+├── QuoteCraft.Tests/                    # xUnit tests (quote numbering, feature gates, quote entity, Supabase config, relative dates, settings validation)
 └── QuoteCraft/
     ├── QuoteCraft.csproj
     ├── App.xaml / App.xaml.cs          # App shell, DI, routing, styles
@@ -66,9 +66,9 @@ QuoteCraft helps service professionals create, manage, and send quotes to client
     ├── Models/                          # Data entities
     ├── Data/                            # SQLite database & repositories
     ├── Services/                        # PDF, email, sharing, feature gates
-    ├── Styles/                          # Color palette, typography, status colors
+    ├── Styles/                          # Color palette, status colors, layout tokens (Layout.xaml)
     ├── Helpers/                         # Value converters & utilities
-    ├── Controls/                        # Custom controls (sparklines, etc.)
+    ├── Controls/                        # Custom controls (sparkline, status pill)
     └── Assets/                          # Fonts (DM Sans, JetBrains Mono), icons
 ```
 
@@ -128,6 +128,21 @@ iOS builds on macOS and the WinAppSDK head on Windows; elsewhere the SDK skips t
 
 The reasons, and the options for PDF export on the other heads, are in
 [docs/DECISIONS-production-readiness.md](docs/DECISIONS-production-readiness.md).
+
+## Layouts
+
+Every page uses the Uno Toolkit's `utu:Responsive` with the default breakpoints:
+
+| Category | Window width | Navigation | Quotes, Clients, Catalog | Settings, editor, onboarding |
+|---|---|---|---|---|
+| Narrow | below 600 | bottom tabs | one pane: the list, or the picked item with a back button; search under the title | one column, 16 px sides |
+| Normal | 600 to 800 | bottom tabs | one pane, header on one row | one column, 24 px sides |
+| Wide | 800 to 1080 | side rail | one pane, stat cards above the list | one column, capped and centred |
+| Widest | 1080 and up | side rail | list and detail side by side, page capped at 1600 px | Settings adds the live quote preview from 1400 px |
+
+Spacing, insets, widths, radii and touch sizes are tokens in `QuoteCraft/Styles/Layout.xaml`; colours are theme
+resources (`Styles/ColorPaletteOverride.xaml`, `Styles/StatusColors.xaml`, `App.xaml`). Screenshots of each page at
+360, 599, 600, 800, 1080 and 1920 px in Light and Dark are in [docs/evidence](docs/evidence).
 
 ## Local-first, with optional cloud sync
 
