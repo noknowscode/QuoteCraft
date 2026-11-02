@@ -106,6 +106,24 @@ public partial record QuoteEditorModel
             (IImmutableList<LineItemEntity>)(await _quoteRepo.GetLineItemsAsync(_quoteId)).ToImmutableList())
         .AsListFeed();
 
+    /// <summary>
+    /// Subtotal, tax and total, recomputed when the items change and when the tax rate field is left. Until the rate
+    /// reads (0 to 100), the tax line asks for one and the total leaves tax out.
+    /// </summary>
+    public IFeed<QuoteTotals> Totals => Feed.Combine(LineItemsVersion, TaxRate)
+        .SelectAsync(async (inputs, ct) =>
+        {
+            var (_, rateText) = inputs;
+            var rateReads = Money.TryParseRate(rateText, out var rate) && rate <= 100;
+            var quote = new QuoteEntity
+            {
+                TaxRate = rateReads ? rate : 0m,
+                LineItems = await _quoteRepo.GetLineItemsAsync(_quoteId),
+            };
+            var label = rateReads ? $"Tax ({Money.FormatRate(rate)} %)" : "Tax (enter a rate from 0 to 100)";
+            return new QuoteTotals(quote.Subtotal, label, quote.TaxAmount, quote.Total);
+        });
+
     /// <summary>A new item goes last; an edited one keeps its place (the dialog has validated it).</summary>
     public async ValueTask SaveLineItem(LineItemEntity item, CancellationToken ct)
     {
@@ -299,6 +317,7 @@ public partial record QuoteEditorModel
         await _quoteRepo.SaveAsync(existing);
     }
 
+    /// <summary>When the quote was sent, accepted, declined, expired or reopened (PRD F3.4), oldest first.</summary>
     public IListFeed<StatusHistoryEntry> StatusHistory => LineItemsVersion
         .SelectAsync(async (_, ct) =>
             (IImmutableList<StatusHistoryEntry>)(await _statusHistoryRepo.GetByQuoteIdAsync(_quoteId)).ToImmutableList())

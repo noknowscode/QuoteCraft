@@ -11,7 +11,8 @@
       Background="{ThemeResource BackgroundBrush}">
 
   <!--
-    Quote editor: one column at every size, capped at ReadingMaxWidth (720) and centred from Normal up.
+    Quote editor: one column at every size, capped at ReadingMaxWidth (720) and centred from Normal up. From the top:
+    title, client, tax rate, line items, totals, photos, notes, export, status actions, history.
       Narrow   16 px sides; the line-item actions go under the "Line Items" heading; status actions stack full width.
       Normal / Wide / Widest   wider insets; actions beside their headings; status actions in a row.
   -->
@@ -242,6 +243,46 @@
           </mvux:FeedView.ErrorTemplate>
         </mvux:FeedView>
 
+        <!-- Totals (PRD F1.5): what the PDF will show; recomputed as items change and when the tax field is left -->
+        <mvux:FeedView Source="{Binding Totals}"
+                       HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+          <DataTemplate>
+            <Border Background="{ThemeResource SurfaceVariantBrush}"
+                    CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Inset16}">
+              <Grid RowSpacing="{StaticResource Space8}" ColumnSpacing="{StaticResource Space16}">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock Text="Subtotal" Style="{StaticResource BodyMedium}"
+                           Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                <TextBlock Grid.Column="1"
+                           Text="{Binding Data.Subtotal, Converter={StaticResource CurrencyFormatConverter}}"
+                           Style="{StaticResource BodyMedium}" FontFamily="{StaticResource MonospaceFontFamily}"
+                           HorizontalAlignment="Right" />
+                <TextBlock Grid.Row="1" Text="{Binding Data.TaxLabel}" Style="{StaticResource BodyMedium}"
+                           Foreground="{ThemeResource OnSurfaceVariantBrush}" TextWrapping="Wrap" />
+                <TextBlock Grid.Row="1" Grid.Column="1"
+                           Text="{Binding Data.Tax, Converter={StaticResource CurrencyFormatConverter}}"
+                           Style="{StaticResource BodyMedium}" FontFamily="{StaticResource MonospaceFontFamily}"
+                           HorizontalAlignment="Right" />
+                <TextBlock Grid.Row="2" Text="Total" Style="{StaticResource TitleMediumBold}" />
+                <TextBlock Grid.Row="2" Grid.Column="1"
+                           Text="{Binding Data.Total, Converter={StaticResource CurrencyFormatConverter}}"
+                           Style="{StaticResource TitleMediumBold}" FontFamily="{StaticResource MonospaceFontFamily}"
+                           Foreground="{ThemeResource PrimaryBrush}"
+                           HorizontalAlignment="Right"
+                           AutomationProperties.Name="Total" />
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </mvux:FeedView>
+
         <!-- Photos Section -->
         <Grid utu:AutoLayout.PrimaryAlignment="Stretch"
               MinHeight="{StaticResource TouchTarget}">
@@ -395,6 +436,41 @@
                   MinHeight="{StaticResource TouchTarget}"
                   Style="{StaticResource MaterialOutlinedButtonStyle}" />
         </StackPanel>
+
+        <!-- Status history (PRD F3.4), one line per change -->
+        <TextBlock Text="History"
+                   Style="{StaticResource TitleMedium}"
+                   AutomationProperties.HeadingLevel="Level2"
+                   Margin="{StaticResource GapTop8}" />
+        <mvux:FeedView Source="{Binding StatusHistory}"
+                       HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+          <DataTemplate>
+            <ItemsControl ItemsSource="{Binding Data}" IsTabStop="False">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <TextBlock Style="{StaticResource BodyMedium}" Margin="{StaticResource InsetY4}">
+                    <Run Text="{Binding Status}" FontWeight="SemiBold" /><Run Text=" · " /><Run Text="{Binding ChangedAt, Converter={StaticResource ShortDateConverter}}" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                  </TextBlock>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </DataTemplate>
+          <mvux:FeedView.NoneTemplate>
+            <DataTemplate>
+              <TextBlock Text="No status changes yet. Sending, accepting or declining the quote adds a line here."
+                         Style="{StaticResource BodyMedium}"
+                         Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                         TextWrapping="Wrap" />
+            </DataTemplate>
+          </mvux:FeedView.NoneTemplate>
+          <mvux:FeedView.ErrorTemplate>
+            <DataTemplate>
+              <TextBlock Text="The history could not be loaded."
+                         Style="{StaticResource BodyMedium}"
+                         Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+            </DataTemplate>
+          </mvux:FeedView.ErrorTemplate>
+        </mvux:FeedView>
 
       </utu:AutoLayout>
     </ScrollViewer>
