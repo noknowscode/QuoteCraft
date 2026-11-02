@@ -71,6 +71,20 @@ public class NotificationService : INotificationService
         UnreadCountChanged?.Invoke(_unreadCount);
     }
 
+    public async Task<bool> ExistsAsync(NotificationType type, string quoteId, DateTimeOffset since)
+    {
+        await using var conn = await _db.OpenConnectionAsync();
+
+        var cmd = conn.CreateCommand();
+        cmd.CommandText = """
+            SELECT EXISTS (SELECT 1 FROM notifications WHERE type = @type AND quote_id = @quote_id AND created_at >= @since)
+            """;
+        cmd.Parameters.AddWithValue("@type", type.ToString());
+        cmd.Parameters.AddWithValue("@quote_id", quoteId);
+        cmd.Parameters.AddWithValue("@since", since.ToUniversalTime().ToString("O"));
+        return Convert.ToInt32(await cmd.ExecuteScalarAsync()) == 1;
+    }
+
     public async Task MarkAsReadAsync(string notificationId)
     {
         await using var conn = await _db.OpenConnectionAsync();

@@ -173,6 +173,9 @@ public partial class App : Application
 #endif
         Host = await builder.NavigateAsync<Shell>();
 
+        // Overdue quotes expire, and reminders go out 3 days before (PRD F17), while the app runs.
+        Host.Services.GetRequiredService<Services.QuoteExpiryService>().Start();
+
         await ShowOnboardingOnFirstRunAsync();
 #if DEBUG
         await ApplyVerificationViewAsync();
