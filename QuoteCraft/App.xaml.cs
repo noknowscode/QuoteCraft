@@ -116,6 +116,8 @@ public partial class App : Application
                     services.AddSingleton<Services.QuoteExpiryService>();
                 })
                 .UseNavigation(ReactiveViewModelMappings.ViewModelMappings, RegisterRoutes)
+                // Light, Dark or the system's theme (the default); the choice is saved and restored at launch.
+                .UseThemeSwitching()
             );
         MainWindow = builder.Window;
 
@@ -128,9 +130,26 @@ public partial class App : Application
         // system has to be restored first.
         await AppStorage.EnsureReadyAsync();
 
+#if DEBUG
+        if (VerificationArgs.Get("seed") == "sample")
+        {
+            // Evidence runs: sample data goes in before the first page loads.
+            try
+            {
+                await SampleData.SeedAsync();
+            }
+            catch (Exception ex)
+            {
+                VerificationArgs.Log($"seed failed: {ex}");
+            }
+        }
+#endif
         Host = await builder.NavigateAsync<Shell>();
 
         await ShowOnboardingOnFirstRunAsync();
+#if DEBUG
+        await ApplyVerificationViewAsync();
+#endif
         }
         catch (Exception ex)
         {
@@ -163,6 +182,153 @@ public partial class App : Application
             services.GetRequiredService<ILogger<App>>().LogError("No navigator to open onboarding");
         }
     }
+
+#if DEBUG
+    /// <summary>
+    /// Screenshot-matrix hooks (docs/evidence). <c>--qc-theme=light|dark</c> sets the theme through the theme service, as
+    /// the app's own selector does. <c>--qc-route=&lt;route&gt;[:detail]</c> opens Dashboard (the quotes list), Clients,
+    /// Catalog, Settings, Onboarding or QuoteEditor (the seeded quote with the most line items, opened from the
+    /// dashboard like a tap does); <c>:detail</c> also selects the first quote, client or category. Each step prints a
+    /// <c>VERIFY</c> line to stderr.
+    /// </summary>
+    private async Task ApplyVerificationViewAsync()
+    {
+        try
+        {
+            if (Host is null || MainWindow?.Content is not FrameworkElement root)
+            {
+                return;
+            }
+
+            if (VerificationArgs.Get("theme") is { } theme)
+            {
+                var dark = theme.Equals("dark", StringComparison.OrdinalIgnoreCase);
+                // The window's theme service, as the shell's theme menu uses it.
+                var scope = (FrameworkElement?)await WaitForAsync<MainPage>(root) ?? root;
+                var service = scope.FindServiceProvider()?.GetService<Uno.Extensions.Toolkit.IThemeService>();
+                if (service is not null)
+                {
+                    await service.SetThemeAsync(dark ? Uno.Extensions.Toolkit.AppTheme.Dark : Uno.Extensions.Toolkit.AppTheme.Light);
+                }
+                VerificationArgs.Log($"theme={(dark ? "Dark" : "Light")} service={service is not null} actual={root.ActualTheme}");
+            }
+
+            if (VerificationArgs.Get("route") is not { } spec)
+            {
+                return;
+            }
+
+            var parts = spec.Split(':', 2);
+            var route = parts[0];
+            var detail = parts.Length == 2 && parts[1] == "detail";
+            if (route == "Onboarding")
+            {
+                var response = await root.Navigator()!.NavigateRouteAsync(this, "Onboarding", qualifier: Qualifiers.ClearBackStack);
+                VerificationArgs.Log($"route={spec} success={response?.Success}");
+                return;
+            }
+
+            var main = await WaitForAsync<MainPage>(root);
+            if (main is null)
+            {
+                VerificationArgs.Log($"route={spec} failed: no main page");
+                return;
+            }
+
+            if (route is "Clients" or "Catalog" or "Settings")
+            {
+                var response = await main.Navigator()!.NavigateRouteAsync(main, route);
+                VerificationArgs.Log($"route={spec} success={response?.Success}");
+            }
+
+            if (route == "QuoteEditor")
+            {
+                var dashboard = await WaitForAsync<DashboardPage>(root);
+                var quotes = await Host.Services.GetRequiredService<IQuoteRepository>().GetAllAsync();
+                var quote = quotes.OrderByDescending(q => q.LineItems.Count).FirstOrDefault();
+                if (dashboard is null || quote is null)
+                {
+                    VerificationArgs.Log($"route={spec} failed: dashboard={dashboard is not null} quote={quote is not null}");
+                    return;
+                }
+                var response = await dashboard.Navigator()!.NavigateRouteAsync(dashboard, "QuoteEditor", data: quote);
+                VerificationArgs.Log($"route={spec} quote={quote.QuoteNumber} success={response?.Success}");
+                return;
+            }
+
+            if (detail)
+            {
+                await Task.Delay(1500);
+                var selected = route switch
+                {
+                    "Dashboard" => await SelectFirstAsync<DashboardPage, DashboardModel>(root, async m =>
+                        {
+                            var all = await Host.Services.GetRequiredService<IQuoteRepository>().GetAllAsync();
+                            var first = all.OrderByDescending(q => q.LineItems.Count).First();
+                            await m.OpenQuote(first, CancellationToken.None);
+                            return first.Title;
+                        }),
+                    "Clients" => await SelectFirstAsync<ClientsPage, ClientsModel>(root, async m =>
+                        {
+                            var first = (await m.Clients).First();
+                            await m.SelectClient(first, CancellationToken.None);
+                            return first.Name;
+                        }),
+                    "Catalog" => await SelectFirstAsync<CatalogPage, CatalogModel>(root, async m =>
+                        {
+                            var first = (await m.CategoryCards).First();
+                            await m.SelectCategoryCard(first, CancellationToken.None);
+                            return first.Name;
+                        }),
+                    _ => null,
+                };
+                VerificationArgs.Log($"route={spec} selected={selected}");
+            }
+        }
+        catch (Exception ex)
+        {
+            VerificationArgs.Log($"failed: {ex}");
+        }
+    }
+
+    private static async Task<string?> SelectFirstAsync<TPage, TModel>(FrameworkElement root, Func<TModel, Task<string>> select)
+        where TPage : FrameworkElement
+        where TModel : class
+    {
+        var page = await WaitForAsync<TPage>(root);
+        return page is not null && MvuxHelper.GetModel<TModel>(page.DataContext) is { } model ? await select(model) : null;
+    }
+
+    private static async Task<T?> WaitForAsync<T>(DependencyObject root) where T : DependencyObject
+    {
+        for (var i = 0; i < 100; i++)
+        {
+            if (Find<T>(root) is { } found)
+            {
+                return found;
+            }
+            await Task.Delay(100);
+        }
+        return null;
+    }
+
+    private static T? Find<T>(DependencyObject parent) where T : DependencyObject
+    {
+        for (var i = 0; i < Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
+        {
+            var child = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(parent, i);
+            if (child is T match && (child is not UIElement element || element.Visibility == Visibility.Visible))
+            {
+                return match;
+            }
+            if (Find<T>(child) is { } found)
+            {
+                return found;
+            }
+        }
+        return null;
+    }
+#endif
 
     private static void RegisterRoutes(IViewRegistry views, IRouteRegistry routes)
     {

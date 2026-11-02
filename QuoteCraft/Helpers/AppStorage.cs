@@ -10,6 +10,10 @@ public static class AppStorage
     /// so the data lives under LocalFolder there; every other head keeps the folder it has always used.
     /// </summary>
     public static string Root { get; } =
+#if DEBUG
+        // Evidence runs (--qc-data=<folder>) keep their sample data away from the developer's own.
+        VerificationArgs.Get("data") ??
+#endif
 #if __WASM__
         Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "QuoteCraft");
 #else
