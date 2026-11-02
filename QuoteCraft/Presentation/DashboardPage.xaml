@@ -657,6 +657,28 @@
                   <ctrl:StatusPill Status="{Binding Data.Quote.Status}" />
                 </StackPanel>
 
+                <!-- Expired: Reopen makes it a Draft again, valid again, to edit and send (PRD F17.3) -->
+                <Border Background="{ThemeResource SurfaceVariantBrush}"
+                        CornerRadius="{StaticResource RadiusMd}" Padding="{StaticResource Inset12x8}"
+                        Visibility="{Binding Data.IsExpired, Converter={StaticResource BoolToVisibilityConverter}}">
+                  <Grid ColumnSpacing="{StaticResource Space12}">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="This quote has expired. Reopen it to update it and send it again."
+                               Style="{StaticResource BodyMedium}"
+                               Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                               TextWrapping="Wrap" VerticalAlignment="Center" />
+                    <Button Grid.Column="1" Content="Reopen"
+                            Command="{Binding DataContext.ReopenQuote, ElementName=DashboardRoot}"
+                            Style="{StaticResource MaterialOutlinedButtonStyle}"
+                            MinHeight="{StaticResource TouchTarget}"
+                            VerticalAlignment="Center"
+                            AutomationProperties.Name="Reopen quote" />
+                  </Grid>
+                </Border>
+
                 <!-- Content: Line Items + side column (client, details, totals) -->
                 <Grid>
                   <Grid.ColumnDefinitions>

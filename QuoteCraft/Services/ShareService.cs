@@ -11,7 +11,6 @@ public interface IShareService
 
     Task ShareQuotePdfAsync(QuoteEntity quote);
     Task GenerateAndDownloadPdfAsync(QuoteEntity quote);
-    Task MarkAsSentAsync(QuoteEntity quote);
     Task<string> GenerateShareLinkAsync(QuoteEntity quote);
     Task CopyShareLinkAsync(QuoteEntity quote);
     Task ShareViaSmsAsync(QuoteEntity quote, string phoneNumber);
@@ -21,17 +20,20 @@ public class ShareService : IShareService
 {
     private readonly IPdfGenerator _pdfGenerator;
     private readonly IQuoteRepository _quoteRepo;
+    private readonly QuoteStatusService _status;
     private readonly Data.Remote.SupabaseConfig _supabase;
     private readonly ILogger<ShareService> _logger;
 
     public ShareService(
         IPdfGenerator pdfGenerator,
         IQuoteRepository quoteRepo,
+        QuoteStatusService status,
         Data.Remote.SupabaseConfig supabase,
         ILogger<ShareService> logger)
     {
         _pdfGenerator = pdfGenerator;
         _quoteRepo = quoteRepo;
+        _status = status;
         _supabase = supabase;
         _logger = logger;
     }
@@ -41,7 +43,7 @@ public class ShareService : IShareService
     public async Task ShareQuotePdfAsync(QuoteEntity quote)
     {
         await GenerateAndDownloadPdfAsync(quote);
-        await MarkAsSentAsync(quote);
+        await _status.MarkSentAsync(quote.Id);
     }
 
     public async Task GenerateAndDownloadPdfAsync(QuoteEntity quote)
@@ -59,20 +61,6 @@ public class ShareService : IShareService
         // The pages offer no PDF export on this head (CanExportPdf is false).
         throw new PlatformNotSupportedException(UnsupportedPdfGenerator.UnavailableMessage);
 #endif
-    }
-
-    public async Task MarkAsSentAsync(QuoteEntity quote)
-    {
-        if (quote.Status == QuoteStatus.Draft)
-        {
-            var fresh = await _quoteRepo.GetByIdAsync(quote.Id);
-            if (fresh != null)
-            {
-                fresh.Status = QuoteStatus.Sent;
-                fresh.SentAt = DateTimeOffset.UtcNow;
-                await _quoteRepo.SaveAsync(fresh);
-            }
-        }
     }
 
     public async Task<string> GenerateShareLinkAsync(QuoteEntity quote)
@@ -113,7 +101,7 @@ public class ShareService : IShareService
         var uri = new Uri($"sms:{phoneNumber}?body={Uri.EscapeDataString(message)}");
         await Windows.System.Launcher.LaunchUriAsync(uri);
 
-        await MarkAsSentAsync(quote);
+        await _status.MarkSentAsync(quote.Id);
     }
 
     private static string GenerateShareToken()

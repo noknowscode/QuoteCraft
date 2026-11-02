@@ -10,6 +10,7 @@ public partial record DashboardModel
     private readonly QuoteNumberGenerator _quoteNumberGen;
     private readonly Services.IShareService _shareService;
     private readonly Services.IFeatureGateService _featureGate;
+    private readonly Services.QuoteStatusService _status;
 
     public DashboardModel(
         INavigator navigator,
@@ -19,8 +20,10 @@ public partial record DashboardModel
         ICatalogItemRepository catalogRepo,
         QuoteNumberGenerator quoteNumberGen,
         Services.IShareService shareService,
-        Services.IFeatureGateService featureGate)
+        Services.IFeatureGateService featureGate,
+        Services.QuoteStatusService status)
     {
+        _status = status;
         _navigator = navigator;
         _quoteRepo = quoteRepo;
         _clientRepo = clientRepo;
@@ -174,37 +177,26 @@ public partial record DashboardModel
 
     public async ValueTask ExpireOverdueQuotes(CancellationToken ct)
     {
-        var now = DateTimeOffset.UtcNow;
-        var expirable = await _quoteRepo.GetExpirableAsync(now);
-
-        foreach (var q in expirable)
-        {
-            q.Status = QuoteStatus.Expired;
-            q.UpdatedAt = DateTimeOffset.UtcNow;
-            await _quoteRepo.SaveAsync(q);
-        }
-
-        if (expirable.Count > 0)
+        var expired = await _status.ExpireOverdueAsync(DateTimeOffset.UtcNow);
+        if (expired.Count > 0)
             await DetailVersion.UpdateAsync(v => v + 1, ct);
     }
 
+    /// <summary>The expired banner's Reopen: back to Draft, valid again, ready to edit and send (PRD F17.3).</summary>
     public async ValueTask ReopenQuote(CancellationToken ct)
     {
-        var quote = await SelectedQuote;
-        if (quote is not null && quote.Status == QuoteStatus.Expired)
+        if (await SelectedQuote is { } quote && await _status.ReopenAsync(quote.Id) is { } reopened)
         {
-            var fresh = await _quoteRepo.GetByIdAsync(quote.Id);
-            if (fresh is not null)
-            {
-                fresh.Status = QuoteStatus.Draft;
-                fresh.ValidUntil = DateTimeOffset.UtcNow.AddDays(
-                    (await _profileRepo.GetAsync()).QuoteValidDays);
-                fresh.UpdatedAt = DateTimeOffset.UtcNow;
-                await _quoteRepo.SaveAsync(fresh);
-                await SelectedQuote.UpdateAsync(_ => fresh, ct);
-                await DetailVersion.UpdateAsync(v => v + 1, ct);
-            }
+            await SelectedQuote.UpdateAsync(_ => reopened, ct);
+            await DetailVersion.UpdateAsync(v => v + 1, ct);
         }
+    }
+
+    /// <summary>The quote went out by email: Sent (with a fresh validity period) unless already answered.</summary>
+    public async Task MarkSentAsync(string quoteId)
+    {
+        await _status.MarkSentAsync(quoteId);
+        await DetailVersion.UpdateAsync(v => v + 1, CancellationToken.None);
     }
 
     public async ValueTask OpenQuote(QuoteEntity quote, CancellationToken ct)

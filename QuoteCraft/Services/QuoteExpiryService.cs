@@ -7,20 +7,20 @@ namespace QuoteCraft.Services;
 public class QuoteExpiryService : IDisposable
 {
     private readonly IQuoteRepository _quoteRepo;
+    private readonly QuoteStatusService _status;
     private readonly INotificationService _notificationService;
-    private readonly IStatusHistoryRepository _statusHistoryRepo;
     private readonly ILogger<QuoteExpiryService> _logger;
     private Timer? _timer;
 
     public QuoteExpiryService(
         IQuoteRepository quoteRepo,
+        QuoteStatusService status,
         INotificationService notificationService,
-        IStatusHistoryRepository statusHistoryRepo,
         ILogger<QuoteExpiryService> logger)
     {
         _quoteRepo = quoteRepo;
+        _status = status;
         _notificationService = notificationService;
-        _statusHistoryRepo = statusHistoryRepo;
         _logger = logger;
     }
 
@@ -45,16 +45,8 @@ public class QuoteExpiryService : IDisposable
         {
             var now = DateTimeOffset.UtcNow;
 
-            // Targeted query: only quotes past valid_until (no full table scan)
-            var expirable = await _quoteRepo.GetExpirableAsync(now);
-
-            foreach (var q in expirable)
+            foreach (var q in await _status.ExpireOverdueAsync(now))
             {
-                q.Status = QuoteStatus.Expired;
-                q.UpdatedAt = DateTimeOffset.UtcNow;
-                await _quoteRepo.SaveAsync(q);
-                await _statusHistoryRepo.RecordAsync(q.Id, "Expired", "system");
-
                 _logger.LogInformation("Auto-expired quote {QuoteNumber}", q.QuoteNumber);
             }
 

@@ -40,7 +40,7 @@ public class StatusHistoryRepository : IStatusHistoryRepository
         var conn = await _db.GetConnectionAsync();
 
         var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT * FROM status_history WHERE quote_id = @quote_id ORDER BY changed_at ASC";
+        cmd.CommandText = "SELECT * FROM status_history WHERE quote_id = @quote_id ORDER BY changed_at, rowid";
         cmd.Parameters.AddWithValue("@quote_id", quoteId);
 
         var entries = new List<StatusHistoryEntry>();

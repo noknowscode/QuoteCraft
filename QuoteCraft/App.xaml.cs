@@ -103,6 +103,7 @@ public partial class App : Application
                     services.AddSingleton<Services.IPhotoService, Services.PhotoService>();
 
                     services.AddSingleton<IStatusHistoryRepository, StatusHistoryRepository>();
+                    services.AddSingleton<Services.QuoteStatusService>();
 
                     // Shared HttpClient for auth, sync, and cloud services
                     services.AddSingleton<HttpClient>();

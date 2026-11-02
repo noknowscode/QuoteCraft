@@ -280,6 +280,7 @@ public class QuoteRepository : IQuoteRepository
         return Convert.ToInt32(await cmd.ExecuteScalarAsync());
     }
 
+    /// <summary>Sent and Viewed quotes valid until before <paramref name="now"/>; a Draft never expires.</summary>
     public async Task<List<QuoteEntity>> GetExpirableAsync(DateTimeOffset now)
     {
         var conn = await _db.GetConnectionAsync();
@@ -288,7 +289,7 @@ public class QuoteRepository : IQuoteRepository
         cmd.CommandText = """
             SELECT * FROM quotes
             WHERE is_deleted = 0
-              AND status IN ('Draft', 'Sent', 'Viewed')
+              AND status IN ('Sent', 'Viewed')
               AND valid_until IS NOT NULL
               AND valid_until < @now
             """;

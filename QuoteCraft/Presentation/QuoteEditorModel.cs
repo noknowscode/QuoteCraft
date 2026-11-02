@@ -13,6 +13,7 @@ public partial record QuoteEditorModel
     private readonly string _quoteId;
     private readonly IPhotoService _photoService;
     private readonly IStatusHistoryRepository _statusHistoryRepo;
+    private readonly QuoteStatusService _status;
 
     // Track initial values for unsaved changes detection
     private readonly string _initialTitle;
@@ -29,8 +30,10 @@ public partial record QuoteEditorModel
         IBusinessProfileRepository profileRepo,
         IShareService shareService,
         IPhotoService photoService,
-        IStatusHistoryRepository statusHistoryRepo)
+        IStatusHistoryRepository statusHistoryRepo,
+        QuoteStatusService status)
     {
+        _status = status;
         _navigator = navigator;
         _quoteRepo = quoteRepo;
         _clientRepo = clientRepo;
@@ -245,7 +248,7 @@ public partial record QuoteEditorModel
         var mailto = $"mailto:{Uri.EscapeDataString(quote.ClientName ?? "")}?subject={Uri.EscapeDataString(subject)}&body={Uri.EscapeDataString(body)}";
         await Windows.System.Launcher.LaunchUriAsync(new Uri(mailto));
 
-        await _shareService.MarkAsSentAsync(quote);
+        await _status.MarkSentAsync(quote.Id);
     }
 
     public async Task<bool> HasUnsavedChangesAsync()
@@ -304,19 +307,9 @@ public partial record QuoteEditorModel
 
     private async Task UpdateStatus(QuoteStatus status)
     {
-        var existing = await _quoteRepo.GetByIdAsync(_quoteId);
-        if (existing is null) return;
-
-        existing.Status = status;
-        if (status == QuoteStatus.Sent)
-            existing.SentAt = DateTimeOffset.UtcNow;
-
-        existing.UpdatedAt = DateTimeOffset.UtcNow;
-        await _quoteRepo.SaveAsync(existing);
-
-        // Record status history
-        await _statusHistoryRepo.RecordAsync(_quoteId, status.ToString(), "user");
-
+        // The edits first, so a status change does not drop them.
+        await PersistEditsAsync();
+        await _status.SetStatusAsync(_quoteId, status);
         await GoBack(CancellationToken.None);
     }
 }

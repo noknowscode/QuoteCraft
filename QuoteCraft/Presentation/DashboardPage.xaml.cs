@@ -424,8 +424,7 @@ public sealed partial class DashboardPage : Page
                 subjectBox.Text?.Trim() ?? string.Empty,
                 bodyBox.Text?.Trim() ?? string.Empty);
 
-            await shareService.MarkAsSentAsync(freshQuote);
-            await model.RefreshDetail(CancellationToken.None);
+            await model.MarkSentAsync(freshQuote.Id);
         }
         else if (result == ContentDialogResult.Secondary)
         {
