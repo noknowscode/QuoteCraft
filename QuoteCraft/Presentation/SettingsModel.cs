@@ -114,7 +114,7 @@ public partial record SettingsModel
     public IState<string> Address => State<string>.Value(this, () => string.Empty);
     public IState<string> Website => State<string>.Value(this, () => string.Empty);
     public IState<string> BusinessNumber => State<string>.Value(this, () => string.Empty);
-    public IState<string> DefaultTaxRate => State<string>.Value(this, () => "13.0");
+    public IState<string> DefaultTaxRate => State<string>.Value(this, () => Money.FormatRate(13m));
     public IState<string> DefaultMarkup => State<string>.Value(this, () => "0");
     public IState<string> CurrencyCode => State<string>.Value(this, () => "USD");
     public IState<string> QuoteValidDays => State<string>.Value(this, () => "14");
@@ -131,8 +131,8 @@ public partial record SettingsModel
         await Address.UpdateAsync(_ => profile.Address ?? string.Empty, ct);
         await Website.UpdateAsync(_ => profile.Website ?? string.Empty, ct);
         await BusinessNumber.UpdateAsync(_ => profile.BusinessNumber ?? string.Empty, ct);
-        await DefaultTaxRate.UpdateAsync(_ => profile.DefaultTaxRate.ToString("F1"), ct);
-        await DefaultMarkup.UpdateAsync(_ => profile.DefaultMarkup.ToString("F1"), ct);
+        await DefaultTaxRate.UpdateAsync(_ => Money.FormatRate(profile.DefaultTaxRate), ct);
+        await DefaultMarkup.UpdateAsync(_ => Money.FormatRate(profile.DefaultMarkup), ct);
         await CurrencyCode.UpdateAsync(_ => profile.CurrencyCode, ct);
         await QuoteValidDays.UpdateAsync(_ => profile.QuoteValidDays.ToString(), ct);
         await QuoteNumberPrefix.UpdateAsync(_ => profile.QuoteNumberPrefix, ct);
@@ -183,13 +183,12 @@ public partial record SettingsModel
         profile.CurrencyCode = await CurrencyCode ?? "USD";
         profile.UpdatedAt = DateTimeOffset.UtcNow;
 
-        var taxStr = await DefaultTaxRate ?? "0";
-        if (decimal.TryParse(taxStr, out var tax))
+        if (Money.TryParseRate(await DefaultTaxRate, out var tax))
             profile.DefaultTaxRate = tax;
 
-        var markupStr = await DefaultMarkup ?? "0";
-        if (decimal.TryParse(markupStr, out var markup))
-            profile.DefaultMarkup = markup;
+        var markupText = await DefaultMarkup;
+        profile.DefaultMarkup = string.IsNullOrWhiteSpace(markupText) ? 0m
+            : Money.TryParseRate(markupText, out var markup) ? markup : profile.DefaultMarkup;
 
         var daysStr = await QuoteValidDays ?? "14";
         if (int.TryParse(daysStr, out var days))

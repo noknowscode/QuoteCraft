@@ -10,10 +10,15 @@ public class AppDatabase
     private bool _initialized;
 
     public AppDatabase()
+        : this(AppStorage.Root)
+    {
+    }
+
+    /// <param name="dir">The folder that holds the database (and its key file); tests pass a temporary folder.</param>
+    public AppDatabase(string dir)
     {
         SQLitePCL.Batteries_V2.Init();
 
-        var dir = AppStorage.Root;
         Directory.CreateDirectory(dir);
         var dbPath = Path.Combine(dir, "quotecraft.db");
 

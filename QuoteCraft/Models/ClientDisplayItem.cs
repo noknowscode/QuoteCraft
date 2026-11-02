@@ -6,5 +6,5 @@ public partial record ClientDisplayItem(
     string Initials,
     int QuoteCount,
     string City,
-    double TotalValue,
+    decimal TotalValue,
     ClientEntity Entity);

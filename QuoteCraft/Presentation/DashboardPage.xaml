@@ -958,7 +958,7 @@
                           </Grid.ColumnDefinitions>
                           <TextBlock Style="{StaticResource BodyMedium}"
                                      Foreground="{ThemeResource OnSurfaceVariantBrush}">
-                            <Run Text="Tax (" /><Run Text="{Binding Data.Quote.TaxRate}" /><Run Text="%)" />
+                            <Run Text="Tax (" /><Run Text="{Binding Data.Quote.TaxRate, Converter={StaticResource RateFormatConverter}}" /><Run Text="%)" />
                           </TextBlock>
                           <TextBlock Grid.Column="1"
                                      Text="{Binding Data.Quote.TaxAmount, Converter={StaticResource CurrencyFormatConverter}}"
@@ -1320,7 +1320,7 @@
                           <TextBlock Style="{StaticResource BodyMedium}"
                                      Foreground="{ThemeResource OnSurfaceVariantBrush}"
                                      HorizontalAlignment="Right" Margin="{StaticResource GapEnd16}">
-                            <Run Text="Tax (" /><Run Text="{Binding Data.Quote.TaxRate}" /><Run Text="%)" />
+                            <Run Text="Tax (" /><Run Text="{Binding Data.Quote.TaxRate, Converter={StaticResource RateFormatConverter}}" /><Run Text="%)" />
                           </TextBlock>
                           <TextBlock Grid.Column="1"
                                      Text="{Binding Data.Quote.TaxAmount, Converter={StaticResource CurrencyFormatConverter}}"

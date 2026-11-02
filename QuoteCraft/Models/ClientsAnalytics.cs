@@ -1,3 +1,3 @@
 namespace QuoteCraft.Models;
 
-public partial record ClientsAnalytics(int TotalClients, double TotalRevenue, double AvgPerClient, int NewThisMonth);
+public partial record ClientsAnalytics(int TotalClients, decimal TotalRevenue, decimal AvgPerClient, int NewThisMonth);

@@ -85,7 +85,7 @@
         <!-- Tax Rate -->
         <TextBox Header="Tax Rate (%)"
                  Text="{Binding TaxRate, Mode=TwoWay}"
-                 PlaceholderText="13.0"
+                 PlaceholderText="13"
                  InputScope="Number" />
 
         <!-- Line Items Section (the actions go under the heading on Narrow) -->

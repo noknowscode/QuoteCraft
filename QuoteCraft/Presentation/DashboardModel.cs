@@ -386,16 +386,12 @@ public partial record DashboardModel
         if (quote is null) return;
 
         var profile = await _profileRepo.GetAsync();
-        var markup = profile.DefaultMarkup;
-        var effectivePrice = markup > 0
-            ? catalogItem.UnitPrice * (1 + markup / 100m)
-            : catalogItem.UnitPrice;
 
         var item = new LineItemEntity
         {
             QuoteId = quote.Id,
             Description = catalogItem.Description,
-            UnitPrice = Math.Round(effectivePrice, 2),
+            UnitPrice = Money.WithMarkup(catalogItem.UnitPrice, profile.DefaultMarkup),
             Quantity = 1,
             SortOrder = (await _quoteRepo.GetByIdAsync(quote.Id))?.LineItems.Count ?? 0,
         };

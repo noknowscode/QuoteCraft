@@ -43,12 +43,12 @@ public partial record QuoteEditorModel
 
         _initialTitle = quote.Title;
         _initialNotes = quote.Notes ?? string.Empty;
-        _initialTaxRate = quote.TaxRate.ToString("F1");
+        _initialTaxRate = Money.FormatRate(quote.TaxRate);
         _initialClientName = quote.ClientName ?? string.Empty;
 
         Title = State<string>.Value(this, () => quote.Title);
         Notes = State<string>.Value(this, () => quote.Notes ?? string.Empty);
-        TaxRate = State<string>.Value(this, () => quote.TaxRate.ToString("F1"));
+        TaxRate = State<string>.Value(this, () => Money.FormatRate(quote.TaxRate));
         ClientName = State<string>.Value(this, () => quote.ClientName ?? string.Empty);
         QuoteNumber = State<string>.Value(this, () => quote.QuoteNumber);
     }
@@ -110,16 +110,12 @@ public partial record QuoteEditorModel
     public async ValueTask AddFromCatalog(CatalogItemEntity catalogItem, CancellationToken ct)
     {
         var profile = await _profileRepo.GetAsync();
-        var markup = profile.DefaultMarkup;
-        var effectivePrice = markup > 0
-            ? catalogItem.UnitPrice * (1 + markup / 100m)
-            : catalogItem.UnitPrice;
 
         var item = new LineItemEntity
         {
             QuoteId = _quoteId,
             Description = catalogItem.Description,
-            UnitPrice = Math.Round(effectivePrice, 2),
+            UnitPrice = Money.WithMarkup(catalogItem.UnitPrice, profile.DefaultMarkup),
             Quantity = 1,
             SortOrder = (await _quoteRepo.GetLineItemsAsync(_quoteId)).Count,
         };
@@ -168,8 +164,7 @@ public partial record QuoteEditorModel
             return;
         }
 
-        var taxStr = await TaxRate ?? "0";
-        if (!decimal.TryParse(taxStr, out var tax) || tax < 0 || tax > 100)
+        if (!Money.TryParseRate(await TaxRate, out var tax) || tax > 100)
         {
             await ValidationError.UpdateAsync(_ => "Tax rate must be a number between 0 and 100.", ct);
             return;
@@ -296,8 +291,7 @@ public partial record QuoteEditorModel
         existing.ClientName = await ClientName;
         existing.UpdatedAt = DateTimeOffset.UtcNow;
 
-        var taxStr = await TaxRate ?? "0";
-        if (decimal.TryParse(taxStr, out var tax))
+        if (Money.TryParseRate(await TaxRate, out var tax))
             existing.TaxRate = tax;
 
         await _quoteRepo.SaveAsync(existing);

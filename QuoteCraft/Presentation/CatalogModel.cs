@@ -10,14 +10,14 @@ public partial record CatalogCategoryCard(
 public partial record CatalogDisplayItem(
     string Id,
     string Description,
-    double UnitPrice,
+    decimal UnitPrice,
     string Category,
     bool IsHeader,
     bool IsExpanded = true,
     string IconGlyph = "")
 {
     public static CatalogDisplayItem FromEntity(CatalogItemEntity entity) =>
-        new(entity.Id, entity.Description, (double)entity.UnitPrice, entity.Category, false);
+        new(entity.Id, entity.Description, entity.UnitPrice, entity.Category, false);
 
     public static string GetCategoryIcon(string category) => category switch
     {

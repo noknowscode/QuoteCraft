@@ -51,7 +51,7 @@ public partial record ClientsModel
                 var city = ParseCity(c.Address);
                 var totalValue = clientQuotes.Sum(q => q.Total);
 
-                return new ClientDisplayItem(c.Id, c.Name, initials, clientQuotes.Count, city, (double)totalValue, c);
+                return new ClientDisplayItem(c.Id, c.Name, initials, clientQuotes.Count, city, totalValue, c);
             });
 
             if (!string.IsNullOrWhiteSpace(search))
@@ -78,11 +78,11 @@ public partial record ClientsModel
             var totalRevenue = quotes
                 .Where(q => q.Status == QuoteStatus.Accepted)
                 .Sum(q => q.Total);
-            var avgPerClient = totalClients > 0 ? totalRevenue / totalClients : 0m;
+            var avgPerClient = totalClients > 0 ? Money.RoundToCents(totalRevenue / totalClients) : 0m;
             var newThisMonth = clients
                 .Count(c => c.UpdatedAt >= new DateTimeOffset(DateTime.Now.Year, DateTime.Now.Month, 1, 0, 0, 0, TimeSpan.Zero));
 
-            return new ClientsAnalytics(totalClients, (double)totalRevenue, (double)avgPerClient, newThisMonth);
+            return new ClientsAnalytics(totalClients, totalRevenue, avgPerClient, newThisMonth);
         });
 
     // Combined detail feed: client + quotes (avoids nested FeedView with ElementName). Read again on every Version
@@ -95,7 +95,7 @@ public partial record ClientsModel
             var all = await _quoteRepo.GetAllAsync();
             var quotes = all.Where(q => q.ClientId == client.Id).ToImmutableList();
             var item = new ClientDisplayItem(entity.Id, entity.Name, GetInitials(entity.Name), quotes.Count,
-                ParseCity(entity.Address), (double)quotes.Sum(q => q.Total), entity);
+                ParseCity(entity.Address), quotes.Sum(q => q.Total), entity);
             return new ClientDetail(item, quotes);
         });
 

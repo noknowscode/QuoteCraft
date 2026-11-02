@@ -31,7 +31,7 @@ public partial record OnboardingModel
     public IState<string> Address => State<string>.Value(this, () => string.Empty);
 
     // Step 3: Quote Settings
-    public IState<string> TaxRate => State<string>.Value(this, () => "8.5");
+    public IState<string> TaxRate => State<string>.Value(this, () => Money.FormatRate(8.5m));
     public IState<string> ValidDays => State<string>.Value(this, () => "14");
     public IState<string> QuotePrefix => State<string>.Value(this, () => "QC-");
 
@@ -90,8 +90,7 @@ public partial record OnboardingModel
     public async ValueTask Complete(CancellationToken ct)
     {
         // Validate quote settings before completing
-        var taxStr = await TaxRate ?? "0";
-        if (!decimal.TryParse(taxStr, out var tax) || tax < 0 || tax > 100)
+        if (!Money.TryParseRate(await TaxRate, out var tax) || tax > 100)
         {
             await ValidationError.UpdateAsync(_ => "Tax rate must be between 0 and 100.", ct);
             return;
@@ -130,8 +129,7 @@ public partial record OnboardingModel
             profile.Address = address;
 
         // Save quote settings
-        var taxStr = await TaxRate ?? "0";
-        if (decimal.TryParse(taxStr, out var taxRate))
+        if (Money.TryParseRate(await TaxRate, out var taxRate))
             profile.DefaultTaxRate = taxRate;
 
         var daysStr = await ValidDays ?? "14";

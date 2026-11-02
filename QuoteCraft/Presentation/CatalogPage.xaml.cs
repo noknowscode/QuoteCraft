@@ -83,9 +83,9 @@ public sealed partial class CatalogPage : Page
         };
         var priceBox = new TextBox
         {
-            Header = "Unit Price ($)",
-            Text = isNew ? string.Empty : entity.UnitPrice.ToString("F2"),
-            PlaceholderText = "0.00",
+            Header = $"Unit Price ({Money.Symbol(CurrencyFormatConverter.CurrencyCode)})",
+            Text = isNew ? string.Empty : Money.FormatAmountInput(entity.UnitPrice),
+            PlaceholderText = Money.FormatAmountInput(0m),
             InputScope = new InputScope { Names = { new InputScopeName(InputScopeNameValue.Number) } },
         };
 
@@ -143,10 +143,11 @@ public sealed partial class CatalogPage : Page
                 return;
             }
 
-            if (!string.IsNullOrWhiteSpace(priceBox.Text)
-                && (!decimal.TryParse(priceBox.Text, out var enteredPrice) || enteredPrice < 0))
+            var price = 0m;
+            if (!string.IsNullOrWhiteSpace(priceBox.Text) && !Money.TryParseAmount(priceBox.Text, out price))
             {
-                DialogHelper.ShowValidation(validation, "Enter the unit price as a number, for example 125.00.");
+                DialogHelper.ShowValidation(validation,
+                    $"Enter the unit price as an amount, for example {Money.FormatAmountInput(125m)}.");
                 args.Cancel = true;
                 return;
             }
@@ -160,9 +161,7 @@ public sealed partial class CatalogPage : Page
                             : !string.IsNullOrEmpty(typedCategory) ? typedCategory
                             : string.Empty;
 
-            var priceStr = priceBox.Text ?? "0";
-            if (decimal.TryParse(priceStr, out var price))
-                entity.UnitPrice = price;
+            entity.UnitPrice = price;
 
             await CatalogRepo.SaveAsync(entity);
         };

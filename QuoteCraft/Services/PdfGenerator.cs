@@ -31,8 +31,9 @@ public class PdfGenerator : IPdfGenerator
         QuestPDF.Settings.License = LicenseType.Community;
 
         var profile = await _profileRepo.GetAsync();
-        var currencySymbol = Helpers.CurrencyFormatConverter.GetCurrencySymbol(profile.CurrencyCode);
+        // Amounts and rates as the app shows them (Helpers/Money).
         var currencyCode = profile.CurrencyCode;
+        string Amount(decimal value) => Money.Format(value, currencyCode);
         var photos = _photoService.GetPhotos(quote.Id);
         var dir = AppStorage.Combine("exports");
         Directory.CreateDirectory(dir);
@@ -125,8 +126,8 @@ public class PdfGenerator : IPdfGenerator
 
                             table.Cell().Background(bg).Padding(6).Text(item.Description);
                             table.Cell().Background(bg).Padding(6).AlignRight().Text(item.Quantity.ToString());
-                            table.Cell().Background(bg).Padding(6).AlignRight().Text($"{currencySymbol}{item.UnitPrice:F2}");
-                            table.Cell().Background(bg).Padding(6).AlignRight().Text($"{currencySymbol}{item.LineTotal:F2}");
+                            table.Cell().Background(bg).Padding(6).AlignRight().Text(Amount(item.UnitPrice));
+                            table.Cell().Background(bg).Padding(6).AlignRight().Text(Amount(item.LineTotal));
                         }
                     });
 
@@ -136,18 +137,18 @@ public class PdfGenerator : IPdfGenerator
                         totals.Item().Row(row =>
                         {
                             row.RelativeItem().AlignRight().Text("Subtotal:").Bold();
-                            row.ConstantItem(120).AlignRight().Text($"{currencySymbol}{quote.Subtotal:F2} {currencyCode}");
+                            row.ConstantItem(120).AlignRight().Text($"{Amount(quote.Subtotal)} {currencyCode}");
                         });
                         totals.Item().Row(row =>
                         {
-                            row.RelativeItem().AlignRight().Text($"Tax ({quote.TaxRate}%):");
-                            row.ConstantItem(120).AlignRight().Text($"{currencySymbol}{quote.TaxAmount:F2}");
+                            row.RelativeItem().AlignRight().Text($"Tax ({Money.FormatRate(quote.TaxRate)}%):");
+                            row.ConstantItem(120).AlignRight().Text(Amount(quote.TaxAmount));
                         });
                         totals.Item().PaddingTop(4).Row(row =>
                         {
                             row.RelativeItem().AlignRight().Text("Total:").FontSize(14).Bold()
                                 .FontColor(Colors.Blue.Darken3);
-                            row.ConstantItem(120).AlignRight().Text($"{currencySymbol}{quote.Total:F2} {currencyCode}")
+                            row.ConstantItem(120).AlignRight().Text($"{Amount(quote.Total)} {currencyCode}")
                                 .FontSize(14).Bold().FontColor(Colors.Blue.Darken3);
                         });
                     });

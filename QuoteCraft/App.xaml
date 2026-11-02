@@ -84,6 +84,7 @@
 
       <!-- Value Converters -->
       <helpers:CurrencyFormatConverter x:Key="CurrencyFormatConverter" />
+      <helpers:RateFormatConverter x:Key="RateFormatConverter" />
       <helpers:RelativeDateConverter x:Key="RelativeDateConverter" />
       <helpers:InitialsConverter x:Key="InitialsConverter" />
       <helpers:EmptyToVisibleConverter x:Key="EmptyToVisibleConverter" />
