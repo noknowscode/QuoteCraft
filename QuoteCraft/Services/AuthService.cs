@@ -17,7 +17,10 @@ public class AuthService : IAuthService
     private readonly string _supabaseUrl;
     private readonly string _supabaseAnonKey;
     private AuthState _currentState;
-    private static readonly string _tokenFilePath = AppStorage.Combine(".auth_token");
+
+    // The refresh token: in the platform's vault on Android, iOS and WinAppSDK, a file elsewhere (DECISIONS D13).
+    private readonly StoredSecret _storedSession =
+        new("auth-session", AppStorage.Combine(".auth_token"), StoredSecret.PlatformVault);
 
     public event Action<AuthState>? AuthStateChanged;
 
@@ -198,9 +201,8 @@ public class AuthService : IAuthService
     {
         try
         {
-            if (!File.Exists(_tokenFilePath)) return;
+            if (_storedSession.Read() is not { } json) return;
 
-            var json = await File.ReadAllTextAsync(_tokenFilePath);
             var stored = JsonSerializer.Deserialize<StoredSession>(json);
             if (stored?.RefreshToken is null) return;
 
@@ -213,22 +215,29 @@ public class AuthService : IAuthService
         }
     }
 
-    private static void PersistToken(AuthState state)
+    private void PersistToken(AuthState state)
     {
         try
         {
-            var dir = Path.GetDirectoryName(_tokenFilePath)!;
-            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-
             var stored = new StoredSession(state.UserId, state.Email, state.RefreshToken);
-            File.WriteAllText(_tokenFilePath, JsonSerializer.Serialize(stored));
+            _storedSession.Write(JsonSerializer.Serialize(stored));
         }
-        catch { }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to store the auth session");
+        }
     }
 
-    private static void DeleteStoredToken()
+    private void DeleteStoredToken()
     {
-        try { if (File.Exists(_tokenFilePath)) File.Delete(_tokenFilePath); } catch { }
+        try
+        {
+            _storedSession.Delete();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to delete the stored auth session");
+        }
     }
 
     private record StoredSession(string? UserId, string? Email, string? RefreshToken);

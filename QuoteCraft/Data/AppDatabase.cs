@@ -20,7 +20,7 @@ public class AppDatabase
     {
     }
 
-    /// <param name="dir">The folder that holds the database (and its key file); tests pass a temporary folder.</param>
+    /// <param name="dir">The folder that holds the database (and, on desktop, its key file); tests pass a temporary folder.</param>
     public AppDatabase(string dir)
     {
         SQLitePCL.Batteries_V2.Init();
@@ -37,26 +37,20 @@ public class AppDatabase
 #if !__WASM__
         // WebAssembly: the database lives in the browser's IndexedDB storage for this site, where a key would have to
         // sit next to it, so SQLCipher runs without one there (docs/DECISIONS-production-readiness.md, D1).
-        connectionString.Password = GetOrCreateEncryptionKey(dir);
+        // Android, iOS and WinAppSDK keep the key in the platform's vault, desktop in a file beside the database (D13).
+        connectionString.Password = new StoredSecret("database-key", Path.Combine(dir, ".dbkey"), StoredSecret.PlatformVault)
+            .GetOrCreate(NewEncryptionKey);
 #endif
         _connectionString = connectionString.ToString();
     }
 
 #if !__WASM__
-    private static string GetOrCreateEncryptionKey(string appDir)
+    /// <summary>A random 32-character hex key.</summary>
+    private static string NewEncryptionKey()
     {
-        var keyFile = Path.Combine(appDir, ".dbkey");
-        if (File.Exists(keyFile))
-        {
-            return File.ReadAllText(keyFile).Trim();
-        }
-
-        // Generate a random 32-char hex key
         var keyBytes = new byte[16];
         System.Security.Cryptography.RandomNumberGenerator.Fill(keyBytes);
-        var key = Convert.ToHexString(keyBytes);
-        File.WriteAllText(keyFile, key);
-        return key;
+        return Convert.ToHexString(keyBytes);
     }
 #endif
 
