@@ -336,10 +336,12 @@ the desktop app still creates and reads `.dbkey`. The vault itself runs only on 
 which ran here.
 
 Open points:
-- **Android backup.** The manifest has `android:allowBackup="true"`. A backup carries the database and Uno's encrypted
-  `.vault` file but not the AndroidKeyStore key that decrypts it, so a database restored onto a new device cannot be
-  opened (before this change the `.dbkey` file travelled with it). Excluding the database and `.vault` from backup, or
-  backing the key up some other way, is an owner call.
+- **Android backup: the app's files stay on the device (owner decision, 2026-11-03).** A backup would carry the
+  database and Uno's encrypted `.vault` file but not the AndroidKeyStore key that opens them, so a restored copy could
+  not be opened. `Platforms/Android/Resources/xml/backup_rules.xml` (Android 11 and earlier) and
+  `data_extraction_rules.xml` (Android 12 and later, cloud backup and device transfer) exclude the `file` domain;
+  settings (SharedPreferences) still travel. A new phone starts empty until cloud sync exists (D8). Checked: the
+  Release APK carries both rule files and the merged manifest references them; a real backup and restore was not run.
 - **iOS Keychain access.** Uno's vault throws "not allowed to use the keychain" on status -34018, and
   `Platforms/iOS/Entitlements.plist` is empty. Apps normally get their default access group without an entry; confirm on
   the first signed device build.
