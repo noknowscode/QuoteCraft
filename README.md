@@ -11,7 +11,7 @@ QuoteCraft helps service professionals create, manage, and send quotes to client
 - **Quote Management** — Create, edit, duplicate, and track quotes with status indicators (Draft, Sent, Viewed, Accepted, Declined, Expired); sent quotes expire after their validity period, with a reminder 3 days before, and an expired quote can be reopened and sent again
 - **Client Directory** — Maintain a searchable client database with contact details and quote history
 - **Service Catalog** — Organize services and materials into categories (Electrical, Plumbing, HVAC, etc.) with preset pricing
-- **PDF Generation** — Generate professional PDF quotes ready to send to clients (desktop and Windows apps; see [Platform notes](#platform-notes))
+- **PDF Generation** — Generate professional PDF quotes ready to send to clients, on every platform (saved, downloaded or offered to the system's save dialog; see [Platform notes](#platform-notes))
 - **Email Integration** — Send quotes directly to clients via email
 - **Dashboard Analytics** — At-a-glance metrics including monthly totals, send counts, and acceptance rates with sparkline charts
 - **Quote Editor** — Line-item editor with quantity, pricing, tax rate, markup, and custom footer support; subtotal, tax and total as the PDF shows them, and the quote's status history
@@ -36,8 +36,8 @@ QuoteCraft helps service professionals create, manage, and send quotes to client
 - **Architecture:** MVUX (Model-View-Update-eXtended)
 - **Navigation:** Uno Navigation Extensions (region-based)
 - **Dependency Injection:** Microsoft.Extensions.Hosting
-- **Database:** SQLite, encrypted with SQLCipher (Microsoft.Data.Sqlite + SQLitePCLRaw), local-first
-- **PDF:** QuestPDF (desktop and Windows)
+- **Database:** SQLite, encrypted with SQLCipher (Microsoft.Data.Sqlite + SQLitePCLRaw), local-first; the key in the platform's vault (`PasswordVault`) on Android, iOS and Windows (WinAppSDK)
+- **PDF:** SkiaSharp's PDF backend (`SKDocument`), set in the app's DM Sans; no extra package
 - **Cloud (optional):** Supabase sign-in and Stripe billing (cloud sync is off in this version); see [Local-first, with optional sign-in and billing](#local-first-with-optional-sign-in-and-billing)
 
 ## Project Structure
@@ -123,10 +123,11 @@ iOS builds on macOS and the WinAppSDK head on Windows; elsewhere the SDK skips t
 | | Desktop | Windows (WinAppSDK) | Android | iOS | WebAssembly |
 |---|---|---|---|---|---|
 | Local database | SQLCipher, encrypted | SQLCipher, encrypted | SQLCipher, encrypted | SQLCipher, encrypted | SQLite in IndexedDB, not encrypted |
-| PDF export | Yes | Yes | No (a note says so) | No (a note says so) | No (a note says so) |
+| Database key and sign-in token | Files in the app's data folder | `PasswordVault` (Credential Locker) | `PasswordVault` (AndroidKeyStore) | `PasswordVault` (Keychain) | No key; token in a file in IndexedDB |
+| PDF export | Written to `exports/` and opened | Written to `exports/` and opened | Save dialog | Export sheet (Save to Files) | Browser download |
 
-The reasons, and the options for PDF export on the other heads, are in
-[docs/DECISIONS-production-readiness.md](docs/DECISIONS-production-readiness.md).
+An older install's `.dbkey` and `.auth_token` files move into the vault at the first start of this version. The
+reasons are in [docs/DECISIONS-production-readiness.md](docs/DECISIONS-production-readiness.md) (D1, D12, D13).
 
 ## Layouts
 
@@ -170,8 +171,8 @@ app: it bypasses row-level security and belongs to the Edge Functions only. Keep
 device, and Settings says so. The sync service would upload quotes without their line items (so they arrive at $0),
 and never the catalog or the business profile; what it needs before it is turned on is in
 [docs/DECISIONS-production-readiness.md](docs/DECISIONS-production-readiness.md) (D8). Other gaps with a project
-configured: the sign-in page is reachable only through Sign Out, and the sign-in refresh token is kept in a plain
-file in the app's data folder, not in the platform's secure store.
+configured: the sign-in page is reachable only through Sign Out, and on desktop and in the browser the sign-in
+refresh token is kept in a file in the app's data folder (Android, iOS and Windows keep it in `PasswordVault`).
 
 ## UnoFeatures
 

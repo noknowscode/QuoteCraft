@@ -263,6 +263,47 @@ Tradeoff:
   WebAssembly.
 - Android and iOS are verified by CI builds only.
 
+Implementation (2026-11-03):
+- **Layout** (`Services/PdfGenerator.cs`, `QuotePdf.Render`), US Letter with 40 pt margins, as the QuestPDF layout had it:
+  the header (logo, business name and contact lines, QUOTE with the number, date and validity) and the footer (custom
+  footer, the watermark when `HasPdfWatermark`, the date) on every page; the title and client; the line-item table with
+  alternating rows, which breaks between rows and repeats its header row on the next page; subtotal, tax and total
+  through `Helpers/Money` as the app shows them; the notes, wrapped and broken across pages by line; then a photo
+  appendix, two photos a row. DM Sans Regular and Bold are read from the package (`ms-appx:///Assets/Fonts`) into
+  `SKTypeface`; the PDF embeds subsets of them. DM Sans has no narrow no-break space, which fr-FR uses to group digits
+  ("1 250,00 €"), so a space glyph the font lacks prints as a plain space.
+- **Delivery** (`Services/ShareService.cs`): desktop and WinAppSDK write `exports/<number>.pdf` and open it, as before.
+  Android uses `FileSavePicker` (the system's Create document dialog, the quote number as the suggested name).
+  WebAssembly uses `FileSavePicker` in Uno's download mode (`WasmPickerConfiguration.DownloadUpload`, set for that call
+  only), so every browser downloads the file: the File System Access save dialog needs a fresh user gesture, and the
+  PDF is drawn before the picker opens. iOS: Uno's docs mark `FileSavePicker` partial there, and Uno 7's iOS build throws
+  "FileSavePicker extension is not registered" unless the app supplies one, so the PDF is written to the exports
+  folder and handed to `UIDocumentPickerViewController` in export mode (Save to Files). Pickers open on the UI thread;
+  MVUX runs commands on a background thread.
+- **Removed:** the QuestPDF package and the `QUESTPDF` symbol, `UnsupportedPdfGenerator`, `IPdfGenerator.IsSupported`,
+  `IShareService.CanExportPdf` (always true now, so the property and its branches went with it) and the "PDF export is
+  available in the desktop and Windows apps" notes. Download PDF (dashboard preview), Export PDF (editor) and Download
+  PDF Only (Send dialog) show on every head, and Send via Email always saves the PDF first.
+
+Verified:
+- **Unit tests** (`PdfGeneratorTests`, fonts from the app's assets): the output starts with `%PDF`; 60 line items give
+  more than one page. With poppler's `pdftotext`: the amounts read as `Money.Format` writes them; every page repeats the
+  header, the table header and the footer date; the watermark appears only when on. The text tests are skipped where
+  `pdftotext` is missing, which includes CI's Ubuntu image (no poppler-utils).
+- **Desktop** (Linux, Xvfb, Debug, `--qc-seed=sample`, with 24 more line items, a logo and three photos added to
+  QC-2026-0001): Export PDF (editor), Download PDF (preview) and Download PDF Only (Send dialog) each wrote
+  `exports/QC-2026-0001.pdf` (321 KB, three Letter pages, DM Sans embedded). Rendered with `pdftoppm`
+  (`docs/evidence/pdf-export.jpg`): the header with the logo on both quote pages; the table breaking after 18 rows with
+  its header row repeated; subtotal $9,058.00 USD, tax (13%) $1,177.54 and total $10,235.54 USD, as the editor shows
+  them; the notes, the custom footer, and the photo appendix. The watermark is off without billing (D3); a render of the
+  same layout with it on (from a test) showed it centred above the date.
+- **WebAssembly** (Release publish, served locally, headless Chromium through Playwright, a fresh browser profile):
+  skipped onboarding, created a quote, added "Panel upgrade to 200 A", 2 × $1,250.50, in the editor, and pressed Export
+  PDF. The browser downloaded `QC-2026-0001.pdf` (83 KB, one page, DM Sans Regular and Bold embedded, read from the
+  app package): the header, the item row, subtotal $2,501.00 USD, tax (8.5%) $212.59 and total $2,713.59 USD, as the
+  editor showed them. The page showed no error.
+- **Android**: Release build, 0 warnings; not run (no device or emulator here). **iOS** and **WinAppSDK**: CI builds.
+
 ## D13. Database key and refresh token in `PasswordVault` where Uno has one (2026-11-03)
 
 Owner delegated the call (D1 and D3 open points).
@@ -279,3 +320,26 @@ Tradeoff:
 - Desktop (Windows, Linux, macOS on Skia) keeps a key file next to the database. DPAPI would be a new package, and
   Uno has no vault on Linux or macOS.
 - Android, iOS and WinAppSDK are verified by CI builds only.
+
+Implementation (2026-11-03): `Helpers/StoredSecret.cs`. `AppDatabase` and `AuthService` read their secret through a
+`StoredSecret` (a name in the vault, and the file earlier versions wrote):
+- With a vault, a file left by an earlier version is written to the vault and deleted once the vault gives the same
+  value back. It wins over a different value already in the vault, since it belongs to the database beside it (an iOS
+  Keychain entry can outlive an uninstall). Otherwise the vault's value is used, and a new key goes to the vault only.
+- Without a vault (desktop, WebAssembly) the files stay as they were.
+- The app uses one vault instance: Uno's Android and iOS vaults keep the whole list in memory and write it whole at every
+  change, so a second instance would drop the first one's entries.
+
+Verified: `StoredSecretTests` (six cases, in-memory vault: create, reuse, move a file in, a file winning over a stale
+value, a vault that does not keep the value leaving the file in place, delete); the Android Release build (0 warnings);
+the desktop app still creates and reads `.dbkey`. The vault itself runs only on Android, iOS and WinAppSDK, none of
+which ran here.
+
+Open points:
+- **Android backup.** The manifest has `android:allowBackup="true"`. A backup carries the database and Uno's encrypted
+  `.vault` file but not the AndroidKeyStore key that decrypts it, so a database restored onto a new device cannot be
+  opened (before this change the `.dbkey` file travelled with it). Excluding the database and `.vault` from backup, or
+  backing the key up some other way, is an owner call.
+- **iOS Keychain access.** Uno's vault throws "not allowed to use the keychain" on status -34018, and
+  `Platforms/iOS/Entitlements.plist` is empty. Apps normally get their default access group without an entry; confirm on
+  the first signed device build.
