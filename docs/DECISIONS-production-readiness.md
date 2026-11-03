@@ -90,8 +90,8 @@ Owner decision (round 2 plan): QuoteCraft runs fully on local data with no accou
   device.
 - **No plans without billing.** `FeatureGateService` lifts the Free limits (5 quotes a month, 10 clients) and the PDF
   watermark when billing is not configured, and keeps cloud sync off. An upgrade prompt that cannot be acted on would
-  be a dead end. If the owner prefers to demo the Free limits in local builds, `HasPlans` is the one switch, and the
-  prompts then need a non-billing message.
+  be a dead end. **Owner decision (2026-11-03): keep them lifted.** `HasPlans` stays the one switch; the
+  `LocalOnly_*` tests in `FeatureGateServiceTests` pin the behaviour.
 
 Open points for the next phases (behaviour with a Supabase project configured, unchanged here):
 - `ISyncService.StartAsync` is never called, so sync never runs. Since round 2 this is the decision (D8), not a gap.
@@ -245,3 +245,37 @@ from the highest number each year had and renumbered quotes that shared a number
 - **Errors:** page handlers report failures through `ErrorReporter` (logged, and a dialog says what did not happen);
   failed bound commands show on the page (a banner on Quotes, a message in the editor); `App` logs what nothing else
   caught and keeps running; a startup failure shows its message instead of a blank window.
+
+## D12. PDF export: SkiaSharp's `SKDocument` on every head; QuestPDF removed (2026-11-03)
+
+Owner delegated the call (D2 option 3).
+
+Decision: one `IPdfGenerator` drawn with `SKDocument.CreatePdf` on all five heads, and QuestPDF is removed.
+
+Reason:
+- Contractors quote on site from a phone, so PDF export missing on Android, iOS and WebAssembly left the core flow
+  broken on three heads.
+- SkiaSharp 4 already ships to every head, so there is one layout, one fewer package and no QuestPDF licence terms.
+
+Tradeoff:
+- A working desktop renderer is rewritten.
+- Delivery differs per head: a file on desktop and Windows, a save picker on Android and iOS, a browser download on
+  WebAssembly.
+- Android and iOS are verified by CI builds only.
+
+## D13. Database key and refresh token in `PasswordVault` where Uno has one (2026-11-03)
+
+Owner delegated the call (D1 and D3 open points).
+
+Decision: Android, iOS and WinAppSDK keep the SQLCipher key and the refresh token in
+`Windows.Security.Credentials.PasswordVault`, and an existing `.dbkey` or `.auth_token` file moves into it. Desktop
+keeps the files. WebAssembly stays unencrypted (D1).
+
+Reason:
+- Uno implements the vault on exactly those heads, on AndroidKeyStore and the iOS Keychain.
+- No new package or UnoFeature is needed.
+
+Tradeoff:
+- Desktop (Windows, Linux, macOS on Skia) keeps a key file next to the database. DPAPI would be a new package, and
+  Uno has no vault on Linux or macOS.
+- Android, iOS and WinAppSDK are verified by CI builds only.
