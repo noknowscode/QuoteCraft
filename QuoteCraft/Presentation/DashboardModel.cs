@@ -8,8 +8,7 @@ public record QuoteSendDetails(
     string? ClientName,
     string ClientEmail,
     string BusinessName,
-    DateTimeOffset? ValidUntil,
-    bool CanAttachPdf);
+    DateTimeOffset? ValidUntil);
 
 public partial record DashboardModel
 {
@@ -82,10 +81,6 @@ public partial record DashboardModel
             await ActionError.UpdateAsync(_ => ErrorReporter.Describe(failure, ex), ct);
         }
     }
-
-    // Empty where PDF export works; otherwise the note shown in place of the Download PDF button.
-    public IFeed<string> PdfUnavailableNote => Feed.Async(ct => ValueTask.FromResult(
-        _shareService.CanExportPdf ? string.Empty : Services.UnsupportedPdfGenerator.UnavailableMessage));
 
     // Cached quote list: refreshed once per DetailVersion bump, shared across derived feeds
     private List<QuoteEntity>? _cachedQuotes;
@@ -287,7 +282,7 @@ public partial record DashboardModel
         }
     }, ct);
 
-    /// <summary>Writes and opens the quote's PDF; the quote's status does not change.</summary>
+    /// <summary>Saves the quote's PDF (<see cref="Services.IShareService"/>); the quote's status does not change.</summary>
     public async Task ExportPdfAsync(string quoteId)
     {
         if (await _quoteRepo.GetByIdAsync(quoteId) is { } quote)
@@ -333,19 +328,16 @@ public partial record DashboardModel
         var client = string.IsNullOrEmpty(quote.ClientId) ? null : await _clientRepo.GetByIdAsync(quote.ClientId);
         var profile = await _profileRepo.GetAsync();
         return new QuoteSendDetails(quote.Id, quote.QuoteNumber, quote.Title, quote.ClientName, client?.Email ?? string.Empty,
-            profile.BusinessName ?? "Our Company", quote.ValidUntil, _shareService.CanExportPdf);
+            profile.BusinessName ?? "Our Company", quote.ValidUntil);
     }
 
     /// <summary>
-    /// The Send dialog's Send via Email: writes the PDF to attach (where this head can make one), opens the email, and
-    /// marks the quote Sent (with a fresh validity period) unless the client has already answered.
+    /// The Send dialog's Send via Email: saves the PDF to attach, opens the email, and marks the quote Sent (with a
+    /// fresh validity period) unless the client has already answered.
     /// </summary>
     public async Task SendByEmailAsync(string quoteId, string recipient, string subject, string body)
     {
-        if (_shareService.CanExportPdf)
-        {
-            await ExportPdfAsync(quoteId);
-        }
+        await ExportPdfAsync(quoteId);
 
         if (!await _email.ComposeEmailAsync(recipient, subject, body))
         {

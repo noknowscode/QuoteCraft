@@ -114,11 +114,7 @@ public partial class App : Application
                     services.AddSingleton<IBusinessProfileRepository, BusinessProfileRepository>();
                     services.AddSingleton<ICatalogItemRepository, CatalogItemRepository>();
                     services.AddSingleton<QuoteNumberGenerator>();
-#if QUESTPDF
                     services.AddSingleton<Services.IPdfGenerator, Services.PdfGenerator>();
-#else
-                    services.AddSingleton<Services.IPdfGenerator, Services.UnsupportedPdfGenerator>();
-#endif
                     services.AddSingleton<Services.IShareService, Services.ShareService>();
                     services.AddSingleton<Services.IFeatureGateService, Services.FeatureGateService>();
                     services.AddSingleton<Services.IEmailLauncherService, Services.EmailLauncherService>();

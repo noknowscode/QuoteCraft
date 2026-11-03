@@ -306,9 +306,7 @@ public sealed partial class DashboardPage : Page
                     },
                     new TextBlock
                     {
-                        Text = quote.CanAttachPdf
-                            ? "The PDF will be downloaded. Please attach it to the email."
-                            : $"{Services.UnsupportedPdfGenerator.UnavailableMessage} The email opens without an attachment.",
+                        Text = "The PDF will be downloaded. Please attach it to the email.",
                         Style = (Style)Application.Current.Resources["BodySmall"],
                         Foreground = ThemeResources.GetBrush(this, "OnTertiaryContainerBrush"),
                         TextWrapping = TextWrapping.Wrap,
@@ -333,16 +331,13 @@ public sealed partial class DashboardPage : Page
             primaryButtonText: "Send via Email",
             closeButtonText: "Cancel");
 
-        if (quote.CanAttachPdf)
-        {
-            dialog.SecondaryButtonText = "Download PDF Only";
-        }
+        dialog.SecondaryButtonText = "Download PDF Only";
 
         var result = await dialog.ShowAsync();
 
         if (result == ContentDialogResult.Primary)
         {
-            // The PDF (where this head can make one), then the email, then the quote is marked Sent.
+            // The PDF, then the email, then the quote is marked Sent.
             await model.SendByEmailAsync(
                 quote.QuoteId,
                 recipientBox.Text?.Trim() ?? string.Empty,

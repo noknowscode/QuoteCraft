@@ -604,10 +604,6 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                   </Grid.ColumnDefinitions>
-                  <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                  </Grid.RowDefinitions>
 
                   <TextBlock Text="{Binding Data.Quote.Title}"
                              Grid.ColumnSpan="{utu:Responsive Narrowest=2, Widest=1, Layout={StaticResource SplitLayout}}"
@@ -741,10 +737,6 @@
                     <!-- Auto, not 340: a fixed column would still take its width when the side column is stacked below -->
                     <ColumnDefinition Width="Auto" />
                   </Grid.ColumnDefinitions>
-                  <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                  </Grid.RowDefinitions>
 
                   <StackPanel Spacing="{StaticResource Space16}"
                               Grid.ColumnSpan="{utu:Responsive Narrowest=2, Widest=1, Layout={StaticResource SplitLayout}}"
@@ -1134,10 +1126,6 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
                   </Grid.ColumnDefinitions>
-                  <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                  </Grid.RowDefinitions>
 
                   <Button Command="{Binding DataContext.BackToDetail, ElementName=DashboardRoot}"
                           AutomationProperties.Name="Back to detail view"
@@ -1151,19 +1139,8 @@
                     </StackPanel>
                   </Button>
 
-                  <TextBlock Grid.Row="{utu:Responsive Narrow=1, Normal=0}"
-                             Grid.Column="{utu:Responsive Narrow=0, Normal=1}"
-                             Grid.ColumnSpan="{utu:Responsive Narrow=4, Normal=1}"
-                             Text="{Binding DataContext.PdfUnavailableNote, ElementName=DashboardRoot}"
-                             Visibility="{Binding DataContext.PdfUnavailableNote, ElementName=DashboardRoot, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert}"
-                             Style="{StaticResource BodySmall}"
-                             Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                             TextWrapping="Wrap" TextAlignment="{utu:Responsive Narrow=Left, Normal=Right}"
-                             VerticalAlignment="Center" Margin="{utu:Responsive Narrow={StaticResource GapTop8}, Normal={StaticResource InsetX12}}" />
-
                   <Button Grid.Column="2"
                           Command="{Binding DataContext.DownloadPdf, ElementName=DashboardRoot}"
-                          Visibility="{Binding DataContext.PdfUnavailableNote, ElementName=DashboardRoot, Converter={StaticResource EmptyToVisibleConverter}}"
                           AutomationProperties.Name="Download PDF"
                           ToolTipService.ToolTip="Download PDF"
                           Style="{StaticResource MaterialFilledButtonStyle}"

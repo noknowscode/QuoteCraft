@@ -62,9 +62,6 @@ public partial record QuoteEditorModel
     public IState<string> ClientName { get; }
     public IState<string> QuoteNumber { get; }
 
-    // Empty where PDF export works; otherwise the note shown in place of the Export PDF button.
-    public IFeed<string> PdfUnavailableNote => Feed.Async(ct => ValueTask.FromResult(
-        _shareService.CanExportPdf ? string.Empty : UnsupportedPdfGenerator.UnavailableMessage));
     public IState<string> ValidationError => State<string>.Value(this, () => string.Empty);
 
     /// <summary>True while Save writes the quote (the page shows a progress bar).</summary>
@@ -216,7 +213,7 @@ public partial record QuoteEditorModel
 
     public ValueTask MarkDeclined(CancellationToken ct) => UpdateStatus(QuoteStatus.Declined, ct);
 
-    /// <summary>Saves the edits, then writes and opens the PDF; a failure shows on the page, next to the button.</summary>
+    /// <summary>Saves the edits, then saves the PDF; a failure shows on the page, next to the button.</summary>
     public async ValueTask ExportPdf(CancellationToken ct)
     {
         await ValidationError.UpdateAsync(_ => string.Empty, ct);

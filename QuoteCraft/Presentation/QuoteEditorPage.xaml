@@ -397,20 +397,13 @@
           </DataTemplate>
         </mvux:FeedView>
 
-        <!-- Export PDF (a note takes its place on the heads without a PDF engine) -->
+        <!-- Export PDF -->
         <Button Content="Export PDF"
                 Command="{Binding ExportPdf}"
-                Visibility="{Binding PdfUnavailableNote, Converter={StaticResource EmptyToVisibleConverter}}"
                 HorizontalAlignment="Stretch"
                 MinHeight="{StaticResource TouchTarget}"
                 Style="{StaticResource MaterialFilledTonalButtonStyle}"
                 Margin="{StaticResource GapTop8}" />
-        <TextBlock Text="{Binding PdfUnavailableNote}"
-                   Visibility="{Binding PdfUnavailableNote, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert}"
-                   Style="{StaticResource BodySmall}"
-                   Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                   TextWrapping="Wrap"
-                   Margin="{StaticResource GapTop8}" />
 
         <!-- Status Actions (stacked full width on Narrow) -->
         <TextBlock Text="Status Actions"
