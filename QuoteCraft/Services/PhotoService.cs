@@ -99,9 +99,10 @@ public class PhotoService : IPhotoService
                 output.SetLength(0);
                 data.SaveTo(output);
             }
-            catch
+            catch (Exception ex)
             {
-                // If compression fails, keep the original file
+                // The photo stays as it was added, only larger than the 1 MB aim.
+                ErrorReporter.Log(ex, "Compressing a photo failed; the original is kept");
             }
         });
     }
