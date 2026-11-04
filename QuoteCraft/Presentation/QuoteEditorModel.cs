@@ -13,6 +13,7 @@ public partial record QuoteEditorModel
     private readonly IStatusHistoryRepository _statusHistoryRepo;
     private readonly QuoteStatusService _status;
     private readonly IDispatcher _dispatcher;
+    private readonly QuoteBoard _board;
 
     // Track initial values for unsaved changes detection
     private readonly string _initialTitle;
@@ -29,8 +30,10 @@ public partial record QuoteEditorModel
         IPhotoService photoService,
         IStatusHistoryRepository statusHistoryRepo,
         QuoteStatusService status,
-        IDispatcher dispatcher)
+        IDispatcher dispatcher,
+        QuoteBoard board)
     {
+        _board = board;
         _status = status;
         _dispatcher = dispatcher;
         _navigator = navigator;
@@ -149,14 +152,14 @@ public partial record QuoteEditorModel
         {
             await _quoteRepo.DeleteLineItemAsync(deletedId);
         }
-        await LineItemsVersion.UpdateAsync(v => v + 1, ct);
+        await LineItemsChangedAsync(ct);
     }, ct);
 
     /// <summary>From Catalog: the browser adds items as they are tapped; the list reloads when it closes.</summary>
     public ValueTask OpenCatalog(CancellationToken ct) => ReportFailureAsync("The catalog could not be opened.", async () =>
     {
         await _navigator.ShowDialogAsync<object>(this, "CatalogBrowser", new CatalogBrowserRequest(_quoteId), ct);
-        await LineItemsVersion.UpdateAsync(v => v + 1, ct);
+        await LineItemsChangedAsync(ct);
     }, ct);
 
     /// <summary>Runs an action's work; a failure is logged and shown in the editor's message line.</summary>
@@ -187,7 +190,14 @@ public partial record QuoteEditorModel
 
         (ids[from], ids[to]) = (ids[to], ids[from]);
         await _quoteRepo.ReorderLineItemsAsync(_quoteId, ids);
+        await LineItemsChangedAsync(ct);
+    }
+
+    /// <summary>The items changed: this page reads them again, and so do the quotes list and detail.</summary>
+    private async ValueTask LineItemsChangedAsync(CancellationToken ct)
+    {
         await LineItemsVersion.UpdateAsync(v => v + 1, ct);
+        _board.QuotesChanged();
     }
 
     public async ValueTask Save(CancellationToken ct)
@@ -325,6 +335,7 @@ public partial record QuoteEditorModel
             existing.TaxRate = tax;
 
         await _quoteRepo.SaveAsync(existing);
+        _board.QuotesChanged();
     }
 
     /// <summary>When the quote was sent, accepted, declined, expired or reopened (PRD F3.4), oldest first.</summary>
@@ -341,6 +352,7 @@ public partial record QuoteEditorModel
             // The edits first, so a status change does not drop them.
             await PersistEditsAsync();
             await _status.SetStatusAsync(_quoteId, status);
+            _board.QuotesChanged();
         }
         catch (Exception ex)
         {

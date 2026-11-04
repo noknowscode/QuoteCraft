@@ -17,9 +17,9 @@ public class QuoteEditorModelTests
     /// The editor once its fields hold the quote. On the page the bindings read every state long before anyone types;
     /// reading them here first does the same, so an update is never made before a state has its first value.
     /// </summary>
-    private static async Task<QuoteEditorModel> Create(ModelHarness h, QuoteEntity quote)
+    internal static async Task<QuoteEditorModel> Create(ModelHarness h, QuoteEntity quote)
     {
-        var model = new QuoteEditorModel(quote, h.Navigator, h.Db.Quotes, h.Db.Clients, h.Share, h.Photos, h.Db.History, h.Status, h.Dispatcher);
+        var model = new QuoteEditorModel(quote, h.Navigator, h.Db.Quotes, h.Db.Clients, h.Share, h.Photos, h.Db.History, h.Status, h.Dispatcher, h.Board);
         _ = (await model.Title, await model.Notes, await model.TaxRate, await model.ClientName, await model.ValidationError);
         return model;
     }

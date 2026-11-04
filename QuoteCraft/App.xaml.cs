@@ -111,6 +111,9 @@ public partial class App : Application
                     services.AddSingleton<Helpers.ConnectivityHelper>();
                     services.AddSingleton<Services.QuoteExpiryService>();
                     services.AddSingleton<Services.ThemeChoiceNotifier>();
+                    services.AddSingleton<Services.QuoteBoard>();
+                    // The open quote's view, created by the Quotes page's detail region (route ./QuoteDetail)
+                    services.AddTransient<QuoteDetailView>();
                 })
                 .UseNavigation(ReactiveViewModelMappings.ViewModelMappings, RegisterRoutes)
                 // "!" routes to a Page open in this drawer instead of a full-window flyout. After UseNavigation, which
@@ -429,7 +432,8 @@ public partial class App : Application
             new DataViewMap<CatalogBrowserDialog, CatalogBrowserModel, CatalogBrowserRequest>(),
             new ResultDataViewMap<ClientEditorDialog, ClientEditorModel, ClientEntity>(Data: new DataMap<ClientEditRequest>()),
             new ResultDataViewMap<CatalogItemEditorDialog, CatalogItemEditorModel, CatalogItemEditResult>(Data: new DataMap<CatalogItemEditRequest>()),
-            new DataViewMap<QuoteEditorPage, QuoteEditorModel, QuoteEntity>()
+            new DataViewMap<QuoteEditorPage, QuoteEditorModel, QuoteEntity>(),
+            new DataViewMap<QuoteDetailView, QuoteDetailModel, QuoteEntity>()
         );
 
         routes.Register(
@@ -449,7 +453,12 @@ public partial class App : Application
                     new ("Main", View: views.FindByViewModel<MainModel>(), IsDefault: true,
                         Nested:
                         [
-                            new ("Dashboard", View: views.FindByViewModel<DashboardModel>(), IsDefault: true),
+                            new ("Dashboard", View: views.FindByViewModel<DashboardModel>(), IsDefault: true,
+                                Nested:
+                                [
+                                    // The open quote, in the Quotes page's detail region (DashboardModel.OpenQuote)
+                                    new ("QuoteDetail", View: views.FindByViewModel<QuoteDetailModel>()),
+                                ]),
                             new ("Clients", View: views.FindByViewModel<ClientsModel>()),
                             new ("Catalog", View: views.FindByViewModel<CatalogModel>()),
                             new ("Settings", View: views.FindByViewModel<SettingsModel>()),
