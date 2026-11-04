@@ -127,7 +127,7 @@
         <mvux:FeedView Grid.Row="1" Source="{Binding CategoryCards}">
           <DataTemplate>
             <ScrollViewer Padding="{utu:Responsive Narrow={StaticResource ListInsetNarrow}, Normal={StaticResource ListInsetNormal}, Widest={StaticResource ListInsetWidest}}">
-              <muxc:ItemsRepeater ItemsSource="{Binding Data}">
+              <muxc:ItemsRepeater ItemsSource="{Binding Data}" TabFocusNavigation="Local">
                 <muxc:ItemsRepeater.Layout>
                   <muxc:UniformGridLayout MinItemWidth="156" MinItemHeight="130"
                                           MinColumnSpacing="{StaticResource Space8}" MinRowSpacing="{StaticResource Space8}"
@@ -295,7 +295,7 @@
               <!-- Items List -->
               <utu:CardContentControl Style="{StaticResource StaticCardStyle}"
                       Padding="{utu:Responsive Narrow={StaticResource Inset8}, Normal={StaticResource Inset16}}">
-                <muxc:ItemsRepeater ItemsSource="{Binding Data.Items}">
+                <muxc:ItemsRepeater ItemsSource="{Binding Data.Items}" TabFocusNavigation="Local">
                   <muxc:ItemsRepeater.Layout>
                     <muxc:StackLayout Spacing="{StaticResource Space4}" />
                   </muxc:ItemsRepeater.Layout>

@@ -222,7 +222,8 @@ public partial class App : Application
 
 #if DEBUG
     /// <summary>
-    /// Screenshot-matrix hooks (docs/evidence). <c>--qc-theme=light|dark</c> sets the theme through the theme service, as
+    /// Screenshot-matrix hooks (docs/evidence). <c>--qc-focus=log</c> prints each element that takes keyboard focus.
+    /// <c>--qc-theme=light|dark</c> sets the theme through the theme service, as
     /// the app's own selector does. <c>--qc-route=&lt;route&gt;[:detail]</c> opens Dashboard (the quotes list), Clients,
     /// Catalog, Settings, Onboarding or QuoteEditor (the seeded quote with the most line items, opened from the
     /// dashboard like a tap does); <c>:detail</c> also selects the first quote, client or category, and
@@ -236,6 +237,21 @@ public partial class App : Application
             if (Host is null || MainWindow?.Content is not FrameworkElement root)
             {
                 return;
+            }
+
+            if (VerificationArgs.Get("focus") == "log")
+            {
+                // Keyboard checks: each element that takes focus, with its accessible name, so a Tab walk is readable.
+                Microsoft.UI.Xaml.Input.FocusManager.GotFocus += (_, e) =>
+                {
+                    var element = e.NewFocusedElement as DependencyObject;
+                    var name = element is null ? string.Empty : Microsoft.UI.Xaml.Automation.AutomationProperties.GetName(element);
+                    if (string.IsNullOrEmpty(name) && element is ContentControl { Content: string text })
+                    {
+                        name = text;
+                    }
+                    VerificationArgs.Log($"focus {element?.GetType().Name} \"{name}\"");
+                };
             }
 
             if (VerificationArgs.Get("theme") is { } theme)

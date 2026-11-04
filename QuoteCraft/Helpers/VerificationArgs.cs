@@ -3,7 +3,8 @@ namespace QuoteCraft.Helpers;
 
 /// <summary>
 /// Debug-only command-line hooks for the screenshot matrix (docs/evidence): <c>--qc-data=&lt;folder&gt;</c>,
-/// <c>--qc-seed=sample</c>, <c>--qc-theme=light|dark</c> and <c>--qc-route=&lt;route&gt;[:detail]</c>.
+/// <c>--qc-seed=sample</c>, <c>--qc-theme=light|dark</c>, <c>--qc-route=&lt;route&gt;[:detail]</c> and
+/// <c>--qc-focus=log</c>.
 /// Release builds never read them.
 /// </summary>
 public static class VerificationArgs

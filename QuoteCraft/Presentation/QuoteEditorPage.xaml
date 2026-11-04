@@ -27,7 +27,7 @@
     </Grid.RowDefinitions>
 
     <!-- The back arrow is an explicit action: it shows (and works) however the editor was opened. -->
-    <utu:NavigationBar MainCommandMode="Action">
+    <utu:NavigationBar IsTabStop="False" MainCommandMode="Action">
       <utu:NavigationBar.Content>
         <!-- A string state binds directly: a FeedView over IState<string> gets a plain string and never renders -->
         <TextBlock Text="{Binding QuoteNumber}"

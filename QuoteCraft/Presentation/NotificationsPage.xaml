@@ -17,7 +17,7 @@
       <RowDefinition />
     </Grid.RowDefinitions>
 
-    <utu:NavigationBar Content="Notifications" MainCommandMode="Action">
+    <utu:NavigationBar IsTabStop="False" Content="Notifications" MainCommandMode="Action">
       <utu:NavigationBar.MainCommand>
         <AppBarButton uen:Navigation.Request="-"
                       Label="Close"
@@ -57,7 +57,8 @@
           <ListView.ItemTemplate>
             <DataTemplate>
               <Grid Padding="{StaticResource Inset20x16}" Margin="{StaticResource RowSeparatorGap}"
-                    Background="{ThemeResource SurfaceBrush}">
+                    Background="{ThemeResource SurfaceBrush}"
+                    AutomationProperties.Name="{Binding Message}">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="Auto" />
                   <ColumnDefinition Width="*" />
