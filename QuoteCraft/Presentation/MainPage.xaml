@@ -244,7 +244,8 @@
       <!-- Bottom actions: Notifications, Theme, Collapse -->
       <StackPanel Grid.Row="3">
         <Border Height="{StaticResource HairlineThickness}" Background="{ThemeResource OutlineVariantBrush}" Margin="{StaticResource InsetX12}" />
-        <Button uen:Navigation.Request="!Notifications"
+        <!-- The drawer, through the same command as the Alerts tab below 800 px -->
+        <Button Command="{Binding OpenNotifications}"
                 Margin="{StaticResource RailActionMargin}"
                 MinHeight="{StaticResource TouchTarget}"
                 HorizontalAlignment="Stretch"
