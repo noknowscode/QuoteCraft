@@ -44,6 +44,14 @@
         </ResourceDictionary>
       </ResourceDictionary.ThemeDictionaries>
 
+      <!--
+        Cards here are surfaces, not buttons (Styles/Cards.xaml): no Material hover, pressed or focus wash. On touch, a
+        swipe that starts on a card can leave the hover wash up. List cards draw their states with InteractionHelper.
+      -->
+      <SolidColorBrush x:Key="FilledCardContentBorderBrushPointerOver" Color="Transparent" />
+      <SolidColorBrush x:Key="FilledCardContentBorderBrushPressed" Color="Transparent" />
+      <SolidColorBrush x:Key="FilledCardContentBorderBrushFocused" Color="Transparent" />
+
       <!-- Bold/SemiBold typography variants (derived from Material styles) -->
       <Style x:Key="HeadlineMediumBold" TargetType="TextBlock" BasedOn="{StaticResource HeadlineMedium}">
         <Setter Property="FontWeight" Value="Bold" />

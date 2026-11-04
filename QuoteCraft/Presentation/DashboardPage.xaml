@@ -891,7 +891,7 @@
                         </Grid.ColumnDefinitions>
                         <utu:CardContentControl Style="{StaticResource AvatarCardStyle}"
                                                 Width="{StaticResource AvatarSizeSm}" Height="{StaticResource AvatarSizeSm}"
-                                                CornerRadius="{StaticResource RadiusCircle36}">
+                                                CornerRadius="{StaticResource RadiusCircle36}" AutomationProperties.AccessibilityView="Raw">
                           <TextBlock Text="{Binding Data.Quote.ClientName, Converter={StaticResource InitialsConverter}}"
                                      Style="{StaticResource LabelMedium}"
                                      Foreground="{ThemeResource OnPrimaryContainerBrush}"

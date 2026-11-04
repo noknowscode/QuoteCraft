@@ -249,7 +249,7 @@
                             </Grid.ColumnDefinitions>
 
                             <!-- Avatar -->
-                            <utu:CardContentControl Style="{StaticResource AvatarCardStyle}" Width="{StaticResource AvatarSize}" Height="{StaticResource AvatarSize}" CornerRadius="{StaticResource RadiusCircle40}">
+                            <utu:CardContentControl Style="{StaticResource AvatarCardStyle}" Width="{StaticResource AvatarSize}" Height="{StaticResource AvatarSize}" CornerRadius="{StaticResource RadiusCircle40}" AutomationProperties.AccessibilityView="Raw">
                               <TextBlock Text="{Binding Initials}" Style="{StaticResource LabelLarge}"
                                          Foreground="{ThemeResource OnPrimaryContainerBrush}"
                                          HorizontalAlignment="Center" VerticalAlignment="Center" />

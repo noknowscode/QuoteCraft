@@ -2,9 +2,10 @@
   Rounded containers are Toolkit CardContentControls (Material outlined card) tuned by lightweight keys, not Borders.
 
   StaticCardStyle: a surface that is not a button. It fills its slot like the Borders it replaced (the Material base
-  style centres the card), takes no keyboard focus, and its hover, pressed and focus washes are transparent: on
-  touch, a swipe that starts on a Material card can leave the hover wash up (uno-scaffolding gotchas, MorningCard).
-  Cards that react to the pointer get their states from Helpers/InteractionHelper.
+  style centres the card) and takes no keyboard focus. The Material hover, pressed and focus washes are off for every
+  card (App.xaml); cards that react to the pointer get their states from Helpers/InteractionHelper.
+  No attached-property setters here: on WinAppSDK a style BasedOn a Toolkit template throws on them
+  (microsoft/microsoft-ui-xaml#6388).
 -->
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -22,15 +23,6 @@
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="CornerRadius" Value="{StaticResource RadiusLg}" />
     <Setter Property="Padding" Value="0" />
-    <Setter Property="utu:ResourceExtensions.Resources">
-      <Setter.Value>
-        <ResourceDictionary>
-          <SolidColorBrush x:Key="FilledCardContentBorderBrushPointerOver" Color="Transparent" />
-          <SolidColorBrush x:Key="FilledCardContentBorderBrushPressed" Color="Transparent" />
-          <SolidColorBrush x:Key="FilledCardContentBorderBrushFocused" Color="Transparent" />
-        </ResourceDictionary>
-      </Setter.Value>
-    </Setter>
   </Style>
 
   <!-- A surface card with the standard inset (stat cards, list cards) -->
@@ -63,7 +55,6 @@
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="HorizontalContentAlignment" Value="Center" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
-    <Setter Property="AutomationProperties.AccessibilityView" Value="Raw" />
   </Style>
 
 </ResourceDictionary>
