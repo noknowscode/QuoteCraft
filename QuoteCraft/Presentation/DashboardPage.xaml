@@ -357,6 +357,7 @@
                         <utu:CardContentControl Style="{StaticResource StaticCardStyle}"
                                                 CornerRadius="{StaticResource RadiusMd}">
                           <Grid>
+                            <!-- xaml-lint: allow card - the open quote's tint inside its card (a fill under the button), not a card -->
                             <Border Background="{ThemeResource PrimaryContainerBrush}"
                                     BorderBrush="{ThemeResource PrimaryBrush}"
                                     BorderThickness="1"
