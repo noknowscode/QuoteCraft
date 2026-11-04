@@ -191,7 +191,8 @@
                            TextAlignment="Center" TextWrapping="Wrap" MaxWidth="{StaticResource HintMaxWidth}" />
                 <Button Command="{Binding DataContext.AddItem, ElementName=CatalogRoot}"
                         Style="{StaticResource AccentButtonStyle}"
-                        HorizontalAlignment="Center" Margin="{StaticResource GapTop8}">
+                        HorizontalAlignment="Center" Margin="{StaticResource GapTop8}"
+                        AutomationProperties.Name="Add catalog item">
                   <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
                     <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource OnAccentFixedBrush}" />
                     <TextBlock Text="Add Item" Foreground="{StaticResource OnAccentFixedBrush}" Style="{StaticResource LabelLargeSemiBold}" />
@@ -220,7 +221,8 @@
                 <Button Content="Retry"
                         Command="{Binding DataContext.RefreshList, ElementName=CatalogRoot}"
                         Style="{StaticResource MaterialOutlinedButtonStyle}"
-                        HorizontalAlignment="Center" />
+                        HorizontalAlignment="Center"
+                        AutomationProperties.Name="Retry loading the catalog" />
               </StackPanel>
             </DataTemplate>
           </mvux:FeedView.ErrorTemplate>
@@ -377,10 +379,12 @@
               <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}" HorizontalAlignment="Center">
                 <Button Content="Back"
                         Command="{Binding DataContext.BackToList, ElementName=CatalogRoot}"
-                        Style="{StaticResource MaterialTextButtonStyle}" />
+                        Style="{StaticResource MaterialTextButtonStyle}"
+                        AutomationProperties.Name="Back to categories" />
                 <Button Content="Retry"
                         Command="{Binding DataContext.RefreshList, ElementName=CatalogRoot}"
-                        Style="{StaticResource MaterialOutlinedButtonStyle}" />
+                        Style="{StaticResource MaterialOutlinedButtonStyle}"
+                        AutomationProperties.Name="Retry loading the category" />
               </StackPanel>
             </StackPanel>
           </DataTemplate>

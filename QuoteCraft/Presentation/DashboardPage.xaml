@@ -440,7 +440,8 @@
                                Foreground="{ThemeResource OnSurfaceVariantBrush}" />
                     <Button Command="{Binding DataContext.CreateQuote, ElementName=DashboardRoot}"
                             Style="{StaticResource AccentButtonStyle}"
-                            HorizontalAlignment="Center" Margin="{StaticResource GapTop8}">
+                            HorizontalAlignment="Center" Margin="{StaticResource GapTop8}"
+                            AutomationProperties.Name="Create quote">
                       <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
                         <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource OnAccentFixedBrush}" />
                         <TextBlock Text="Create Quote" Foreground="{StaticResource OnAccentFixedBrush}" Style="{StaticResource LabelLargeSemiBold}" />
@@ -469,7 +470,8 @@
                     <Button Content="Retry"
                             Command="{Binding DataContext.Refresh, ElementName=DashboardRoot}"
                             Style="{StaticResource MaterialOutlinedButtonStyle}"
-                            HorizontalAlignment="Center" />
+                            HorizontalAlignment="Center"
+                            AutomationProperties.Name="Retry loading quotes" />
                   </StackPanel>
                 </DataTemplate>
               </mvux:FeedView.ErrorTemplate>

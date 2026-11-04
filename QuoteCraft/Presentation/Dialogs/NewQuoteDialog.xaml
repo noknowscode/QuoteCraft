@@ -15,13 +15,15 @@
 
     <TextBox Header="Quote Title"
              Text="{Binding QuoteTitle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-             PlaceholderText="e.g. Kitchen Renovation" />
+             PlaceholderText="e.g. Kitchen Renovation"
+             AutomationProperties.Name="Quote title" />
 
     <AutoSuggestBox Header="Client Name (optional)"
                     Text="{Binding ClientName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     ItemsSource="{Binding ClientSuggestions}"
                     PlaceholderText="Start typing a client name..."
-                    TextBoxStyle="{StaticResource MaterialOutlinedTextBoxStyle}" />
+                    TextBoxStyle="{StaticResource MaterialOutlinedTextBoxStyle}"
+                    AutomationProperties.Name="Client name" />
 
     <TextBlock Text="{Binding ValidationError}"
                Style="{StaticResource BodySmall}"
@@ -32,8 +34,8 @@
 
     <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}" HorizontalAlignment="Right">
       <!-- xaml-lint: allow backbar - a dialog Cancel that closes the dialog, not a page back bar -->
-      <Button Content="Cancel" uen:Navigation.Request="-" Style="{StaticResource MaterialTextButtonStyle}" />
-      <Button Content="Create" Command="{Binding Create}" Style="{StaticResource MaterialFilledButtonStyle}" />
+      <Button Content="Cancel" uen:Navigation.Request="-" Style="{StaticResource MaterialTextButtonStyle}" AutomationProperties.Name="Cancel" />
+      <Button Content="Create" Command="{Binding Create}" Style="{StaticResource MaterialFilledButtonStyle}" AutomationProperties.Name="Create quote" />
     </StackPanel>
   </StackPanel>
 </ContentDialog>

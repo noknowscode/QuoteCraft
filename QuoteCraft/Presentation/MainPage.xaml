@@ -92,7 +92,8 @@
                       Command="{Binding OpenTab}" CommandParameter="Dashboard"
                       Content="Quotes"
                       IsSelectable="True"
-                      Style="{StaticResource MaterialBottomTabBarItemStyle}">
+                      Style="{StaticResource MaterialBottomTabBarItemStyle}"
+                      AutomationProperties.Name="Quotes">
         <utu:TabBarItem.Icon>
           <FontIcon Glyph="&#xE8A5;" />
         </utu:TabBarItem.Icon>
@@ -102,7 +103,8 @@
                       Command="{Binding OpenTab}" CommandParameter="Clients"
                       Content="Clients"
                       IsSelectable="True"
-                      Style="{StaticResource MaterialBottomTabBarItemStyle}">
+                      Style="{StaticResource MaterialBottomTabBarItemStyle}"
+                      AutomationProperties.Name="Clients">
         <utu:TabBarItem.Icon>
           <FontIcon Glyph="&#xE77B;" />
         </utu:TabBarItem.Icon>
@@ -112,7 +114,8 @@
                       Command="{Binding OpenTab}" CommandParameter="Catalog"
                       Content="Catalog"
                       IsSelectable="True"
-                      Style="{StaticResource MaterialBottomTabBarItemStyle}">
+                      Style="{StaticResource MaterialBottomTabBarItemStyle}"
+                      AutomationProperties.Name="Catalog">
         <utu:TabBarItem.Icon>
           <FontIcon Glyph="&#xE7BF;" />
         </utu:TabBarItem.Icon>
@@ -135,7 +138,8 @@
                       Command="{Binding OpenTab}" CommandParameter="Settings"
                       Content="Settings"
                       IsSelectable="True"
-                      Style="{StaticResource MaterialBottomTabBarItemStyle}">
+                      Style="{StaticResource MaterialBottomTabBarItemStyle}"
+                      AutomationProperties.Name="Settings">
         <utu:TabBarItem.Icon>
           <FontIcon Glyph="&#xE115;" />
         </utu:TabBarItem.Icon>
@@ -273,13 +277,16 @@
             <MenuFlyout Placement="RightEdgeAlignedBottom">
               <RadioMenuFlyoutItem Text="System default" GroupName="AppTheme"
                                    IsChecked="{Binding IsSystemTheme}"
-                                   Command="{Binding SetTheme}" CommandParameter="System" />
+                                   Command="{Binding SetTheme}" CommandParameter="System"
+                                   AutomationProperties.Name="System default theme" />
               <RadioMenuFlyoutItem Text="Light" GroupName="AppTheme"
                                    IsChecked="{Binding IsLightTheme}"
-                                   Command="{Binding SetTheme}" CommandParameter="Light" />
+                                   Command="{Binding SetTheme}" CommandParameter="Light"
+                                   AutomationProperties.Name="Light theme" />
               <RadioMenuFlyoutItem Text="Dark" GroupName="AppTheme"
                                    IsChecked="{Binding IsDarkTheme}"
-                                   Command="{Binding SetTheme}" CommandParameter="Dark" />
+                                   Command="{Binding SetTheme}" CommandParameter="Dark"
+                                   AutomationProperties.Name="Dark theme" />
             </MenuFlyout>
           </Button.Flyout>
           <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}"

@@ -130,7 +130,8 @@
             <Button Content="Retry"
                     Command="{Binding Refresh, ElementName=NotificationsFeed}"
                     Style="{StaticResource MaterialOutlinedButtonStyle}"
-                    HorizontalAlignment="Center" />
+                    HorizontalAlignment="Center"
+                    AutomationProperties.Name="Retry loading notifications" />
           </StackPanel>
         </DataTemplate>
       </mvux:FeedView.ErrorTemplate>

@@ -364,7 +364,8 @@
                           SelectedItem="{Binding CurrencyCode, Mode=TwoWay}"
                           VerticalAlignment="Center"
                           MinWidth="{StaticResource CompactPickerMinWidth}" BorderThickness="0"
-                          Background="Transparent">
+                          Background="Transparent"
+                          AutomationProperties.Name="Currency">
                   <x:String>USD</x:String>
                   <x:String>CAD</x:String>
                 </ComboBox>
@@ -449,7 +450,8 @@
                       HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
                       MinHeight="{StaticResource TouchTarget}"
                       Padding="{StaticResource FormRowInset}"
-                      Content="Manage catalog" />
+                      Content="Manage catalog"
+                      AutomationProperties.Name="Manage catalog" />
             </StackPanel>
           </utu:CardContentControl>
         </StackPanel>

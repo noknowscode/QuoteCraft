@@ -345,7 +345,8 @@
                           <Button Command="{Binding DataContext.AddLineItem, ElementName=DetailRoot}"
                                   Style="{StaticResource MaterialTextButtonStyle}"
                                   MinHeight="{StaticResource TouchTarget}"
-                                  CornerRadius="{StaticResource RadiusMd}" Padding="{StaticResource Inset12x4}">
+                                  CornerRadius="{StaticResource RadiusMd}" Padding="{StaticResource Inset12x4}"
+                                  AutomationProperties.Name="Add line item">
                             <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
                               <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" />
                               <TextBlock Text="Add Line Item" />
@@ -357,7 +358,8 @@
                                 Style="{StaticResource MaterialOutlinedButtonStyle}"
                                 BorderBrush="{StaticResource AppBarAccentInvariantBrush}"
                                 MinHeight="{StaticResource TouchTarget}"
-                                CornerRadius="{StaticResource RadiusMd}" Padding="{StaticResource Inset12x4}">
+                                CornerRadius="{StaticResource RadiusMd}" Padding="{StaticResource Inset12x4}"
+                                AutomationProperties.Name="Add from catalog">
                           <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
                             <FontIcon Glyph="&#xE8F1;" FontSize="{StaticResource IconSizeSm}" />
                             <TextBlock Text="From Catalog" />
@@ -395,7 +397,8 @@
                                AcceptsReturn="True"
                                MinHeight="{StaticResource NotesMinHeight}"
                                Margin="{StaticResource Inset16}"
-                               Visibility="{Binding DataContext.IsEditMode, ElementName=DetailRoot, Converter={StaticResource BoolToVisibilityConverter}}" />
+                               Visibility="{Binding DataContext.IsEditMode, ElementName=DetailRoot, Converter={StaticResource BoolToVisibilityConverter}}"
+                               AutomationProperties.Name="Notes for the client" />
                     </StackPanel>
                   </utu:CardContentControl>
 
@@ -589,10 +592,12 @@
               <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}" HorizontalAlignment="Center">
                 <Button Content="Back"
                         Command="{Binding DataContext.BackToList, ElementName=DetailRoot}"
-                        Style="{StaticResource MaterialTextButtonStyle}" />
+                        Style="{StaticResource MaterialTextButtonStyle}"
+                        AutomationProperties.Name="Back to quotes" />
                 <Button Content="Retry"
                         Command="{Binding DataContext.Refresh, ElementName=DetailRoot}"
-                        Style="{StaticResource MaterialOutlinedButtonStyle}" />
+                        Style="{StaticResource MaterialOutlinedButtonStyle}"
+                        AutomationProperties.Name="Retry loading the quote" />
               </StackPanel>
             </StackPanel>
           </DataTemplate>
@@ -944,10 +949,12 @@
               <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}" HorizontalAlignment="Center">
                 <Button Content="Back to Detail"
                         Command="{Binding DataContext.BackToDetail, ElementName=DetailRoot}"
-                        Style="{StaticResource MaterialTextButtonStyle}" />
+                        Style="{StaticResource MaterialTextButtonStyle}"
+                        AutomationProperties.Name="Back to detail view" />
                 <Button Content="Retry"
                         Command="{Binding DataContext.Refresh, ElementName=DetailRoot}"
-                        Style="{StaticResource MaterialOutlinedButtonStyle}" />
+                        Style="{StaticResource MaterialOutlinedButtonStyle}"
+                        AutomationProperties.Name="Retry the preview" />
               </StackPanel>
             </StackPanel>
           </DataTemplate>

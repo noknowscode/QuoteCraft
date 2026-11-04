@@ -40,7 +40,8 @@
         <Button Command="{Binding NextStep}"
                 Style="{StaticResource AccentButtonStyle}"
                 HorizontalAlignment="Center"
-                Padding="{StaticResource ButtonInsetWide}" Margin="{StaticResource GapTop8}">
+                Padding="{StaticResource ButtonInsetWide}" Margin="{StaticResource GapTop8}"
+                AutomationProperties.Name="Get started">
           <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
             <TextBlock Text="Get Started" Style="{StaticResource LabelLargeSemiBold}"
                        Foreground="{StaticResource OnAccentFixedBrush}" />
@@ -53,7 +54,8 @@
                 Style="{StaticResource MaterialTextButtonStyle}"
                 MinHeight="{StaticResource TouchTarget}"
                 HorizontalAlignment="Center"
-                Content="Skip for now" />
+                Content="Skip for now"
+                AutomationProperties.Name="Skip for now" />
       </StackPanel>
 
       <!-- Step 2: Business Info -->
@@ -80,18 +82,22 @@
 
         <TextBox Header="Business Name"
                  Text="{Binding BusinessName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                 PlaceholderText="e.g. Smith Plumbing LLC" />
+                 PlaceholderText="e.g. Smith Plumbing LLC"
+                 AutomationProperties.Name="Business name" />
         <TextBox Header="Phone"
                  Text="{Binding Phone, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                  PlaceholderText="(555) 123-4567"
-                 InputScope="TelephoneNumber" />
+                 InputScope="TelephoneNumber"
+                 AutomationProperties.Name="Phone" />
         <TextBox Header="Email"
                  Text="{Binding Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                  PlaceholderText="you@yourbusiness.com"
-                 InputScope="EmailSmtpAddress" />
+                 InputScope="EmailSmtpAddress"
+                 AutomationProperties.Name="Email" />
         <TextBox Header="Address (optional)"
                  Text="{Binding Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                 PlaceholderText="123 Trade St, Anytown USA" />
+                 PlaceholderText="123 Trade St, Anytown USA"
+                 AutomationProperties.Name="Address" />
 
         <!-- What stops the step (a string state binds directly; a FeedView over it never renders) -->
         <TextBlock Text="{Binding ValidationError}"
@@ -109,9 +115,11 @@
           <Button Command="{Binding PreviousStep}"
                   Style="{StaticResource MaterialOutlinedButtonStyle}"
                   MinHeight="{StaticResource TouchTarget}"
-                  CornerRadius="{StaticResource RadiusMd}" Content="Back" />
+                  CornerRadius="{StaticResource RadiusMd}" Content="Back"
+                  AutomationProperties.Name="Back to welcome" />
           <Button Grid.Column="1" Command="{Binding NextStep}"
-                  Style="{StaticResource AccentButtonStyle}">
+                  Style="{StaticResource AccentButtonStyle}"
+                  AutomationProperties.Name="Next: quote settings">
             <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
               <TextBlock Text="Next" Style="{StaticResource LabelLargeSemiBold}"
                          Foreground="{StaticResource OnAccentFixedBrush}" />
@@ -158,18 +166,21 @@
           <TextBox Header="Default Tax Rate (%)"
                    Grid.ColumnSpan="{utu:Responsive Narrow=2, Normal=1}"
                    Text="{Binding TaxRate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                   InputScope="Number" />
+                   InputScope="Number"
+                   AutomationProperties.Name="Default tax rate (%)" />
           <TextBox Grid.Row="{utu:Responsive Narrow=1, Normal=0}"
                    Grid.Column="{utu:Responsive Narrow=0, Normal=1}"
                    Grid.ColumnSpan="{utu:Responsive Narrow=2, Normal=1}"
                    Header="Quote Valid For (days)"
                    Text="{Binding ValidDays, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                   InputScope="Number" />
+                   InputScope="Number"
+                   AutomationProperties.Name="Quote valid for (days)" />
         </Grid>
 
         <TextBox Header="Quote Number Prefix"
                  Text="{Binding QuotePrefix, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                 PlaceholderText="QC-" />
+                 PlaceholderText="QC-"
+                 AutomationProperties.Name="Quote number prefix" />
 
         <!-- Catalog note (a Grid, so the text wraps: a horizontal StackPanel gives it unlimited width) -->
         <utu:CardContentControl Style="{StaticResource TonalCardStyle}" Padding="{StaticResource Inset16x12}">
@@ -208,9 +219,11 @@
           <Button Command="{Binding PreviousStep}"
                   Style="{StaticResource MaterialOutlinedButtonStyle}"
                   MinHeight="{StaticResource TouchTarget}"
-                  CornerRadius="{StaticResource RadiusMd}" Content="Back" />
+                  CornerRadius="{StaticResource RadiusMd}" Content="Back"
+                  AutomationProperties.Name="Back to your business" />
           <Button Grid.Column="1" Command="{Binding Complete}"
-                  Style="{StaticResource AccentButtonStyle}">
+                  Style="{StaticResource AccentButtonStyle}"
+                  AutomationProperties.Name="Create first quote">
             <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
               <TextBlock Text="Create First Quote" Style="{StaticResource LabelLargeSemiBold}"
                          Foreground="{StaticResource OnAccentFixedBrush}" />

@@ -14,13 +14,15 @@
 
     <TextBox Header="Description"
              Text="{Binding Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-             PlaceholderText="e.g. Kitchen faucet installation" />
+             PlaceholderText="e.g. Kitchen faucet installation"
+             AutomationProperties.Name="Description" />
 
     <!-- The business's currency, the user's number format -->
     <TextBox Header="{Binding UnitPriceHeader}"
              PlaceholderText="{Binding UnitPricePlaceholder}"
              Text="{Binding UnitPrice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-             InputScope="Number" />
+             InputScope="Number"
+             AutomationProperties.Name="Unit price" />
 
     <!-- Quantity with -/+ -->
     <Grid ColumnSpacing="{StaticResource Space8}">
@@ -38,7 +40,8 @@
                Header="Quantity"
                Text="{Binding Quantity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                HorizontalAlignment="Stretch" TextAlignment="Center"
-               InputScope="Number" />
+               InputScope="Number"
+               AutomationProperties.Name="Quantity" />
       <Button Content="+" Command="{Binding IncreaseQuantity}" Grid.Column="2"
               AutomationProperties.Name="Increase quantity"
               Style="{StaticResource MaterialOutlinedButtonStyle}"
@@ -80,10 +83,11 @@
       <Button Content="Delete" Command="{Binding Delete}"
               Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}"
               Style="{StaticResource MaterialTextButtonStyle}"
-              Foreground="{ThemeResource ErrorBrush}" />
+              Foreground="{ThemeResource ErrorBrush}"
+              AutomationProperties.Name="Delete line item" />
       <!-- xaml-lint: allow backbar - a dialog Cancel that closes the dialog, not a page back bar -->
-      <Button Grid.Column="2" Content="Cancel" uen:Navigation.Request="-" Style="{StaticResource MaterialTextButtonStyle}" />
-      <Button Grid.Column="3" Content="Save" Command="{Binding Save}" Style="{StaticResource MaterialFilledButtonStyle}" />
+      <Button Grid.Column="2" Content="Cancel" uen:Navigation.Request="-" Style="{StaticResource MaterialTextButtonStyle}" AutomationProperties.Name="Cancel" />
+      <Button Grid.Column="3" Content="Save" Command="{Binding Save}" Style="{StaticResource MaterialFilledButtonStyle}" AutomationProperties.Name="Save line item" />
     </Grid>
   </StackPanel>
 </ContentDialog>

@@ -96,7 +96,8 @@
         <!-- Quote Title -->
         <TextBox Header="Quote Title"
                  Text="{Binding Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                 PlaceholderText="e.g. Kitchen Renovation" />
+                 PlaceholderText="e.g. Kitchen Renovation"
+                 AutomationProperties.Name="Quote title" />
 
         <!-- Client Name (Material text field, like the fields around it) -->
         <AutoSuggestBox
@@ -112,7 +113,8 @@
         <TextBox Header="Tax Rate (%)"
                  Text="{Binding TaxRate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                  PlaceholderText="13"
-                 InputScope="Number" />
+                 InputScope="Number"
+                 AutomationProperties.Name="Tax rate (%)" />
 
         <!-- Line Items Section (the actions go under the heading on Narrow) -->
         <Grid utu:AutoLayout.PrimaryAlignment="Stretch"
@@ -135,7 +137,8 @@
                       Orientation="Horizontal" Spacing="{StaticResource Space4}">
             <Button Command="{Binding OpenCatalog}"
                     Style="{StaticResource MaterialTextButtonStyle}"
-                    MinHeight="{StaticResource TouchTarget}">
+                    MinHeight="{StaticResource TouchTarget}"
+                    AutomationProperties.Name="Add from catalog">
               <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space4}">
                 <FontIcon Glyph="&#xE82D;" FontSize="{StaticResource IconSizeMd}" />
                 <TextBlock Text="From Catalog" />
@@ -143,7 +146,8 @@
             </Button>
             <Button Command="{Binding AddLineItem}"
                     Style="{StaticResource MaterialTextButtonStyle}"
-                    MinHeight="{StaticResource TouchTarget}">
+                    MinHeight="{StaticResource TouchTarget}"
+                    AutomationProperties.Name="Add line item">
               <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space4}">
                 <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeMd}" />
                 <TextBlock Text="Add Item" />
@@ -266,7 +270,8 @@
                 <Button Content="Retry"
                         Command="{Binding DataContext.Reload, ElementName=EditorRoot}"
                         Style="{StaticResource MaterialOutlinedButtonStyle}"
-                        HorizontalAlignment="Center" />
+                        HorizontalAlignment="Center"
+                        AutomationProperties.Name="Retry loading line items" />
               </StackPanel>
             </DataTemplate>
           </mvux:FeedView.ErrorTemplate>
@@ -327,7 +332,8 @@
                   Command="{Binding AddPhoto}"
                   Style="{StaticResource MaterialFilledTonalButtonStyle}"
                   MinHeight="{StaticResource TouchTarget}"
-                  VerticalAlignment="Center">
+                  VerticalAlignment="Center"
+                  AutomationProperties.Name="Add photo">
             <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
               <FontIcon Glyph="&#xE722;" FontSize="{StaticResource IconSizeMd}" />
               <TextBlock Text="Add Photo" />
@@ -398,7 +404,8 @@
                 <Button Content="Retry"
                         Command="{Binding DataContext.Reload, ElementName=EditorRoot}"
                         Style="{StaticResource MaterialOutlinedButtonStyle}"
-                        HorizontalAlignment="Center" />
+                        HorizontalAlignment="Center"
+                        AutomationProperties.Name="Retry loading photos" />
               </StackPanel>
             </DataTemplate>
           </mvux:FeedView.ErrorTemplate>
@@ -410,7 +417,8 @@
                  PlaceholderText="Additional notes for the client"
                  AcceptsReturn="True"
                  TextWrapping="Wrap"
-                 MinHeight="{StaticResource NotesMinHeight}" />
+                 MinHeight="{StaticResource NotesMinHeight}"
+                 AutomationProperties.Name="Notes" />
 
         <!-- Export PDF -->
         <Button Content="Export PDF"
@@ -418,7 +426,8 @@
                 HorizontalAlignment="Stretch"
                 MinHeight="{StaticResource TouchTarget}"
                 Style="{StaticResource MaterialFilledTonalButtonStyle}"
-                Margin="{StaticResource GapTop8}" />
+                Margin="{StaticResource GapTop8}"
+                AutomationProperties.Name="Export PDF" />
 
         <!-- Status Actions (stacked full width on Narrow) -->
         <TextBlock Text="Status Actions"
@@ -432,17 +441,20 @@
                   Command="{Binding MarkSent}"
                   HorizontalAlignment="{utu:Responsive Narrow=Stretch, Normal=Left}"
                   MinHeight="{StaticResource TouchTarget}"
-                  Style="{StaticResource MaterialOutlinedButtonStyle}" />
+                  Style="{StaticResource MaterialOutlinedButtonStyle}"
+                  AutomationProperties.Name="Mark as sent" />
           <Button Content="Accepted"
                   Command="{Binding MarkAccepted}"
                   HorizontalAlignment="{utu:Responsive Narrow=Stretch, Normal=Left}"
                   MinHeight="{StaticResource TouchTarget}"
-                  Style="{StaticResource MaterialFilledButtonStyle}" />
+                  Style="{StaticResource MaterialFilledButtonStyle}"
+                  AutomationProperties.Name="Mark as accepted" />
           <Button Content="Declined"
                   Command="{Binding MarkDeclined}"
                   HorizontalAlignment="{utu:Responsive Narrow=Stretch, Normal=Left}"
                   MinHeight="{StaticResource TouchTarget}"
-                  Style="{StaticResource MaterialOutlinedButtonStyle}" />
+                  Style="{StaticResource MaterialOutlinedButtonStyle}"
+                  AutomationProperties.Name="Mark as declined" />
         </StackPanel>
 
         <!-- Status history (PRD F3.4), one line per change -->

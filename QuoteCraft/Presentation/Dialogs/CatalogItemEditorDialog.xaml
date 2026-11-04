@@ -13,11 +13,13 @@
 
     <TextBox Header="Description"
              Text="{Binding Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-             PlaceholderText="Item description" />
+             PlaceholderText="Item description"
+             AutomationProperties.Name="Description" />
     <TextBox Header="{Binding UnitPriceHeader}"
              PlaceholderText="{Binding UnitPricePlaceholder}"
              Text="{Binding UnitPrice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-             InputScope="Number" />
+             InputScope="Number"
+             AutomationProperties.Name="Unit price" />
     <!-- A category from the list, or a new one typed in -->
     <ComboBox Header="Category"
               IsEditable="True"
@@ -25,7 +27,8 @@
               SelectedItem="{Binding InitialCategory, Mode=OneTime}"
               Text="{Binding Category, Mode=TwoWay}"
               PlaceholderText="e.g. Plumbing, Electrical, Painting"
-              HorizontalAlignment="Stretch" />
+              HorizontalAlignment="Stretch"
+              AutomationProperties.Name="Category" />
 
     <TextBlock Text="{Binding ValidationError}"
                Style="{StaticResource BodySmall}"
@@ -44,10 +47,11 @@
       <Button Content="Delete Item" Command="{Binding Delete}"
               Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}"
               Style="{StaticResource MaterialTextButtonStyle}"
-              Foreground="{ThemeResource ErrorBrush}" />
+              Foreground="{ThemeResource ErrorBrush}"
+              AutomationProperties.Name="Delete item" />
       <!-- xaml-lint: allow backbar - a dialog Cancel that closes the dialog, not a page back bar -->
-      <Button Grid.Column="2" Content="Cancel" uen:Navigation.Request="-" Style="{StaticResource MaterialTextButtonStyle}" />
-      <Button Grid.Column="3" Content="Save" Command="{Binding Save}" Style="{StaticResource MaterialFilledButtonStyle}" />
+      <Button Grid.Column="2" Content="Cancel" uen:Navigation.Request="-" Style="{StaticResource MaterialTextButtonStyle}" AutomationProperties.Name="Cancel" />
+      <Button Grid.Column="3" Content="Save" Command="{Binding Save}" Style="{StaticResource MaterialFilledButtonStyle}" AutomationProperties.Name="Save item" />
     </Grid>
   </StackPanel>
 </ContentDialog>

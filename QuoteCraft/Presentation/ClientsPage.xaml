@@ -296,7 +296,8 @@
                                Foreground="{ThemeResource OnSurfaceVariantBrush}" />
                     <Button Command="{Binding DataContext.AddClient, ElementName=ClientsRoot}"
                             Style="{StaticResource AccentButtonStyle}"
-                            HorizontalAlignment="Center" Margin="{StaticResource GapTop8}">
+                            HorizontalAlignment="Center" Margin="{StaticResource GapTop8}"
+                            AutomationProperties.Name="Add client">
                       <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
                         <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource OnAccentFixedBrush}" />
                         <TextBlock Text="Add Client" Foreground="{StaticResource OnAccentFixedBrush}" Style="{StaticResource LabelLargeSemiBold}" />
@@ -325,7 +326,8 @@
                     <Button Content="Retry"
                             Command="{Binding DataContext.RefreshList, ElementName=ClientsRoot}"
                             Style="{StaticResource MaterialOutlinedButtonStyle}"
-                            HorizontalAlignment="Center" />
+                            HorizontalAlignment="Center"
+                            AutomationProperties.Name="Retry loading clients" />
                   </StackPanel>
                 </DataTemplate>
               </mvux:FeedView.ErrorTemplate>
@@ -584,10 +586,12 @@
               <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}" HorizontalAlignment="Center">
                 <Button Content="Back"
                         Command="{Binding DataContext.BackToList, ElementName=ClientsRoot}"
-                        Style="{StaticResource MaterialTextButtonStyle}" />
+                        Style="{StaticResource MaterialTextButtonStyle}"
+                        AutomationProperties.Name="Back to clients" />
                 <Button Content="Retry"
                         Command="{Binding DataContext.RefreshList, ElementName=ClientsRoot}"
-                        Style="{StaticResource MaterialOutlinedButtonStyle}" />
+                        Style="{StaticResource MaterialOutlinedButtonStyle}"
+                        AutomationProperties.Name="Retry loading the client" />
               </StackPanel>
             </StackPanel>
           </DataTemplate>

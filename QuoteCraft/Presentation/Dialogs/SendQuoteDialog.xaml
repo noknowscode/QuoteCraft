@@ -14,16 +14,19 @@
       <TextBox Header="Recipient Email"
                Text="{Binding Recipient, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                PlaceholderText="client@example.com"
-               InputScope="EmailSmtpAddress" />
+               InputScope="EmailSmtpAddress"
+               AutomationProperties.Name="Recipient email" />
       <TextBox Header="Subject"
-               Text="{Binding Subject, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+               Text="{Binding Subject, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+               AutomationProperties.Name="Subject" />
       <TextBox Header="Message"
                Text="{Binding Body, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                AcceptsReturn="True"
                TextWrapping="Wrap"
                MinHeight="{StaticResource MessageMinHeight}"
                MaxHeight="{StaticResource MessageMinHeight}"
-               ScrollViewer.VerticalScrollBarVisibility="Auto" />
+               ScrollViewer.VerticalScrollBarVisibility="Auto"
+               AutomationProperties.Name="Message" />
 
       <utu:CardContentControl Style="{StaticResource TonalCardStyle}"
                               Background="{ThemeResource TertiaryContainerBrush}"
@@ -41,11 +44,12 @@
       <!-- Three actions do not fit side by side in a phone's dialog: Download PDF Only gets its own row -->
       <Button Content="Download PDF Only" Command="{Binding DownloadPdfOnly}"
               Style="{StaticResource MaterialOutlinedButtonStyle}"
-              HorizontalAlignment="Stretch" Margin="{StaticResource GapTop8}" />
+              HorizontalAlignment="Stretch" Margin="{StaticResource GapTop8}"
+              AutomationProperties.Name="Download PDF only" />
       <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}" HorizontalAlignment="Right">
         <!-- xaml-lint: allow backbar - a dialog Cancel that closes the dialog, not a page back bar -->
-        <Button Content="Cancel" uen:Navigation.Request="-" Style="{StaticResource MaterialTextButtonStyle}" />
-        <Button Content="Send via Email" Command="{Binding SendByEmail}" Style="{StaticResource MaterialFilledButtonStyle}" />
+        <Button Content="Cancel" uen:Navigation.Request="-" Style="{StaticResource MaterialTextButtonStyle}" AutomationProperties.Name="Cancel" />
+        <Button Content="Send via Email" Command="{Binding SendByEmail}" Style="{StaticResource MaterialFilledButtonStyle}" AutomationProperties.Name="Send via email" />
       </StackPanel>
     </StackPanel>
 </ContentDialog>

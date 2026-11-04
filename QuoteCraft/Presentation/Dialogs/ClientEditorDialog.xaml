@@ -13,21 +13,25 @@
 
     <TextBox Header="Name"
              Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-             PlaceholderText="Client or business name" />
+             PlaceholderText="Client or business name"
+             AutomationProperties.Name="Client name" />
     <TextBox Header="Email"
              Text="{Binding Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
              PlaceholderText="email@example.com"
-             InputScope="EmailSmtpAddress" />
+             InputScope="EmailSmtpAddress"
+             AutomationProperties.Name="Client email" />
     <TextBox Header="Phone"
              Text="{Binding Phone, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
              PlaceholderText="(555) 123-4567"
-             InputScope="TelephoneNumber" />
+             InputScope="TelephoneNumber"
+             AutomationProperties.Name="Client phone" />
     <TextBox Header="Address"
              Text="{Binding Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
              PlaceholderText="Street, City, State/Province"
              AcceptsReturn="True"
              TextWrapping="Wrap"
-             MinHeight="{StaticResource NotesMinHeight}" />
+             MinHeight="{StaticResource NotesMinHeight}"
+             AutomationProperties.Name="Client address" />
 
     <TextBlock Text="{Binding ValidationError}"
                Style="{StaticResource BodySmall}"
@@ -38,8 +42,8 @@
 
     <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}" HorizontalAlignment="Right">
       <!-- xaml-lint: allow backbar - a dialog Cancel that closes the dialog, not a page back bar -->
-      <Button Content="Cancel" uen:Navigation.Request="-" Style="{StaticResource MaterialTextButtonStyle}" />
-      <Button Content="Save" Command="{Binding Save}" Style="{StaticResource MaterialFilledButtonStyle}" />
+      <Button Content="Cancel" uen:Navigation.Request="-" Style="{StaticResource MaterialTextButtonStyle}" AutomationProperties.Name="Cancel" />
+      <Button Content="Save" Command="{Binding Save}" Style="{StaticResource MaterialFilledButtonStyle}" AutomationProperties.Name="Save client" />
     </StackPanel>
   </StackPanel>
 </ContentDialog>
