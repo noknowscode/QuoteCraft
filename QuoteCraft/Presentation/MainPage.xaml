@@ -9,8 +9,9 @@
       Background="{ThemeResource BackgroundBrush}">
 
   <!--
-    Shell per category: Narrow and Normal (below 800) put the four destinations in a bottom tab bar; Wide and Widest
-    show the side rail with labels, notifications, the theme menu and the collapse toggle.
+    Shell per category: Narrow and Normal (below 800) put the four destinations and Alerts (the notifications drawer) in a
+    bottom tab bar; Wide and Widest show the side rail with labels, notifications, the theme menu and the collapse
+    toggle.
     The visual states below come from MainModel.ShellState.
   -->
   <Grid uen:Region.Attached="True">
@@ -114,6 +115,19 @@
                       Style="{StaticResource MaterialBottomTabBarItemStyle}">
         <utu:TabBarItem.Icon>
           <FontIcon Glyph="&#xE7BF;" />
+        </utu:TabBarItem.Icon>
+      </utu:TabBarItem>
+
+      <!-- Notifications below 800 px (the rail's bell is hidden there): opens the drawer, so it is not a destination -->
+      <utu:TabBarItem Command="{Binding OpenNotifications}"
+                      Content="Alerts"
+                      AutomationProperties.Name="Notifications"
+                      IsSelectable="False"
+                      BadgeValue="{Binding UnreadBadge}"
+                      BadgeVisibility="{Binding HasUnreadNotifications, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}"
+                      Style="{StaticResource MaterialBottomTabBarItemStyle}">
+        <utu:TabBarItem.Icon>
+          <FontIcon Glyph="&#xEA8F;" />
         </utu:TabBarItem.Icon>
       </utu:TabBarItem>
 

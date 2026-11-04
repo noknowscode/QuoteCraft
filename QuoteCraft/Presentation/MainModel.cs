@@ -55,6 +55,18 @@ public partial record MainModel
 
     public IFeed<int> UnreadNotificationCount => Feed.AsyncEnumerable(WatchUnreadCountAsync);
 
+    /// <summary>The bottom tab's badge: shown while anything is unread, with the count (99+ above 99).</summary>
+    public IFeed<bool> HasUnreadNotifications => UnreadNotificationCount.Select(count => count > 0);
+
+    public IFeed<string> UnreadBadge => UnreadNotificationCount.Select(count => count > 99 ? "99+" : count.ToString(System.Globalization.CultureInfo.CurrentCulture));
+
+    /// <summary>
+    /// The notifications drawer (route <c>!Notifications</c>, D15): from the rail's bell from 800 px, and from the
+    /// bottom tab bar's Alerts item below, where the rail is hidden.
+    /// </summary>
+    public async ValueTask OpenNotifications(CancellationToken ct) =>
+        await _navigator.NavigateRouteAsync(this, "Notifications", qualifier: Qualifiers.Dialog, cancellation: ct);
+
     /// <summary>The page's visual states (MainPage.xaml): the rail expanded or collapsed, the offline banner.</summary>
     public IFeed<string> ShellState => Feed.Combine(IsRailCollapsed, IsOnline)
         .Select(s => string.Join(',', s.Item1 ? "RailCollapsed" : "RailExpanded", s.Item2 ? "Online" : "Offline"));
