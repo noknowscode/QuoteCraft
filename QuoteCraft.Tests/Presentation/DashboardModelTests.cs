@@ -1,5 +1,8 @@
+using Microsoft.Extensions.Logging.Abstractions;
 using QuoteCraft.Models;
 using QuoteCraft.Presentation;
+using QuoteCraft.Services;
+using QuoteCraft.Tests.Data;
 using Uno.Extensions.Reactive;
 using Xunit;
 using static QuoteCraft.Tests.Presentation.ModelHarness;
@@ -162,5 +165,28 @@ public class DashboardModelTests
 
         Assert.Null(h.Board.Current.OpenQuoteId);
         Assert.False(await model.IsQuoteOpen);
+    }
+
+    [Fact]
+    public async Task The_first_load_expires_overdue_quotes_once_while_the_expiry_check_runs_too()
+    {
+        using var h = new ModelHarness();
+        var overdue = await h.AddQuoteAsync("Boiler", QuoteStatus.Sent, validUntil: DateTimeOffset.UtcNow.AddDays(-1));
+        // One status service, as the app registers it, with reads slow enough for the five runs to overlap.
+        var status = new QuoteStatusService(new SlowExpiryReads(h.Db.Quotes), h.Db.History, h.Db.Profiles);
+        var expiry = new QuoteExpiryService(h.Db.Quotes, status, h.Notifications, NullLogger<QuoteExpiryService>.Instance);
+        var model = new DashboardModel(h.Navigator, h.Db.Quotes, h.FeatureGate, status, h.Board);
+        _ = (await model.SelectedFilter, await model.SearchText, await model.ActionError);
+
+        // The list, the total, the counts and the analytics all ask on the page's first load; the timer checks at launch.
+        await Task.WhenAll(
+            Task.Run(async () => await model.Quotes),
+            Task.Run(async () => await model.TotalCount),
+            Task.Run(async () => await model.StatusCounts),
+            Task.Run(async () => await model.Analytics),
+            Task.Run(expiry.CheckExpirationsAsync));
+
+        Assert.Equal(1, (await model.StatusCounts)!.Expired);
+        Assert.Equal(["Expired"], (await h.Db.History.GetByQuoteIdAsync(overdue.Id)).Select(e => e.Status));
     }
 }

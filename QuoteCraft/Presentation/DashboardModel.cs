@@ -53,24 +53,34 @@ public partial record DashboardModel
     /// <summary>True while a quote is open: its detail covers the list below 1080 px and fills the detail column above.</summary>
     public IFeed<bool> IsQuoteOpen => Board.Select(b => b.OpenQuoteId is not null);
 
-    // The quotes, read once per change and shared by the list, the counts and the analytics.
+    // The quotes, read once per change and shared by the list, the counts and the analytics. The four feeds ask at
+    // once on the page's first load, so one reads (and expires overdue quotes) while the others wait for its list.
+    private readonly SemaphoreSlim _cacheGate = new(1, 1);
     private List<QuoteEntity>? _cachedQuotes;
     private int _cachedVersion = -1;
 
     private async Task<List<QuoteEntity>> GetCachedQuotesAsync(int version)
     {
-        if (_cachedQuotes is not null && _cachedVersion == version)
+        await _cacheGate.WaitAsync();
+        try
         {
+            if (_cachedQuotes is not null && _cachedVersion == version)
+            {
+                return _cachedQuotes;
+            }
+            if (_cachedQuotes is null)
+            {
+                // Overdue quotes expire as the list first opens (the expiry service also checks every few minutes).
+                await ErrorReporter.RunQuietlyAsync("Expiring overdue quotes", () => _status.ExpireOverdueAsync(DateTimeOffset.UtcNow));
+            }
+            _cachedQuotes = await _quoteRepo.GetAllAsync();
+            _cachedVersion = version;
             return _cachedQuotes;
         }
-        if (_cachedQuotes is null)
+        finally
         {
-            // Overdue quotes expire as the list first opens (the expiry service also checks every few minutes).
-            await ErrorReporter.RunQuietlyAsync("Expiring overdue quotes", () => _status.ExpireOverdueAsync(DateTimeOffset.UtcNow));
+            _cacheGate.Release();
         }
-        _cachedQuotes = await _quoteRepo.GetAllAsync();
-        _cachedVersion = version;
-        return _cachedQuotes;
     }
 
     private IListFeed<QuoteListItem>? _quotesFeed;

@@ -55,6 +55,32 @@ public class QuoteLifecycleTests
     }
 
     [Fact]
+    public async Task Expiry_asked_for_from_several_places_at_once_expires_each_quote_once()
+    {
+        using var test = new TestDatabase();
+        var overdue = new[]
+        {
+            await AddAsync(test, QuoteStatus.Sent, Now.AddDays(-1)),
+            await AddAsync(test, QuoteStatus.Sent, Now.AddDays(-2)),
+            await AddAsync(test, QuoteStatus.Viewed, Now.AddDays(-3)),
+        };
+        // The app's service (the Quotes list's four feeds and the expiry timer share it), and a second one over the same
+        // database, as another instance of the app would have; their reads are slow enough for the runs to overlap.
+        var slow = new SlowExpiryReads(test.Quotes);
+        var app = new QuoteStatusService(slow, test.History, test.Profiles);
+        var other = new QuoteStatusService(slow, test.History, test.Profiles);
+
+        var runs = await Task.WhenAll(Enumerable.Range(0, 8).Select(i => Task.Run(() => (i % 4 == 3 ? other : app).ExpireOverdueAsync(Now))));
+
+        Assert.Equal(overdue.Select(q => q.Id).Order(), runs.SelectMany(r => r).Select(q => q.Id).Order());
+        foreach (var quote in overdue)
+        {
+            Assert.Equal(QuoteStatus.Expired, (await test.Quotes.GetByIdAsync(quote.Id))!.Status);
+            Assert.Equal(["Expired"], (await test.History.GetByQuoteIdAsync(quote.Id)).Select(e => e.Status));
+        }
+    }
+
+    [Fact]
     public async Task Sending_starts_the_validity_period_so_the_quote_does_not_expire_at_once()
     {
         using var test = new TestDatabase();

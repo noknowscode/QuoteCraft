@@ -16,6 +16,9 @@ public interface IQuoteRepository
     Task<List<LineItemEntity>> GetLineItemsAsync(string quoteId);
     Task<int> CountCreatedSinceAsync(DateTimeOffset since);
     Task<List<QuoteEntity>> GetExpirableAsync(DateTimeOffset now);
+
+    /// <summary>Marks a Sent or Viewed quote Expired; false when it is no longer Sent or Viewed (or is gone).</summary>
+    Task<bool> MarkExpiredAsync(string id);
 }
 
 public class QuoteRepository : IQuoteRepository
@@ -277,6 +280,21 @@ public class QuoteRepository : IQuoteRepository
         cmd.CommandText = "SELECT COUNT(*) FROM quotes WHERE is_deleted = 0 AND created_at >= @since";
         cmd.Parameters.AddWithValue("@since", since.ToString("O"));
         return Convert.ToInt32(await cmd.ExecuteScalarAsync());
+    }
+
+    public async Task<bool> MarkExpiredAsync(string id)
+    {
+        await using var conn = await _db.OpenConnectionAsync();
+
+        // Only from Sent or Viewed, in one statement: a second expiry of the same quote changes nothing.
+        var cmd = conn.CreateCommand();
+        cmd.CommandText = """
+            UPDATE quotes SET status = 'Expired', updated_at = @updated_at
+            WHERE id = @id AND is_deleted = 0 AND status IN ('Sent', 'Viewed')
+            """;
+        cmd.Parameters.AddWithValue("@id", id);
+        cmd.Parameters.AddWithValue("@updated_at", DateTimeOffset.UtcNow.ToString("O"));
+        return await cmd.ExecuteNonQueryAsync() == 1;
     }
 
     /// <summary>Sent and Viewed quotes valid until before <paramref name="now"/>; a Draft never expires.</summary>

@@ -16,6 +16,7 @@ public class QuoteStatusService
     private readonly IQuoteRepository _quoteRepo;
     private readonly IStatusHistoryRepository _history;
     private readonly IBusinessProfileRepository _profileRepo;
+    private readonly SemaphoreSlim _expiryGate = new(1, 1);
 
     public QuoteStatusService(IQuoteRepository quoteRepo, IStatusHistoryRepository history, IBusinessProfileRepository profileRepo)
     {
@@ -74,17 +75,32 @@ public class QuoteStatusService
             : quote;
     }
 
-    /// <summary>Sent and Viewed quotes past their valid-until date become Expired.</summary>
+    /// <summary>
+    /// Sent and Viewed quotes past their valid-until date become Expired, each with one Expired line in its history.
+    /// The Quotes list and <see cref="QuoteExpiryService"/> both ask for it, at times at once: one run goes at a time,
+    /// and a quote another run has expired already is left alone, so the history never gets a second line.
+    /// </summary>
+    /// <returns>The quotes this run expired.</returns>
     public async Task<IReadOnlyList<QuoteEntity>> ExpireOverdueAsync(DateTimeOffset now)
     {
-        var overdue = await _quoteRepo.GetExpirableAsync(now);
-        foreach (var quote in overdue)
+        await _expiryGate.WaitAsync();
+        try
         {
-            quote.Status = QuoteStatus.Expired;
-            quote.UpdatedAt = DateTimeOffset.UtcNow;
-            await _quoteRepo.SaveAsync(quote);
-            await _history.RecordAsync(quote.Id, nameof(QuoteStatus.Expired), "system");
+            var expired = new List<QuoteEntity>();
+            foreach (var quote in await _quoteRepo.GetExpirableAsync(now))
+            {
+                if (await _quoteRepo.MarkExpiredAsync(quote.Id))
+                {
+                    await _history.RecordAsync(quote.Id, nameof(QuoteStatus.Expired), "system");
+                    quote.Status = QuoteStatus.Expired;
+                    expired.Add(quote);
+                }
+            }
+            return expired;
         }
-        return overdue;
+        finally
+        {
+            _expiryGate.Release();
+        }
     }
 }
