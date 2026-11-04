@@ -299,8 +299,12 @@ public partial class App : Application
                     && onboarding.DataContext is OnboardingViewModel { Model: { } model })
                 {
                     await Task.Delay(1000);
-                    await model.NextStep(CancellationToken.None);
-                    await model.NextStep(CancellationToken.None);
+                    // One step per press, as a user would wait: a second press racing the first read step 1 again.
+                    for (var press = 0; press < 10 && await model.CurrentStep < 3; press++)
+                    {
+                        await model.NextStep(CancellationToken.None);
+                        await Task.Delay(300);
+                    }
                     if (parts[1] == "complete")
                     {
                         await model.Complete(CancellationToken.None);
