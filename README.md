@@ -190,8 +190,6 @@ The project uses the following [Uno SDK features](https://aka.platform.uno/singl
 | Navigation | Region-based declarative navigation |
 | Hosting | Microsoft.Extensions dependency injection |
 | Configuration | App configuration and settings |
-| Http | HTTP client integration |
-| Serialization | JSON serialization |
 | Logging | Structured logging |
 | SkiaRenderer | Cross-platform Skia rendering backend |
 

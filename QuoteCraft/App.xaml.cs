@@ -79,7 +79,6 @@ public partial class App : Application
                         .EmbeddedSource<App>()
                         .Section<Data.Remote.SupabaseOptions>("Supabase")
                 )
-                .UseHttp()
                 .ConfigureServices((context, services) =>
                 {
                     services.AddSingleton<AppDatabase>();

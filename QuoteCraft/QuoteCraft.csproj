@@ -36,8 +36,6 @@
       Logging;
       MVUX;
       Configuration;
-      Http;
-      Serialization;
       Navigation;
       SkiaRenderer;
     </UnoFeatures>
