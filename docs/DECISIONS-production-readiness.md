@@ -378,7 +378,7 @@ and fails like any page, and the drawer keeps the page behind it in view.
 
 Tradeoff: the drawer's width is the Toolkit's `DrawerLength`, set through the Toolkit's definition-only workaround
 style (an attached-property setter in a style based on a Toolkit template is otherwise refused on WinAppSDK,
-microsoft-ui-xaml#6388). Below 420 px the drawer fills the window.
+microsoft-ui-xaml#6388). On a phone the drawer covers all but a strip of the page behind it.
 
 ## D16. Cards are `CardContentControl`s with the styles in `Styles/Cards.xaml` (owner decision, 2026-11-04)
 
@@ -396,3 +396,55 @@ Tradeoff: with the tints off, a card that can be tapped needs its states from wh
 or a button inside it, never from code-behind. On touch, a swipe that starts on a card can no longer leave a hover
 tint up. The Material card template passes its alignment to its own fill, so a fixed-size card that is centred
 shrinks its fill to its content: avatars stay `Stretch` and are placed by their parent.
+
+# A pass (2026-11-04)
+
+## D17. Cloud mode keeps D3's shape, with its two missing controls built (proposed, 2026-11-04)
+
+Decision: cloud mode stays as D3 settled it (sign-in, plans and billing appear only with a Supabase project; sync
+stays off, D8). The two gaps the completeness audit found there are small, so they are built, not cut:
+- **Sign In**: Settings' account section offers Sign In while nobody is signed in and Sign Out once someone is
+  (`SettingsModel.IsSignedIn` follows `IAuthService.AuthStateChanged`). The Auth page was reachable only through Sign
+  Out. Sign-up mode on the Auth page gets its Create Account button (the mode switch toggled a flag nothing showed).
+- **Annual billing** (PRD F13.6): the upgrade banner offers the yearly plan ($144/yr, 20% off, from
+  `docs/Revenue-Model.md`) beside the monthly one; `UpgradeToProAnnual` asks checkout for the annual interval.
+  Checkout and portal failures now say so in a dialog instead of only logging.
+
+Reason: "build small, cut large". Each gap is one control over code that already exists; cutting cloud mode would
+reopen D3, an owner decision.
+
+Tradeoff: neither control can run here (no Supabase project); they are covered by model tests (`SettingsModelTests`:
+Sign In opens `Auth`, the annual plan asks for `annual` and reports an unavailable checkout) and by code reading.
+
+## D18. Below 800 px an Alerts tab opens the notifications (proposed, 2026-11-04)
+
+Decision: the bottom tab bar gets a fifth item, Alerts (screen readers: "Notifications"), that opens the same
+`!Notifications` drawer as the rail's bell, with the unread count as its badge. It is not selectable: it opens the
+drawer and the current tab stays selected. D5 left this an open point.
+
+Reason: expiry reminders (PRD F17.2) were unreachable on phones; the rail, with the only bell, is hidden below 800 px.
+A tab item is the smallest change that is always in view, and the Material bottom tab bar draws the badge.
+
+Tradeoff: five items at 360 px leave each about 72 px, so the label is the short "Alerts" rather than
+"Notifications".
+
+## D19. The Quotes page is two models; list cards are Material buttons (proposed, 2026-11-04)
+
+Decision:
+- The Quotes page is `DashboardModel` (the list, search, filter, counts, analytics, New Quote) and
+  `QuoteDetailModel` (the open quote), shown by `QuoteDetailView` in a `ContentControl` region on the page (route
+  `./QuoteDetail`, nested under `Dashboard`). They share `Services/QuoteBoard` (which quote is open, and that quotes
+  changed); the editor's Save, status buttons and line-item changes raise it too, so the list and the detail read the
+  quotes again after the editor.
+- A tappable list card (quotes, clients, catalog categories and items) holds a `ListCardButtonStyle` button (Material
+  text button) that fills it: Material draws hover, pressed and focus, the button is the keyboard stop with Enter and
+  Space, and it carries the item's name. The open quote's card keeps a bound tint. `Helpers/InteractionHelper`, which
+  painted these states from code, is removed.
+
+Reason: the approved refactor (DashboardModel was 498 lines doing six jobs; InteractionHelper set brushes and
+`Translation` from pointer and key handlers). The button pattern is the one the editor's line items and the client's
+quote rows already used, and it follows D16 (cards stay surfaces; states come from what they hold).
+
+Tradeoff: each card is its own tab stop (a `ListView` would give one stop and arrow keys), and the cards lose the
+small lift on hover that InteractionHelper drew. Coming back from the full editor makes the Quotes page again, with no
+quote open, as before the split.
