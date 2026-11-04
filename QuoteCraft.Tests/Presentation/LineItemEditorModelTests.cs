@@ -1,3 +1,4 @@
+using QuoteCraft.Helpers;
 using QuoteCraft.Models;
 using QuoteCraft.Presentation;
 using Uno.Extensions.Reactive;
@@ -13,7 +14,7 @@ public class LineItemEditorModelTests
 
     private static async Task<LineItemEditorModel> Create(ModelHarness h, LineItemEntity? item = null)
     {
-        var model = new LineItemEditorModel(h.Navigator, new LineItemEditRequest(item));
+        var model = new LineItemEditorModel(h.Navigator, h.Currency, new LineItemEditRequest(item));
         _ = (await model.Description, await model.UnitPrice, await model.Quantity, await model.ValidationError);
         return model;
     }
@@ -60,5 +61,20 @@ public class LineItemEditorModelTests
 
         var result = Assert.IsType<LineItemEditResult>(h.Navigator.BackResult);
         Assert.Equal((existing.Id, "Sink", 350m, 2), (result.Saved!.Id, result.Saved.Description, result.Saved.UnitPrice, result.Saved.Quantity));
+    }
+
+    [Fact]
+    public async Task The_price_header_and_the_line_total_are_in_the_business_currency()
+    {
+        using var h = new ModelHarness();
+        h.Currency.Code = "EUR";
+        var model = await Create(h);
+
+        await model.UnitPrice.UpdateAsync(_ => Money.FormatAmountInput(12.5m), None);
+        await model.Quantity.UpdateAsync(_ => "2", None);
+
+        Assert.Equal($"Unit Price ({Money.Symbol("EUR")})", model.UnitPriceHeader);
+        var expected = Money.Format(25m, "EUR");
+        Assert.Equal(expected, await Settled(async () => await model.LineTotal ?? string.Empty, t => t == expected));
     }
 }

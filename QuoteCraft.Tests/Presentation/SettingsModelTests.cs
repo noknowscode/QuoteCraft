@@ -18,7 +18,7 @@ public class SettingsModelTests
     private static SettingsModel Create(ModelHarness h, IThemeService? theme = null, SupabaseConfig? supabase = null, IAuthService? auth = null) => new(
         h.Navigator, h.Db.Profiles, h.Catalog, h.FeatureGate, h.Subscription, auth ?? Substitute.For<IAuthService>(),
         supabase ?? new SupabaseConfig(null, null), theme ?? Substitute.For<IThemeService>(), h.ThemeChoice, h.Dispatcher,
-        NullLogger<SettingsModel>.Instance);
+        h.Currency, NullLogger<SettingsModel>.Instance);
 
     private static async Task<SettingsModel> LoadedAsync(ModelHarness h, IThemeService? theme = null)
     {
@@ -63,6 +63,18 @@ public class SettingsModelTests
         Assert.Equal(("Northside Plumbing", 9.975m, 2, "Thank you!"), (saved.BusinessName, saved.DefaultTaxRate, saved.QuoteValidDays, saved.CustomFooter));
         Assert.Equal("Settings saved.", await model.SavedMessage);
         Assert.Equal(string.Empty, await model.ValidationError);
+    }
+
+    [Fact]
+    public async Task Save_sets_the_currency_every_amount_shows_in()
+    {
+        using var h = new ModelHarness();
+        var model = await LoadedAsync(h);
+
+        await model.CurrencyCode.UpdateAsync(_ => "CAD", None);
+        await model.Save(None);
+
+        Assert.Equal(("CAD", "CAD"), ((await h.Db.Profiles.GetAsync()).CurrencyCode, h.Currency.Code));
     }
 
     [Fact]

@@ -71,6 +71,19 @@ public class ShellModelTests
     }
 
     [Fact]
+    public async Task The_shell_reads_the_business_currency_at_startup()
+    {
+        using var h = new ModelHarness();
+        var profile = await h.Db.Profiles.GetAsync();
+        profile.CurrencyCode = "GBP";
+        await h.Db.Profiles.SaveAsync(profile);
+
+        _ = new ShellModel(h.Db.Profiles, h.Currency, NullLogger<ShellModel>.Instance);
+
+        Assert.Equal("GBP", await Settled(() => Task.FromResult(h.Currency.Code), code => code == "GBP"));
+    }
+
+    [Fact]
     public async Task The_rail_theme_menu_saves_the_choice_and_tells_settings()
     {
         using var h = new ModelHarness();

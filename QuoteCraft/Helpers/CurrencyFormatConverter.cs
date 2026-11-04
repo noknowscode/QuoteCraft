@@ -6,10 +6,10 @@ namespace QuoteCraft.Helpers;
 public class CurrencyFormatConverter : IValueConverter
 {
     /// <summary>
-    /// The business profile's currency: set at startup and when Settings saves.
-    /// Supported: USD, CAD, EUR, GBP, AUD, MXN.
+    /// The app's <see cref="CurrencyService"/>. XAML creates this converter (an App.xaml resource), so it cannot take
+    /// the service from DI: App hands it the instance it registers. Until then amounts read in USD.
     /// </summary>
-    public static string CurrencyCode { get; set; } = "USD";
+    public CurrencyService? Currency { get; set; }
 
     public object Convert(object value, Type targetType, object parameter, string language)
     {
@@ -21,7 +21,7 @@ public class CurrencyFormatConverter : IValueConverter
             double d when double.IsFinite(d) => (decimal)d,
             _ => 0m,
         };
-        return Money.Format(amount, CurrencyCode);
+        return Money.Format(amount, Currency?.Code ?? "USD");
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, string language)

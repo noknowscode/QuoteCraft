@@ -46,6 +46,7 @@ public sealed class ModelHarness : IDisposable
     public IDispatcher Dispatcher { get; } = Substitute.For<IDispatcher>();
     public ThemeChoiceNotifier ThemeChoice { get; } = new();
     public QuoteBoard Board { get; } = new();
+    public CurrencyService Currency { get; } = new();
 
     /// <summary>A client in the database.</summary>
     public async Task<ClientEntity> AddClientAsync(string name, string? email = null, string? address = null)

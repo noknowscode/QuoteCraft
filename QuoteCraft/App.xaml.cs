@@ -52,6 +52,14 @@ public partial class App : Application
     {
         try
         {
+        // The business's currency (registered below). App.xaml's CurrencyFormatConverter is created by XAML, not by the
+        // container, so it gets the same instance here.
+        var currency = new Services.CurrencyService();
+        if (Resources.TryGetValue("CurrencyFormatConverter", out var converter) && converter is CurrencyFormatConverter currencyConverter)
+        {
+            currencyConverter.Currency = currency;
+        }
+
         var builder = this.CreateBuilder(args)
             .UseToolkitNavigation()
             .Configure(host => host
@@ -112,6 +120,7 @@ public partial class App : Application
                     services.AddSingleton<Services.QuoteExpiryService>();
                     services.AddSingleton<Services.ThemeChoiceNotifier>();
                     services.AddSingleton<Services.QuoteBoard>();
+                    services.AddSingleton(currency);
                     // The open quote's view, created by the Quotes page's detail region (route ./QuoteDetail)
                     services.AddTransient<QuoteDetailView>();
                 })

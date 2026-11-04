@@ -16,10 +16,12 @@ public partial record LineItemEditorModel
 {
     private readonly INavigator _navigator;
     private readonly string? _itemId;
+    private readonly CurrencyService _currency;
 
-    public LineItemEditorModel(INavigator navigator, LineItemEditRequest request)
+    public LineItemEditorModel(INavigator navigator, CurrencyService currency, LineItemEditRequest request)
     {
         _navigator = navigator;
+        _currency = currency;
         var item = request.Item;
         _itemId = item?.Id;
         IsEditing = item is not null;
@@ -45,7 +47,7 @@ public partial record LineItemEditorModel
     /// <summary>Editing shows Delete; adding does not.</summary>
     public bool IsEditing { get; }
 
-    public string UnitPriceHeader => $"Unit Price ({Money.Symbol(CurrencyFormatConverter.CurrencyCode)})";
+    public string UnitPriceHeader => $"Unit Price ({Money.Symbol(_currency.Code)})";
 
     public string UnitPricePlaceholder => Money.FormatAmountInput(0m);
 
@@ -63,7 +65,7 @@ public partial record LineItemEditorModel
         var priceReads = string.IsNullOrWhiteSpace(priceText) || Money.TryParseAmount(priceText, out price);
         var quantityReads = int.TryParse(quantityText, NumberStyles.None, CultureInfo.CurrentCulture, out var quantity) && quantity >= 1;
         return priceReads && quantityReads
-            ? Money.Format(Money.LineTotal(price, quantity), CurrencyFormatConverter.CurrencyCode)
+            ? Money.Format(Money.LineTotal(price, quantity), _currency.Code)
             : "—";
     });
 

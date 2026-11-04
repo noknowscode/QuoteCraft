@@ -15,6 +15,7 @@ public partial record SettingsModel
     private readonly IThemeService _theme;
     private readonly Services.ThemeChoiceNotifier _themeChoice;
     private readonly IDispatcher _dispatcher;
+    private readonly CurrencyService _currency;
 
     public SettingsModel(
         INavigator navigator,
@@ -27,8 +28,10 @@ public partial record SettingsModel
         IThemeService theme,
         Services.ThemeChoiceNotifier themeChoice,
         IDispatcher dispatcher,
+        CurrencyService currency,
         ILogger<SettingsModel> logger)
     {
+        _currency = currency;
         _dispatcher = dispatcher;
         _theme = theme;
         _themeChoice = themeChoice;
@@ -251,8 +254,8 @@ public partial record SettingsModel
 
         await _profileRepo.SaveAsync(profile);
 
-        // Update the currency converter for the whole app
-        Helpers.CurrencyFormatConverter.CurrencyCode = profile.CurrencyCode;
+        // Amounts everywhere follow the saved currency.
+        _currency.Code = profile.CurrencyCode;
     }
 
     /// <summary>

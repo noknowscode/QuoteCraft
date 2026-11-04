@@ -15,10 +15,12 @@ public partial record CatalogItemEditorModel
     private readonly INavigator _navigator;
     private readonly ICatalogItemRepository _catalogRepo;
     private readonly CatalogItemEntity _item;
+    private readonly CurrencyService _currency;
 
-    public CatalogItemEditorModel(INavigator navigator, ICatalogItemRepository catalogRepo, CatalogItemEditRequest request)
+    public CatalogItemEditorModel(INavigator navigator, ICatalogItemRepository catalogRepo, CurrencyService currency, CatalogItemEditRequest request)
     {
         _navigator = navigator;
+        _currency = currency;
         _catalogRepo = catalogRepo;
         _item = request.Item;
         IsEditing = !request.IsNew;
@@ -38,7 +40,7 @@ public partial record CatalogItemEditorModel
     /// <summary>The item's category when the list has it: the field starts on that entry.</summary>
     public string? InitialCategory => CategoryNames.Contains(_item.Category ?? string.Empty) ? _item.Category : null;
 
-    public string UnitPriceHeader => $"Unit Price ({Money.Symbol(CurrencyFormatConverter.CurrencyCode)})";
+    public string UnitPriceHeader => $"Unit Price ({Money.Symbol(_currency.Code)})";
     public string UnitPricePlaceholder => Money.FormatAmountInput(0m);
 
     public IState<string> Description { get; }
