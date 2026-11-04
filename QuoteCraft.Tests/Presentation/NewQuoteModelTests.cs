@@ -69,7 +69,7 @@ public class NewQuoteModelTests
     }
 
     [Fact]
-    public async Task Client_suggestions_contain_what_is_typed()
+    public async Task Client_suggestions_contain_what_is_typed_and_leave_out_an_exact_match()
     {
         using var h = new ModelHarness();
         await h.AddClientAsync("Dana Reyes");
@@ -77,8 +77,11 @@ public class NewQuoteModelTests
         var model = await Create(h);
 
         await model.ClientName.UpdateAsync(_ => "rey", None);
-
         Assert.Equal(["Dana Reyes"], await Settled(async () => await ListOf(model.ClientSuggestions), l => l.Count == 1));
+
+        // The same rule as the editor's Client field (ClientLink.SuggestAsync): a name typed in full is not offered again.
+        await model.ClientName.UpdateAsync(_ => "Dana Reyes", None);
+        Assert.Empty(await Settled(async () => await ListOf(model.ClientSuggestions), l => l.Count == 0));
     }
 
     [Fact]

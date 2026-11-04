@@ -46,7 +46,7 @@ public partial record ClientEditorModel
         }
 
         var email = (await Email)?.Trim() ?? string.Empty;
-        if (email.Length > 0 && (!email.Contains('@') || !email.Contains('.')))
+        if (!EmailAddress.IsValidOrEmpty(email))
         {
             await ValidationError.UpdateAsync(_ => "Enter a valid email address, or leave it empty.", ct);
             return;

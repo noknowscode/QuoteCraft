@@ -47,7 +47,7 @@ public partial record OnboardingModel
         {
             // Validate business info before advancing
             var email = (await Email)?.Trim();
-            if (!string.IsNullOrEmpty(email) && (!email.Contains('@') || !email.Contains('.')))
+            if (!EmailAddress.IsValidOrEmpty(email))
             {
                 await ValidationError.UpdateAsync(_ => "Please enter a valid email address.", ct);
                 return;

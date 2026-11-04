@@ -28,4 +28,22 @@ public static class ClientLink
 
         return clients.FirstOrDefault(c => string.Equals(c.Name.Trim(), trimmed, StringComparison.OrdinalIgnoreCase))?.Id;
     }
+
+    /// <summary>
+    /// A client field's suggestions (the editor's Client and New Quote's): up to eight client names containing what is
+    /// typed, ignoring case. None for an empty field, and a name typed in full is not offered again.
+    /// </summary>
+    public static async Task<IImmutableList<string>> SuggestAsync(string? typed, IClientRepository clients)
+    {
+        var query = typed?.Trim() ?? string.Empty;
+        if (query.Length == 0)
+        {
+            return ImmutableList<string>.Empty;
+        }
+        return (await clients.GetAllAsync())
+            .Select(c => c.Name)
+            .Where(n => n.Contains(query, StringComparison.OrdinalIgnoreCase) && n != query)
+            .Take(8)
+            .ToImmutableList();
+    }
 }

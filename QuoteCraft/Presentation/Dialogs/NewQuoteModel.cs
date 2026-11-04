@@ -31,21 +31,9 @@ public partial record NewQuoteModel
 
     public IState<string> ValidationError => State<string>.Value(this, () => string.Empty);
 
-    /// <summary>Up to eight client names containing what is typed.</summary>
+    /// <summary>Clients whose name contains what is typed (<see cref="ClientLink.SuggestAsync"/>).</summary>
     public IListFeed<string> ClientSuggestions => ClientName
-        .SelectAsync(async (typed, ct) =>
-        {
-            var query = typed?.Trim() ?? string.Empty;
-            if (query.Length == 0)
-            {
-                return ImmutableList<string>.Empty;
-            }
-            var clients = await _clientRepo.GetAllAsync();
-            return (IImmutableList<string>)clients.Select(c => c.Name)
-                .Where(n => n.Contains(query, StringComparison.OrdinalIgnoreCase))
-                .Take(8)
-                .ToImmutableList();
-        })
+        .SelectAsync(async (typed, ct) => await ClientLink.SuggestAsync(typed, _clientRepo))
         .AsListFeed();
 
     /// <summary>A Draft linked to the named client (if there is one); the caller opens it in the editor.</summary>
