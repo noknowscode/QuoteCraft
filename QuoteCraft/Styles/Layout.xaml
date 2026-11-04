@@ -157,12 +157,13 @@
   <x:Double x:Key="DialogMinWidth">380</x:Double>
   <!-- Width a ContentDialog takes around its content (its padding and its margin to the window) -->
   <x:Double x:Key="DialogChromeWidth">96</x:Double>
-  <x:Double x:Key="FormLabelWidth">140</x:Double>
-  <x:Double x:Key="FormLabelWidthNarrow">112</x:Double>
-  <!-- Line-item table columns (quantity, unit price, total) -->
-  <x:Double x:Key="TableQtyWidth">60</x:Double>
-  <x:Double x:Key="TableMoneyWidth">90</x:Double>
-  <x:Double x:Key="TotalsValueWidth">120</x:Double>
+  <!-- Column widths (GridLength: a ColumnDefinition's Width takes no x:Double) -->
+  <!-- A Settings row's label -->
+  <GridLength x:Key="FormLabelWidth">140</GridLength>
+  <!-- Line-item table columns (quantity, unit price and total), and the totals' amounts -->
+  <GridLength x:Key="TableQtyWidth">60</GridLength>
+  <GridLength x:Key="TableMoneyWidth">90</GridLength>
+  <GridLength x:Key="TotalsValueWidth">120</GridLength>
 
   <!-- Settings: compact number fields with a unit, the logo thumbnail and file name, the preview's logo -->
   <x:Double x:Key="NumberFieldWidth">70</x:Double>

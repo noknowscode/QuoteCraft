@@ -67,13 +67,44 @@ public partial record SettingsModel
 
     public IState<bool> IsSaving => State<bool>.Value(this, () => false);
 
-    /// <summary>0 System (the default), 1 Light, 2 Dark: the window's theme service applies and saves it.</summary>
-    public IState<int> ThemeIndex => State.Value(this, () => _theme.Theme switch { AppTheme.Light => 1, AppTheme.Dark => 2, _ => 0 })
+    /// <summary>
+    /// 0 System (the default), 1 Light, 2 Dark: the window's theme service applies and saves it. The row follows a
+    /// choice made in the rail's menu too (<see cref="Services.ThemeChoiceNotifier"/>); either side changes the theme
+    /// only when the choice differs from the saved one, so the two never call each other in a loop.
+    /// </summary>
+    public IState<int> ThemeIndex => State<int>.AsyncEnumerable(this, WatchThemeIndexAsync)
         .ForEach(async (index, ct) =>
         {
-            await _theme.SetThemeAsync(index switch { 1 => AppTheme.Light, 2 => AppTheme.Dark, _ => AppTheme.System });
-            _themeChoice.Raise();
+            var choice = ToTheme(index);
+            if (choice != _theme.Theme)
+            {
+                await _theme.SetThemeAsync(choice);
+                _themeChoice.Raise();
+            }
         });
+
+    private static AppTheme ToTheme(int index) => index switch { 1 => AppTheme.Light, 2 => AppTheme.Dark, _ => AppTheme.System };
+
+    private static int ToIndex(AppTheme theme) => theme switch { AppTheme.Light => 1, AppTheme.Dark => 2, _ => 0 };
+
+    private async IAsyncEnumerable<int> WatchThemeIndexAsync([System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct)
+    {
+        var changed = new ChangeSignal();
+        Action handler = changed.Raise;
+        _themeChoice.Changed += handler;
+        try
+        {
+            while (true)
+            {
+                yield return ToIndex(_theme.Theme);
+                await changed.WaitAsync(ct);
+            }
+        }
+        finally
+        {
+            _themeChoice.Changed -= handler;
+        }
+    }
 
     public async ValueTask Reload(CancellationToken ct)
     {
@@ -86,8 +117,16 @@ public partial record SettingsModel
         await _navigator.NavigateRouteAsync(this, "Catalog", cancellation: ct);
     }
 
-    public IFeed<BusinessProfileEntity> Profile => Feed.Async(async ct =>
-        await _profileRepo.GetAsync());
+    /// <summary>
+    /// The quote preview beside the form (from 1400 px): sample items priced with the markup as the catalog adds them,
+    /// tax at the default rate, the dates from today and the validity, and amounts in the currency, all as typed.
+    /// </summary>
+    public IFeed<SettingsPreview> Preview => Feed.Combine(DefaultTaxRate, DefaultMarkup, CurrencyCode, QuoteValidDays, QuoteNumberPrefix)
+        .Select(inputs =>
+        {
+            var (tax, markup, currency, validDays, prefix) = inputs;
+            return SettingsPreview.From(prefix, tax, markup, validDays, currency, DateTimeOffset.Now);
+        });
 
     public IFeed<int> CatalogItemCount => Feed.Async(async ct =>
         await _catalogRepo.GetItemCountAsync());
@@ -252,67 +291,82 @@ public partial record SettingsModel
         await LogoPath.UpdateAsync(_ => destPath, CancellationToken.None);
     }
 
+    /// <summary>Remove: the logo's copy goes, and Save stores the profile without one.</summary>
     public async ValueTask RemoveLogo(CancellationToken ct)
     {
-        var currentPath = await LogoPath;
-        if (!string.IsNullOrEmpty(currentPath) && File.Exists(currentPath))
-            File.Delete(currentPath);
-        await LogoPath.UpdateAsync(_ => string.Empty, ct);
-    }
-
-    public async ValueTask UpgradeToPro(CancellationToken ct)
-    {
+        await LogoError.UpdateAsync(_ => string.Empty, ct);
         try
         {
-            var url = await _subscriptionService.GetCheckoutUrlAsync("pro", "monthly");
-            if (!string.IsNullOrEmpty(url))
+            var currentPath = await LogoPath;
+            if (!string.IsNullOrEmpty(currentPath) && File.Exists(currentPath))
             {
-                await Windows.System.Launcher.LaunchUriAsync(new Uri(url));
+                File.Delete(currentPath);
             }
+            await LogoPath.UpdateAsync(_ => string.Empty, ct);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            _logger.LogError(ex, "Failed to open checkout");
+            _logger.LogError(ex, "Remove logo");
+            await LogoError.UpdateAsync(_ => ErrorReporter.Describe("The logo could not be removed.", ex), ct);
         }
     }
 
-    public async ValueTask UpgradeToProAnnual(CancellationToken ct)
+    /// <summary>Pro, billed monthly: Stripe Checkout in the browser.</summary>
+    public ValueTask UpgradeToPro(CancellationToken ct) => OpenCheckoutAsync("monthly", ct);
+
+    /// <summary>Pro, billed yearly at the annual discount (PRD F13.6): Stripe Checkout in the browser.</summary>
+    public ValueTask UpgradeToProAnnual(CancellationToken ct) => OpenCheckoutAsync("annual", ct);
+
+    private ValueTask OpenCheckoutAsync(string interval, CancellationToken ct) => _navigator.RunAsync(this, "Checkout could not open.", async () =>
     {
+        var url = await _subscriptionService.GetCheckoutUrlAsync("pro", interval);
+        await LaunchAsync(url, "Checkout is not available right now. Try again later.");
+    }, ct);
+
+    public ValueTask ManageSubscription(CancellationToken ct) => _navigator.RunAsync(this, "The billing portal could not open.", async () =>
+    {
+        var url = await _subscriptionService.GetCustomerPortalUrlAsync();
+        await LaunchAsync(url, "The billing portal is not available right now. Try again later.");
+    }, ct);
+
+    /// <summary>Opens a billing page in the browser; says so when there is none or nothing opened it.</summary>
+    private static async Task LaunchAsync(string? url, string unavailable)
+    {
+        if (string.IsNullOrEmpty(url) || !await Windows.System.Launcher.LaunchUriAsync(new Uri(url)))
+        {
+            throw new InvalidOperationException(unavailable);
+        }
+    }
+
+    /// <summary>Signed in to the configured Supabase project (only then is Sign Out offered; Sign In otherwise).</summary>
+    public IFeed<bool> IsSignedIn => Feed.AsyncEnumerable(WatchSignedInAsync);
+
+    private async IAsyncEnumerable<bool> WatchSignedInAsync([System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct)
+    {
+        var changed = new ChangeSignal();
+        Action<Services.AuthState> handler = _ => changed.Raise();
+        _authService.AuthStateChanged += handler;
         try
         {
-            var url = await _subscriptionService.GetCheckoutUrlAsync("pro", "annual");
-            if (!string.IsNullOrEmpty(url))
+            while (true)
             {
-                await Windows.System.Launcher.LaunchUriAsync(new Uri(url));
+                yield return _authService.CurrentState.IsAuthenticated;
+                await changed.WaitAsync(ct);
             }
         }
-        catch (Exception ex)
+        finally
         {
-            _logger.LogError(ex, "Failed to open checkout");
+            _authService.AuthStateChanged -= handler;
         }
     }
 
-    public async ValueTask ManageSubscription(CancellationToken ct)
-    {
-        try
-        {
-            var url = await _subscriptionService.GetCustomerPortalUrlAsync();
-            if (!string.IsNullOrEmpty(url))
-            {
-                await Windows.System.Launcher.LaunchUriAsync(new Uri(url));
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to open customer portal");
-        }
-    }
+    /// <summary>Sign In (a Supabase project is configured and nobody is signed in): the sign-in page.</summary>
+    public ValueTask SignIn(CancellationToken ct) => _navigator.RunAsync(this, "The sign-in page could not open.",
+        async () => await _navigator.NavigateRouteAsync(this, "Auth", cancellation: ct), ct);
 
-    public async ValueTask SignOut(CancellationToken ct)
+    public ValueTask SignOut(CancellationToken ct) => _navigator.RunAsync(this, "You could not be signed out.", async () =>
     {
         await _authService.SignOutAsync();
-        await _navigator.NavigateRouteAsync(this, "Auth", qualifier: Qualifiers.ClearBackStack);
-    }
-
-    public bool IsAuthenticated => _authService.CurrentState.IsAuthenticated;
+        await _navigator.NavigateRouteAsync(this, "Auth", qualifier: Qualifiers.ClearBackStack, cancellation: ct);
+    }, ct);
 }
