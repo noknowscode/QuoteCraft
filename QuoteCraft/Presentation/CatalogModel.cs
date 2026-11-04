@@ -100,17 +100,20 @@ public partial record CatalogModel
     /// <summary>One-pane layouts (below 1080): close the category and show the cards again.</summary>
     public async ValueTask BackToList(CancellationToken ct)
     {
-        await SelectedCategory.UpdateAsync(_ => null!, ct);
+        await SelectedCategory.UpdateDataAsync(_ => Option.None<string>(), ct);
     }
 
     public async ValueTask SelectCategoryCard(CatalogCategoryCard card, CancellationToken ct)
     {
-        var current = await SelectedCategory;
-        // Toggle: click again to deselect (set to null -> Empty -> NoneTemplate)
-        if (current == card.Name)
-            await SelectedCategory.UpdateAsync(_ => null!, ct);
+        // Toggle: a second tap closes the category (no selection: the detail shows its NoneTemplate)
+        if (await SelectedCategory == card.Name)
+        {
+            await SelectedCategory.UpdateDataAsync(_ => Option.None<string>(), ct);
+        }
         else
+        {
             await SelectedCategory.UpdateAsync(_ => card.Name, ct);
+        }
     }
 
     /// <summary>A tap (or Enter) on an item: the item dialog, as stored now.</summary>

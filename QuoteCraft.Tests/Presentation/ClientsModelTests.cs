@@ -57,6 +57,20 @@ public class ClientsModelTests
     }
 
     [Fact]
+    public async Task Back_to_list_closes_the_client()
+    {
+        using var h = new ModelHarness();
+        await h.AddClientAsync("Bob Johnson");
+        var model = await Create(h);
+        await model.SelectClient((await model.Clients).Single(), None);
+
+        await model.BackToList(None);
+
+        Assert.Null(await model.SelectedClient);
+        Assert.Null(await model.SelectedClientDetail);
+    }
+
+    [Fact]
     public async Task Add_client_opens_an_empty_client_dialog_and_the_list_reads_the_new_client()
     {
         using var h = new ModelHarness();

@@ -63,6 +63,19 @@ public class CatalogModelTests
     }
 
     [Fact]
+    public async Task Back_to_list_closes_the_category()
+    {
+        using var h = new ModelHarness();
+        var model = await Create(h);
+        await model.SelectCategoryCard((await model.CategoryCards).First(), None);
+
+        await model.BackToList(None);
+
+        Assert.Null(await model.SelectedCategory);
+        Assert.Null(await model.SelectedCategoryDetail);
+    }
+
+    [Fact]
     public async Task Add_item_in_an_open_category_fills_the_category_in()
     {
         using var h = new ModelHarness();

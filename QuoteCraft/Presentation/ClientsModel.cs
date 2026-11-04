@@ -94,7 +94,7 @@ public partial record ClientsModel
     /// <summary>One-pane layouts (below 1080): close the detail and show the list again.</summary>
     public async ValueTask BackToList(CancellationToken ct)
     {
-        await SelectedClient.UpdateAsync(_ => null!, ct);
+        await SelectedClient.UpdateDataAsync(_ => Option.None<ClientDisplayItem>(), ct);
     }
 
     public async ValueTask SelectClient(ClientDisplayItem item, CancellationToken ct)
@@ -117,7 +117,7 @@ public partial record ClientsModel
         }
 
         await _clientRepo.DeleteAsync(client.Id);
-        await SelectedClient.UpdateAsync(_ => null!, ct);
+        await SelectedClient.UpdateDataAsync(_ => Option.None<ClientDisplayItem>(), ct);
         await Version.UpdateAsync(v => v + 1, ct);
     }, ct);
 
