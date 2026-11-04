@@ -392,4 +392,17 @@ public class QuoteEditorModelTests
         Assert.Empty(await h.Status.ExpireOverdueAsync(end.AddMinutes(-1)));
         Assert.Single(await h.Status.ExpireOverdueAsync(end.AddMinutes(1)));
     }
+
+    [Fact]
+    public async Task A_thumbnail_opens_its_photo_enlarged()
+    {
+        using var h = new ModelHarness();
+        var model = await Create(h, await h.AddQuoteAsync("Service call"));
+
+        await model.ViewPhoto("/data/photos/q1/a.jpg", None);
+
+        Assert.Equal(["!PhotoViewer"], h.Navigator.Routes);
+        Assert.Equal(new PhotoViewRequest("/data/photos/q1/a.jpg"), h.Navigator.DataFor("PhotoViewer"));
+        Assert.Equal(string.Empty, await model.ValidationError);
+    }
 }

@@ -12,7 +12,8 @@
 
   <!--
     Quote editor: one column at every size, capped at ReadingMaxWidth (720) and centred from Normal up. From the top:
-    title, client, tax rate, valid until, line items, totals, photos, notes, export, status actions, history.
+    title, client, tax rate, valid until, line items, totals, photos (a tap opens one enlarged), notes, export, status
+    actions, history.
     The text fields write to the model as they are typed (UpdateSourceTrigger=PropertyChanged): the top bar's Save
     takes no focus, so a field that only committed when left would lose its last edit.
       Narrow   16 px sides; the line-item actions go under the "Line Items" heading; status actions stack full width.
@@ -359,15 +360,23 @@
               <muxc:ItemsRepeater.ItemTemplate>
                 <DataTemplate>
                   <Grid Width="{StaticResource ThumbnailSize}" Height="{StaticResource ThumbnailSize}">
-                    <!-- xaml-lint: allow card - clips the photo to rounded corners with a hairline stroke -->
-                    <Border CornerRadius="{StaticResource RadiusMd}" BorderBrush="{ThemeResource OutlineVariantBrush}"
-                            BorderThickness="1">
-                      <Image Stretch="UniformToFill" AutomationProperties.Name="Job photo">
-                        <Image.Source>
-                          <BitmapImage UriSource="{Binding}" />
-                        </Image.Source>
-                      </Image>
-                    </Border>
+                    <!-- The thumbnail is a button: tap, Enter or Space opens the photo enlarged in a dialog (PRD F14.8) -->
+                    <Button Command="{Binding DataContext.ViewPhoto, ElementName=EditorRoot}"
+                            CommandParameter="{Binding}"
+                            AutomationProperties.Name="View photo enlarged"
+                            ToolTipService.ToolTip="View larger"
+                            Style="{StaticResource ListCardButtonStyle}"
+                            Padding="0">
+                      <!-- xaml-lint: allow card - clips the photo to rounded corners with a hairline stroke -->
+                      <Border CornerRadius="{StaticResource RadiusMd}" BorderBrush="{ThemeResource OutlineVariantBrush}"
+                              BorderThickness="1">
+                        <Image Stretch="UniformToFill" AutomationProperties.Name="Job photo">
+                          <Image.Source>
+                            <BitmapImage UriSource="{Binding}" />
+                          </Image.Source>
+                        </Image>
+                      </Border>
+                    </Button>
                     <Button HorizontalAlignment="Right" VerticalAlignment="Top"
                             Command="{Binding DataContext.DeletePhoto, ElementName=EditorRoot}"
                             CommandParameter="{Binding}"

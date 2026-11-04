@@ -34,6 +34,10 @@ public static class DialogNavigation
         }
     }
 
+    /// <summary>Shows a job photo enlarged (<see cref="PhotoViewRequest"/>) until the user closes it.</summary>
+    public static Task ShowPhotoAsync(this INavigator navigator, object sender, string path, CancellationToken ct) =>
+        navigator.GetDataAsync<ContentDialogResult>(sender, "PhotoViewer", Qualifiers.Dialog, new PhotoViewRequest(path), ct);
+
     /// <summary>Opens a dialog route and waits for the result its model sends back; null when it was cancelled.</summary>
     public static Task<TResult?> ShowDialogAsync<TResult>(this INavigator navigator, object sender, string route, object? data, CancellationToken ct) =>
         navigator.GetDataAsync<TResult>(sender, route, Qualifiers.Dialog, data, ct);

@@ -111,6 +111,10 @@ public partial record QuoteEditorModel
             await PhotosVersion.UpdateAsync(v => v + 1, ct);
     }, ct);
 
+    /// <summary>A thumbnail's tap: the photo as large as a dialog shows it (PRD F14.8, D22).</summary>
+    public ValueTask ViewPhoto(string photoPath, CancellationToken ct) => ValidationError.ReportFailureAsync("The photo could not be opened.", async () =>
+        await _navigator.ShowPhotoAsync(this, photoPath, ct), ct);
+
     /// <summary>A photo's delete button: the file goes and the photos are read again; a failure shows in the message line.</summary>
     public ValueTask DeletePhoto(string photoPath, CancellationToken ct) => ValidationError.ReportFailureAsync("The photo could not be deleted.", async () =>
     {

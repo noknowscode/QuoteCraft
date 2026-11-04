@@ -219,6 +219,7 @@ public partial class App : Application
             new DataViewMap<CatalogBrowserDialog, CatalogBrowserModel, CatalogBrowserRequest>(),
             new ResultDataViewMap<ClientEditorDialog, ClientEditorModel, ClientEntity>(Data: new DataMap<ClientEditRequest>()),
             new ResultDataViewMap<CatalogItemEditorDialog, CatalogItemEditorModel, CatalogItemEditResult>(Data: new DataMap<CatalogItemEditRequest>()),
+            new DataViewMap<PhotoViewerDialog, PhotoViewerModel, PhotoViewRequest>(),
             new DataViewMap<QuoteEditorPage, QuoteEditorModel, QuoteEntity>(),
             new DataViewMap<QuoteDetailView, QuoteDetailModel, QuoteEntity>()
         );
@@ -237,6 +238,7 @@ public partial class App : Application
                     new ("CatalogBrowser", View: views.FindByViewModel<CatalogBrowserModel>()),
                     new ("ClientEditor", View: views.FindByViewModel<ClientEditorModel>()),
                     new ("CatalogItemEditor", View: views.FindByViewModel<CatalogItemEditorModel>()),
+                    new ("PhotoViewer", View: views.FindByViewModel<PhotoViewerModel>()),
                     new ("Main", View: views.FindByViewModel<MainModel>(), IsDefault: true,
                         Nested:
                         [

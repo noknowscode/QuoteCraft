@@ -480,3 +480,19 @@ stored with it still loads: it keeps its pill, it is counted and filtered with S
 The sample data seeds that quote as Sent.
 
 Reason: the cut in D11 left the controls for a status nothing can reach (the audit's open question).
+
+## D22. A photo thumbnail opens the photo enlarged in a dialog; no full-window viewer (proposed, 2026-11-04)
+
+Decision: PRD F14.8 ("tap to view full-size") is built small. Each thumbnail in the quote editor is a button (tap,
+Enter or Space) that opens `!PhotoViewer`, a XAML `ContentDialog` route with a model like the other dialogs (D14), with
+the photo scaled to fit and a Close button. The thumbnail's delete button stays as the way to delete; long press and
+swipe to delete are not built.
+
+The view is as large as Material's dialog allows: 560 px wide at most (a 4:3 photo shows at 512 × 384 px on a desktop
+window), and 56 px in from each side of a phone's screen (230 px of photo at 390 px). Raising that limit for this
+dialog did not work: Material's dialog template reads `MaterialContentDialogMaxWidth` and `MaxHeight` as static
+resources, so neither its own keys nor WinUI's `ContentDialogMaxWidth` set on the dialog change it (two attempts).
+
+What a full-window view would take (not built): a page outside the dialogs. The editor lives in MainPage's Visibility
+region, which has no back stack, so a photo page there would have to hand the editor back with its unsaved edits;
+that is a navigation change, not a small feature.
