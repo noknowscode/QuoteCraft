@@ -42,8 +42,11 @@ public partial record CatalogModel
 {
     private readonly ICatalogItemRepository _catalogRepo;
 
-    public CatalogModel(ICatalogItemRepository catalogRepo)
+    private readonly INavigator _navigator;
+
+    public CatalogModel(INavigator navigator, ICatalogItemRepository catalogRepo)
     {
+        _navigator = navigator;
         _catalogRepo = catalogRepo;
     }
 
@@ -117,20 +120,49 @@ public partial record CatalogModel
             await SelectedCategory.UpdateAsync(_ => card.Name, ct);
     }
 
-    public Task<CatalogItemEntity?> GetItemAsync(string id) => _catalogRepo.GetByIdAsync(id);
-
-    public Task<List<string>> GetCategoryNamesAsync() => _catalogRepo.GetCategoriesAsync();
-
-    /// <summary>The item dialog's Save; the cards and the open category read the catalog again.</summary>
-    public async Task SaveItemAsync(CatalogItemEntity item)
+    /// <summary>A tap (or Enter) on an item: the item dialog, as stored now.</summary>
+    public ValueTask EditItem(CatalogDisplayItem item, CancellationToken ct) => _navigator.RunAsync(this, "The catalog item could not be opened.", async () =>
     {
-        await _catalogRepo.SaveAsync(item);
-        await Version.UpdateAsync(v => v + 1, CancellationToken.None);
-    }
+        if (await _catalogRepo.GetByIdAsync(item.Id) is { } entity)
+        {
+            await EditInDialogAsync(entity, isNew: false, ct);
+        }
+    }, ct);
 
-    public async Task DeleteItemAsync(string id)
+    public ValueTask AddItem(CancellationToken ct) => _navigator.RunAsync(this, "The catalog item could not be added.",
+        async () => await EditInDialogAsync(new CatalogItemEntity(), isNew: true, ct), ct);
+
+    /// <summary>Add Item in an open category: the category is filled in.</summary>
+    public ValueTask AddItemToCategory(CancellationToken ct) => _navigator.RunAsync(this, "The catalog item could not be added.", async () =>
     {
-        await _catalogRepo.DeleteAsync(id);
-        await Version.UpdateAsync(v => v + 1, CancellationToken.None);
+        var entity = new CatalogItemEntity();
+        if (await SelectedCategory is { Length: > 0 } category)
+        {
+            entity.Category = category;
+        }
+        await EditInDialogAsync(entity, isNew: true, ct);
+    }, ct);
+
+    /// <summary>The item dialog saves the item; Delete there asks once more, then removes it.</summary>
+    private async Task EditInDialogAsync(CatalogItemEntity entity, bool isNew, CancellationToken ct)
+    {
+        var categories = await _catalogRepo.GetCategoriesAsync();
+        var result = await _navigator.ShowDialogAsync<CatalogItemEditResult>(this, "CatalogItemEditor",
+            new CatalogItemEditRequest(entity, isNew, categories), ct);
+        if (result is null)
+        {
+            return;
+        }
+
+        if (result.DeleteRequested)
+        {
+            if (!await _navigator.ConfirmAsync(this, new ConfirmRequest("\uE74D", "Delete Catalog Item?",
+                    "This item will be permanently removed from your catalog.", "Delete", "Cancel"), ct))
+            {
+                return;
+            }
+            await _catalogRepo.DeleteAsync(entity.Id);
+        }
+        await Version.UpdateAsync(v => v + 1, ct);
     }
 }

@@ -455,6 +455,7 @@ public partial class App : Application
             new ResultDataViewMap<LineItemEditorDialog, LineItemEditorModel, LineItemEditResult>(Data: new DataMap<LineItemEditRequest>()),
             new DataViewMap<CatalogBrowserDialog, CatalogBrowserModel, CatalogBrowserRequest>(),
             new ResultDataViewMap<ClientEditorDialog, ClientEditorModel, ClientEntity>(Data: new DataMap<ClientEditRequest>()),
+            new ResultDataViewMap<CatalogItemEditorDialog, CatalogItemEditorModel, CatalogItemEditResult>(Data: new DataMap<CatalogItemEditRequest>()),
             new DataViewMap<QuoteEditorPage, QuoteEditorModel, QuoteEntity>()
         );
 
@@ -471,6 +472,7 @@ public partial class App : Application
                     new ("LineItemEditor", View: views.FindByViewModel<LineItemEditorModel>()),
                     new ("CatalogBrowser", View: views.FindByViewModel<CatalogBrowserModel>()),
                     new ("ClientEditor", View: views.FindByViewModel<ClientEditorModel>()),
+                    new ("CatalogItemEditor", View: views.FindByViewModel<CatalogItemEditorModel>()),
                     new ("Main", View: views.FindByViewModel<MainModel>(), IsDefault: true,
                         Nested:
                         [

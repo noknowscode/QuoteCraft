@@ -60,11 +60,9 @@
         </mvux:FeedView>
 
         <!-- Search (under the title row on Narrow) -->
-        <Border Grid.Row="{utu:Responsive Narrow=1, Normal=0}"
+        <utu:CardContentControl Style="{StaticResource TonalCardStyle}" Grid.Row="{utu:Responsive Narrow=1, Normal=0}"
                 Grid.Column="{utu:Responsive Narrow=0, Normal=2}"
                 Grid.ColumnSpan="{utu:Responsive Narrow=4, Normal=1}"
-                Background="{ThemeResource SurfaceVariantBrush}"
-                CornerRadius="{StaticResource RadiusMd}"
                 Padding="{StaticResource InsetX12}"
                 Height="{StaticResource SearchHeight}"
                 MinWidth="{utu:Responsive Narrow=0, Normal={StaticResource SearchMinWidth}}"
@@ -90,11 +88,11 @@
                      VerticalAlignment="Center"
                      VerticalContentAlignment="Center" />
           </Grid>
-        </Border>
+        </utu:CardContentControl>
 
         <Button Grid.Column="3"
                 x:Uid="CatalogPage.Button.AddItem"
-                Click="AddItem_Click"
+                Command="{Binding AddItem}"
                 AutomationProperties.Name="Add catalog item"
                 Style="{StaticResource AccentButtonStyle}">
           <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
@@ -133,7 +131,8 @@
         <mvux:FeedView Grid.Row="1" Source="{Binding CategoryCards}">
           <DataTemplate>
             <ScrollViewer Padding="{utu:Responsive Narrow={StaticResource ListInsetNarrow}, Normal={StaticResource ListInsetNormal}, Widest={StaticResource ListInsetWidest}}">
-              <muxc:ItemsRepeater ItemsSource="{Binding Data}">
+              <muxc:ItemsRepeater ItemsSource="{Binding Data}"
+                                  utu:CommandExtensions.Command="{Binding Parent.SelectCategoryCard}">
                 <muxc:ItemsRepeater.Layout>
                   <muxc:UniformGridLayout MinItemWidth="156" MinItemHeight="130"
                                           MinColumnSpacing="{StaticResource Space8}" MinRowSpacing="{StaticResource Space8}"
@@ -141,26 +140,20 @@
                 </muxc:ItemsRepeater.Layout>
                 <muxc:ItemsRepeater.ItemTemplate>
                   <DataTemplate>
-                    <Border x:Name="CategoryCard"
-                            Background="{ThemeResource SurfaceBrush}"
-                            BorderBrush="{ThemeResource OutlineVariantBrush}"
-                            BorderThickness="1" CornerRadius="{StaticResource RadiusLg}"
+                    <utu:CardContentControl Style="{StaticResource StaticCardStyle}"
                             Padding="{StaticResource Inset16}"
                             Translation="0,0,0"
                             AutomationProperties.Name="{Binding Name}"
-                            Tapped="CategoryCard_Tapped"
                             helpers:InteractionHelper.Command="{Binding DataContext.SelectCategoryCard, ElementName=CatalogRoot}"
                             helpers:InteractionHelper.IsInteractive="True">
                       <StackPanel Spacing="{StaticResource Space8}" VerticalAlignment="Center" HorizontalAlignment="Center">
                         <!-- Icon Circle -->
-                        <Border Width="{StaticResource AvatarSize}" Height="{StaticResource AvatarSize}" CornerRadius="{StaticResource RadiusCircle40}"
-                                Background="{ThemeResource PrimaryContainerBrush}"
-                                HorizontalAlignment="Center">
+                        <utu:CardContentControl Style="{StaticResource AvatarCardStyle}" Width="{StaticResource AvatarSize}" Height="{StaticResource AvatarSize}" CornerRadius="{StaticResource RadiusCircle40}">
                           <FontIcon Glyph="{Binding IconGlyph}"
                                     FontSize="{StaticResource IconSizeXl}"
                                     Foreground="{ThemeResource OnPrimaryContainerBrush}"
                                     HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Border>
+                        </utu:CardContentControl>
                         <!-- Name -->
                         <TextBlock Text="{Binding Name}"
                                    Style="{StaticResource TitleSmall}"
@@ -175,7 +168,7 @@
                           <Run Text=" items" />
                         </TextBlock>
                       </StackPanel>
-                    </Border>
+                    </utu:CardContentControl>
                   </DataTemplate>
                 </muxc:ItemsRepeater.ItemTemplate>
               </muxc:ItemsRepeater>
@@ -196,7 +189,7 @@
                            HorizontalAlignment="Center"
                            Foreground="{ThemeResource OnSurfaceVariantBrush}"
                            TextAlignment="Center" TextWrapping="Wrap" MaxWidth="{StaticResource HintMaxWidth}" />
-                <Button Click="AddItem_Click"
+                <Button Command="{Binding DataContext.AddItem, ElementName=CatalogRoot}"
                         Style="{StaticResource AccentButtonStyle}"
                         HorizontalAlignment="Center" Margin="{StaticResource GapTop8}">
                   <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
@@ -264,13 +257,11 @@
                   <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <Border Width="{StaticResource LogoSize}" Height="{StaticResource LogoSize}" CornerRadius="{StaticResource RadiusCircle48}"
-                        Background="{ThemeResource PrimaryContainerBrush}"
-                        VerticalAlignment="Center">
+                <utu:CardContentControl Style="{StaticResource AvatarCardStyle}" Width="{StaticResource LogoSize}" Height="{StaticResource LogoSize}" CornerRadius="{StaticResource RadiusCircle48}">
                   <FontIcon Glyph="{Binding Data.IconGlyph}" FontSize="{StaticResource IconSize2xl}"
                             Foreground="{ThemeResource OnPrimaryContainerBrush}"
                             HorizontalAlignment="Center" VerticalAlignment="Center" />
-                </Border>
+                </utu:CardContentControl>
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="{StaticResource Space2}">
                   <TextBlock Text="{Binding Data.Name}"
                              Style="{StaticResource HeadlineMedium}"
@@ -286,7 +277,7 @@
                 <!-- Add item to category button -->
                 <Button Grid.Column="2"
                         x:Uid="CatalogPage.Button.AddItemToCategory"
-                        Click="AddItemToCategory_Click"
+                        Command="{Binding DataContext.AddItemToCategory, ElementName=CatalogRoot}"
                         AutomationProperties.Name="Add item to category"
                         ToolTipService.ToolTip="Add item to category"
                         Style="{StaticResource AccentButtonStyle}"
@@ -300,25 +291,23 @@
               </Grid>
 
               <!-- Items List -->
-              <Border Background="{ThemeResource SurfaceBrush}"
-                      BorderBrush="{ThemeResource OutlineVariantBrush}"
-                      BorderThickness="1" CornerRadius="{StaticResource RadiusLg}"
+              <utu:CardContentControl Style="{StaticResource StaticCardStyle}"
                       Padding="{utu:Responsive Narrow={StaticResource Inset8}, Normal={StaticResource Inset16}}">
-                <muxc:ItemsRepeater ItemsSource="{Binding Data.Items}">
+                <muxc:ItemsRepeater ItemsSource="{Binding Data.Items}"
+                                    utu:CommandExtensions.Command="{Binding Parent.EditItem}">
                   <muxc:ItemsRepeater.Layout>
                     <muxc:StackLayout Spacing="{StaticResource Space4}" />
                   </muxc:ItemsRepeater.Layout>
                   <muxc:ItemsRepeater.ItemTemplate>
                     <DataTemplate>
-                      <Border Background="{ThemeResource BackgroundBrush}"
+                      <utu:CardContentControl Style="{StaticResource StaticCardStyle}" Background="{ThemeResource BackgroundBrush}"
                               BorderBrush="{ThemeResource OutlineVariantBrush}"
                               BorderThickness="1" CornerRadius="{StaticResource RadiusMd}"
                               Padding="{StaticResource Inset16x12}"
                               MinHeight="{StaticResource TouchTargetComfortable}"
                               Translation="0,0,0"
                               AutomationProperties.Name="{Binding Description}"
-                              Tapped="CatalogItem_Tapped"
-                              PreviewKeyDown="CatalogItem_PreviewKeyDown"
+                              helpers:InteractionHelper.Command="{Binding DataContext.EditItem, ElementName=CatalogRoot}"
                               helpers:InteractionHelper.RestBackground="BackgroundBrush"
                               helpers:InteractionHelper.IsInteractive="True">
                         <Grid ColumnSpacing="{StaticResource Space12}">
@@ -337,11 +326,11 @@
                                      Foreground="{ThemeResource OnSurfaceVariantBrush}"
                                      VerticalAlignment="Center" />
                         </Grid>
-                      </Border>
+                      </utu:CardContentControl>
                     </DataTemplate>
                   </muxc:ItemsRepeater.ItemTemplate>
                 </muxc:ItemsRepeater>
-              </Border>
+              </utu:CardContentControl>
 
             </StackPanel>
           </ScrollViewer>
