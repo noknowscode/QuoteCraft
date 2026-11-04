@@ -54,12 +54,25 @@ public class AppDatabase
     }
 #endif
 
+#if DEBUG
+    /// <summary>Debug verification only: operations fail until this moment (see <see cref="OpenConnectionAsync"/>).</summary>
+    public static DateTimeOffset FailUntil { get; set; } = DateTimeOffset.MinValue;
+#endif
+
     /// <summary>
     /// Opens a connection for one operation; the caller disposes it (<c>await using</c>). The first call creates or
     /// migrates the schema.
     /// </summary>
     public async Task<SqliteConnection> OpenConnectionAsync()
     {
+#if DEBUG
+        // Verification hook (--qc-fault=load, App.xaml.cs): every operation fails until the moment set, so the pages'
+        // error states and Retry can be checked at runtime.
+        if (DateTimeOffset.UtcNow < FailUntil)
+        {
+            throw new InvalidOperationException("Simulated database failure (--qc-fault=load).");
+        }
+#endif
         var connection = new SqliteConnection(_connectionString);
         try
         {

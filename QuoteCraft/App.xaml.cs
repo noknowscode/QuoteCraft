@@ -147,6 +147,14 @@ public partial class App : Application
             }
         }
 #endif
+#if DEBUG
+        if (VerificationArgs.Get("fault") == "load")
+        {
+            // Error states: the database fails for 20 s from the first page, then recovers for Retry.
+            AppDatabase.FailUntil = DateTimeOffset.UtcNow.AddSeconds(20);
+            VerificationArgs.Log($"fault=load until={AppDatabase.FailUntil:HH:mm:ss}");
+        }
+#endif
         Host = await builder.NavigateAsync<Shell>();
 
         // Overdue quotes expire, and reminders go out 3 days before (PRD F17), while the app runs.
@@ -222,7 +230,8 @@ public partial class App : Application
 
 #if DEBUG
     /// <summary>
-    /// Screenshot-matrix hooks (docs/evidence). <c>--qc-focus=log</c> prints each element that takes keyboard focus.
+    /// Screenshot-matrix hooks (docs/evidence). <c>--qc-focus=log</c> prints each element that takes keyboard focus;
+    /// <c>--qc-fault=load</c> (in OnLaunched) makes the database fail for the first 20 s, for the error states and Retry.
     /// <c>--qc-theme=light|dark</c> sets the theme through the theme service, as
     /// the app's own selector does. <c>--qc-route=&lt;route&gt;[:detail]</c> opens Dashboard (the quotes list), Clients,
     /// Catalog, Settings, Onboarding or QuoteEditor (the seeded quote with the most line items, opened from the
