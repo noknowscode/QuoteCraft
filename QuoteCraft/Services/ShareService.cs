@@ -11,7 +11,9 @@ public interface IShareService
     /// Android asks where to save it, iOS offers the system's export sheet (Save to Files), and the browser downloads it.
     /// It changes nothing on the quote: sending is a separate step.
     /// </summary>
-    Task GenerateAndDownloadPdfAsync(QuoteEntity quote);
+    /// <returns>What the user needs to know when the hand-off fell short (desktop: the file is saved but no app
+    /// opened it, and where it is); null otherwise.</returns>
+    Task<string?> GenerateAndDownloadPdfAsync(QuoteEntity quote);
 }
 
 public class ShareService : IShareService
@@ -30,7 +32,7 @@ public class ShareService : IShareService
         _logger = logger;
     }
 
-    public async Task GenerateAndDownloadPdfAsync(QuoteEntity quote)
+    public async Task<string?> GenerateAndDownloadPdfAsync(QuoteEntity quote)
     {
         // Ensure line items are loaded
         if (quote.LineItems.Count == 0)
@@ -49,10 +51,15 @@ public class ShareService : IShareService
             return Task.CompletedTask;
         });
 #else
-        // Desktop and Windows: the exports folder, then the system's PDF viewer.
-        OpenFileWithDefaultApp(WriteExport(pdf, fileName));
+        // Desktop and Windows: the exports folder, then the system's PDF viewer; if none opens it, say where it is.
+        var path = WriteExport(pdf, fileName);
+        if (!OpenFileWithDefaultApp(path))
+        {
+            return $"{fileName} is saved in {Path.GetDirectoryName(path)}, but no app on this computer opened it.";
+        }
 #endif
         _logger.LogInformation("PDF for {QuoteNumber} handed over ({Bytes} bytes)", quote.QuoteNumber, pdf.Length);
+        return null;
     }
 
 #if __WASM__ || ANDROID
@@ -173,7 +180,8 @@ public class ShareService : IShareService
 #endif
 
 #if !__WASM__ && !ANDROID && !IOS
-    private void OpenFileWithDefaultApp(string filePath)
+    /// <returns>False when nothing could open the file.</returns>
+    private bool OpenFileWithDefaultApp(string filePath)
     {
         try
         {
@@ -182,6 +190,7 @@ public class ShareService : IShareService
                 FileName = filePath,
                 UseShellExecute = true
             });
+            return true;
         }
         catch (Exception ex)
         {
@@ -200,10 +209,16 @@ public class ShareService : IShareService
                 {
                     Process.Start("xdg-open", filePath);
                 }
+                else
+                {
+                    return false;
+                }
+                return true;
             }
             catch (Exception fallbackEx)
             {
                 _logger.LogError(fallbackEx, "All file open methods failed for {FilePath}", filePath);
+                return false;
             }
         }
     }

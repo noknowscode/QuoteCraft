@@ -157,7 +157,7 @@ public partial record CatalogModel
         if (result.DeleteRequested)
         {
             if (!await _navigator.ConfirmAsync(this, new ConfirmRequest("\uE74D", "Delete Catalog Item?",
-                    "This item will be permanently removed from your catalog.", "Delete", "Cancel"), ct))
+                    "This item will be removed from your catalog. Quotes that use it keep their line.", "Delete", "Cancel"), ct))
             {
                 return;
             }

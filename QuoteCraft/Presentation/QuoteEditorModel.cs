@@ -254,9 +254,11 @@ public partial record QuoteEditorModel
         try
         {
             await PersistEditsAsync();
-            if (await _quoteRepo.GetByIdAsync(_quoteId) is { } quote)
+            // When nothing opened the saved file, the message line says where it is.
+            if (await _quoteRepo.GetByIdAsync(_quoteId) is { } quote
+                && await _shareService.GenerateAndDownloadPdfAsync(quote) is { Length: > 0 } note)
             {
-                await _shareService.GenerateAndDownloadPdfAsync(quote);
+                await ValidationError.UpdateAsync(_ => note, ct);
             }
         }
         catch (Exception ex)

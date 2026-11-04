@@ -207,4 +207,17 @@ public class QuoteEditorModelTests
         Assert.Equal(["-"], h.Navigator.Routes);
         Assert.Equal("Bring the ladder.", (await h.Db.Quotes.GetByIdAsync(quote.Id))!.Notes);
     }
+
+    [Fact]
+    public async Task When_no_app_opens_the_exported_pdf_the_message_says_where_it_is()
+    {
+        using var h = new ModelHarness();
+        var quote = await h.AddQuoteAsync("Service call");
+        h.Share.GenerateAndDownloadPdfAsync(default!).ReturnsForAnyArgs("QC-2026-0001.pdf is saved in /data/exports, but no app on this computer opened it.");
+        var model = await Create(h, quote);
+
+        await model.ExportPdf(None);
+
+        Assert.StartsWith("QC-2026-0001.pdf is saved in", await model.ValidationError);
+    }
 }

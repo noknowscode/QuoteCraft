@@ -153,12 +153,16 @@ public partial record QuoteDetailModel
     public ValueTask DownloadPdf(CancellationToken ct) =>
         ReportFailureAsync("The PDF could not be created.", ExportPdfAsync, ct);
 
-    /// <summary>Saves the quote's PDF (<see cref="IShareService"/>); the quote's status does not change.</summary>
+    /// <summary>
+    /// Saves the quote's PDF (<see cref="IShareService"/>); the quote's status does not change. When nothing opened the
+    /// saved file, the banner says where it is.
+    /// </summary>
     private async Task ExportPdfAsync()
     {
-        if (await _quoteRepo.GetByIdAsync(_quoteId) is { } quote)
+        if (await _quoteRepo.GetByIdAsync(_quoteId) is { } quote
+            && await _shareService.GenerateAndDownloadPdfAsync(quote) is { Length: > 0 } note)
         {
-            await _shareService.GenerateAndDownloadPdfAsync(quote);
+            await ActionError.UpdateAsync(_ => note, CancellationToken.None);
         }
     }
 

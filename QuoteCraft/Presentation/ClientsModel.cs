@@ -113,7 +113,7 @@ public partial record ClientsModel
     {
         if (await SelectedClient is not { } client
             || !await _navigator.ConfirmAsync(this, new ConfirmRequest("\uE74D", "Delete Client?",
-                "This client will be permanently removed from your contact list.", "Delete", "Cancel"), ct))
+                "This client will be removed from your contact list. Their quotes stay.", "Delete", "Cancel"), ct))
         {
             return;
         }
