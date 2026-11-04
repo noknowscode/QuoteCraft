@@ -211,7 +211,6 @@
   <!-- Avatars, badges and marks -->
   <x:Double x:Key="AvatarSize">40</x:Double>
   <x:Double x:Key="AvatarSizeSm">36</x:Double>
-  <x:Double x:Key="BadgeSize">16</x:Double>
   <x:Double x:Key="DotSize">8</x:Double>
   <x:Double x:Key="LogoSize">48</x:Double>
   <x:Double x:Key="LogoSizeLarge">64</x:Double>
@@ -237,4 +236,6 @@
   <CornerRadius x:Key="RadiusCircle40">20</CornerRadius>
   <CornerRadius x:Key="RadiusCircle48">24</CornerRadius>
   <x:Double x:Key="RadiusMdValue">8</x:Double>
+  <!-- The onboarding step bars are Rectangles, which take the radius as a number -->
+  <x:Double x:Key="RadiusXsValue">2</x:Double>
 </ResourceDictionary>

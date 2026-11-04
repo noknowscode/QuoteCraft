@@ -42,10 +42,6 @@ public partial class App : Application
     protected Window? MainWindow { get; private set; }
     protected IHost? Host { get; private set; }
 
-    /// <summary>Service provider for pages that need to resolve services directly.</summary>
-    public static IServiceProvider Services =>
-        ((App)Current).Host!.Services;
-
     /// <summary>The services once the host has started; null before (and if startup failed).</summary>
     public static IServiceProvider? ServicesOrNull => (Current as App)?.Host?.Services;
 
@@ -296,7 +292,7 @@ public partial class App : Application
                 // Onboarding:step3 shows the quote settings step.
                 if (parts.Length == 2 && parts[1] is "complete" or "step3"
                     && await WaitForAsync<OnboardingPage>(root) is { } onboarding
-                    && MvuxHelper.GetModel<OnboardingModel>(onboarding.DataContext) is { } model)
+                    && onboarding.DataContext is OnboardingViewModel { Model: { } model })
                 {
                     await Task.Delay(1000);
                     await model.NextStep(CancellationToken.None);
@@ -351,20 +347,20 @@ public partial class App : Application
                 await Task.Delay(1500);
                 var selected = route switch
                 {
-                    "Dashboard" => await SelectFirstAsync<DashboardPage, DashboardModel>(root, async m =>
+                    "Dashboard" => await SelectFirstAsync<DashboardPage, DashboardModel>(root, vm => (vm as DashboardViewModel)?.Model, async m =>
                         {
                             var all = await Host.Services.GetRequiredService<IQuoteRepository>().GetAllAsync();
                             var first = all.OrderByDescending(q => q.LineItems.Count).First();
                             await m.OpenQuote(new QuoteListItem(first, IsSelected: true), CancellationToken.None);
                             return first.Title;
                         }),
-                    "Clients" => await SelectFirstAsync<ClientsPage, ClientsModel>(root, async m =>
+                    "Clients" => await SelectFirstAsync<ClientsPage, ClientsModel>(root, vm => (vm as ClientsViewModel)?.Model, async m =>
                         {
                             var first = (await m.Clients).First();
                             await m.SelectClient(first, CancellationToken.None);
                             return first.Name;
                         }),
-                    "Catalog" => await SelectFirstAsync<CatalogPage, CatalogModel>(root, async m =>
+                    "Catalog" => await SelectFirstAsync<CatalogPage, CatalogModel>(root, vm => (vm as CatalogViewModel)?.Model, async m =>
                         {
                             var first = (await m.CategoryCards).First();
                             await m.SelectCategoryCard(first, CancellationToken.None);
@@ -381,12 +377,13 @@ public partial class App : Application
         }
     }
 
-    private static async Task<string?> SelectFirstAsync<TPage, TModel>(FrameworkElement root, Func<TModel, Task<string>> select)
+    /// <summary>Waits for the page, then runs <paramref name="select"/> on its model (the generated view model's Model).</summary>
+    private static async Task<string?> SelectFirstAsync<TPage, TModel>(FrameworkElement root, Func<object?, TModel?> model, Func<TModel, Task<string>> select)
         where TPage : FrameworkElement
         where TModel : class
     {
         var page = await WaitForAsync<TPage>(root);
-        return page is not null && MvuxHelper.GetModel<TModel>(page.DataContext) is { } model ? await select(model) : null;
+        return page is not null && model(page.DataContext) is { } found ? await select(found) : null;
     }
 
     private static async Task<T?> WaitForAsync<T>(DependencyObject root) where T : DependencyObject

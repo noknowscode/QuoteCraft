@@ -6,12 +6,13 @@ using Windows.System;
 namespace QuoteCraft.Helpers;
 
 /// <summary>
-/// Hover, press, focus, selection and keyboard activation for list cards (a Toolkit CardContentControl, or a Border
-/// on the pages not converted yet), set from XAML with the IsInteractive, IsSelected and Command attached properties.
+/// Hover, press, focus, selection and keyboard activation for list cards (Toolkit CardContentControls with
+/// StaticCardStyle, whose own state washes are off), set from XAML with the IsInteractive, IsSelected and Command
+/// attached properties. The brushes come from the card's theme and are set again when it changes.
 ///
 /// Interaction Tokens (change here to update globally):
 ///   Elevation:  Rest(0,0,0)  Hover(0,-2,4)  Pressed(0,0,2)
-///   Colors:     Hover/Focus border = PrimaryBrush, Rest border = OutlineVariantBrush
+///   Colors:     Hover/Focus card = PrimaryBrush, Rest card = OutlineVariantBrush
 ///   Opacity:    Pressed = 0.92, Rest/Hover = 1.0
 /// </summary>
 public static class InteractionHelper
@@ -25,7 +26,7 @@ public static class InteractionHelper
     private const double OpacityPressed = 0.92;
 
     // ── Per-element state tracking ───────────────────────────────────
-    private static readonly ConditionalWeakTable<FrameworkElement, PointerState> _states = new();
+    private static readonly ConditionalWeakTable<Control, PointerState> _states = new();
 
     private sealed class PointerState
     {
@@ -51,7 +52,7 @@ public static class InteractionHelper
         obj.SetValue(CommandProperty, value);
 
     // ── Attached Property: IsSelected ────────────────────────────────
-    // The selected card keeps the primary border and a primary-container fill.
+    // The selected card keeps the primary card and a primary-container fill.
 
     public static readonly DependencyProperty IsSelectedProperty =
         DependencyProperty.RegisterAttached(
@@ -60,7 +61,7 @@ public static class InteractionHelper
             typeof(InteractionHelper),
             new PropertyMetadata(false, (d, _) =>
             {
-                if (d is FrameworkElement card) ApplyVisualState(card, GetState(card));
+                if (d is Control card) ApplyVisualState(card, GetState(card));
             }));
 
     public static bool GetIsSelected(DependencyObject obj) => (bool)obj.GetValue(IsSelectedProperty);
@@ -98,167 +99,155 @@ public static class InteractionHelper
 
     private static void OnIsInteractiveChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        if (d is not FrameworkElement border) return;
+        if (d is not Control card) return;
 
         if ((bool)e.NewValue)
         {
-            border.PointerEntered += Border_PointerEntered;
-            border.PointerExited += Border_PointerExited;
-            border.PointerPressed += Border_PointerPressed;
-            border.PointerReleased += Border_PointerReleased;
-            border.PointerCanceled += Border_PointerCanceled;
-            border.GotFocus += Border_GotFocus;
-            border.LostFocus += Border_LostFocus;
-            border.KeyDown += Border_KeyDown;
-            border.ActualThemeChanged += Border_ActualThemeChanged;
-            border.IsTabStop = true;
+            card.PointerEntered += Card_PointerEntered;
+            card.PointerExited += Card_PointerExited;
+            card.PointerPressed += Card_PointerPressed;
+            card.PointerReleased += Card_PointerReleased;
+            card.PointerCanceled += Card_PointerCanceled;
+            card.GotFocus += Card_GotFocus;
+            card.LostFocus += Card_LostFocus;
+            card.KeyDown += Card_KeyDown;
+            card.ActualThemeChanged += Card_ActualThemeChanged;
+            card.IsTabStop = true;
         }
         else
         {
-            border.PointerEntered -= Border_PointerEntered;
-            border.PointerExited -= Border_PointerExited;
-            border.PointerPressed -= Border_PointerPressed;
-            border.PointerReleased -= Border_PointerReleased;
-            border.PointerCanceled -= Border_PointerCanceled;
-            border.GotFocus -= Border_GotFocus;
-            border.LostFocus -= Border_LostFocus;
-            border.KeyDown -= Border_KeyDown;
-            border.ActualThemeChanged -= Border_ActualThemeChanged;
+            card.PointerEntered -= Card_PointerEntered;
+            card.PointerExited -= Card_PointerExited;
+            card.PointerPressed -= Card_PointerPressed;
+            card.PointerReleased -= Card_PointerReleased;
+            card.PointerCanceled -= Card_PointerCanceled;
+            card.GotFocus -= Card_GotFocus;
+            card.LostFocus -= Card_LostFocus;
+            card.KeyDown -= Card_KeyDown;
+            card.ActualThemeChanged -= Card_ActualThemeChanged;
         }
     }
 
     // ── Event Handlers ───────────────────────────────────────────────
 
     // Brushes set from code keep their colour: set them again for the new theme.
-    private static void Border_ActualThemeChanged(FrameworkElement sender, object args)
+    private static void Card_ActualThemeChanged(FrameworkElement sender, object args)
     {
-        if (sender is FrameworkElement border) ApplyVisualState(border, GetState(border));
+        if (sender is Control card) ApplyVisualState(card, GetState(card));
     }
 
-    private static void Border_PointerEntered(object sender, PointerRoutedEventArgs e)
+    private static void Card_PointerEntered(object sender, PointerRoutedEventArgs e)
     {
-        if (sender is not FrameworkElement border) return;
-        var state = GetState(border);
+        if (sender is not Control card) return;
+        var state = GetState(card);
         state.IsHovered = true;
-        ApplyVisualState(border, state);
+        ApplyVisualState(card, state);
     }
 
-    private static void Border_PointerExited(object sender, PointerRoutedEventArgs e)
+    private static void Card_PointerExited(object sender, PointerRoutedEventArgs e)
     {
-        if (sender is not FrameworkElement border) return;
-        var state = GetState(border);
+        if (sender is not Control card) return;
+        var state = GetState(card);
         state.IsHovered = false;
         state.IsPressed = false;
-        ApplyVisualState(border, state);
+        ApplyVisualState(card, state);
     }
 
-    private static void Border_PointerPressed(object sender, PointerRoutedEventArgs e)
+    private static void Card_PointerPressed(object sender, PointerRoutedEventArgs e)
     {
-        if (sender is not FrameworkElement border) return;
-        var state = GetState(border);
+        if (sender is not Control card) return;
+        var state = GetState(card);
         state.IsPressed = true;
-        ApplyVisualState(border, state);
+        ApplyVisualState(card, state);
     }
 
-    private static void Border_PointerReleased(object sender, PointerRoutedEventArgs e)
+    private static void Card_PointerReleased(object sender, PointerRoutedEventArgs e)
     {
-        if (sender is not FrameworkElement border) return;
-        var state = GetState(border);
+        if (sender is not Control card) return;
+        var state = GetState(card);
         state.IsPressed = false;
-        ApplyVisualState(border, state);
+        ApplyVisualState(card, state);
     }
 
-    private static void Border_PointerCanceled(object sender, PointerRoutedEventArgs e)
+    private static void Card_PointerCanceled(object sender, PointerRoutedEventArgs e)
     {
-        if (sender is not FrameworkElement border) return;
-        var state = GetState(border);
+        if (sender is not Control card) return;
+        var state = GetState(card);
         state.IsHovered = false;
         state.IsPressed = false;
-        ApplyVisualState(border, state);
+        ApplyVisualState(card, state);
     }
 
-    private static void Border_KeyDown(object sender, KeyRoutedEventArgs e)
+    private static void Card_KeyDown(object sender, KeyRoutedEventArgs e)
     {
-        if (sender is not FrameworkElement border) return;
+        if (sender is not Control card) return;
         if (e.Key is not (VirtualKey.Enter or VirtualKey.Space)) return;
 
         e.Handled = true;
 
         // Press visual feedback
-        var state = GetState(border);
+        var state = GetState(card);
         state.IsPressed = true;
-        ApplyVisualState(border, state);
+        ApplyVisualState(card, state);
 
         // Invoke the attached Command if set, passing DataContext as parameter
-        var command = GetCommand(border);
-        var parameter = border.DataContext;
+        var command = GetCommand(card);
+        var parameter = card.DataContext;
         if (command is not null && command.CanExecute(parameter))
             command.Execute(parameter);
 
         // Reset visual
         state.IsPressed = false;
-        ApplyVisualState(border, state);
+        ApplyVisualState(card, state);
     }
 
-    private static void Border_GotFocus(object sender, RoutedEventArgs e)
+    private static void Card_GotFocus(object sender, RoutedEventArgs e)
     {
-        if (sender is not FrameworkElement border) return;
-        var state = GetState(border);
+        if (sender is not Control card) return;
+        var state = GetState(card);
         state.IsFocused = true;
-        ApplyVisualState(border, state);
+        ApplyVisualState(card, state);
     }
 
-    private static void Border_LostFocus(object sender, RoutedEventArgs e)
+    private static void Card_LostFocus(object sender, RoutedEventArgs e)
     {
-        if (sender is not FrameworkElement border) return;
-        var state = GetState(border);
+        if (sender is not Control card) return;
+        var state = GetState(card);
         state.IsFocused = false;
-        ApplyVisualState(border, state);
+        ApplyVisualState(card, state);
     }
 
     // ── State Machine ────────────────────────────────────────────────
 
-    private static void ApplyVisualState(FrameworkElement border, PointerState state)
+    private static void ApplyVisualState(Control card, PointerState state)
     {
-        var selected = GetIsSelected(border);
-        SetBackground(border, GetBrush(border, selected ? "PrimaryContainerBrush" : GetRestBackground(border)));
+        var selected = GetIsSelected(card);
+        card.Background = GetBrush(card, selected ? "PrimaryContainerBrush" : GetRestBackground(card));
 
         if (state.IsPressed)
         {
-            border.Translation = ElevationPressed;
-            border.Opacity = OpacityPressed;
-            SetBorderBrush(border, GetBrush(border, "PrimaryBrush"));
+            card.Translation = ElevationPressed;
+            card.Opacity = OpacityPressed;
+            card.BorderBrush = GetBrush(card, "PrimaryBrush");
         }
         else if (state.IsHovered || state.IsFocused || selected)
         {
-            border.Translation = state.IsHovered || state.IsFocused ? ElevationHover : ElevationRest;
-            border.Opacity = 1.0;
-            SetBorderBrush(border, GetBrush(border, "PrimaryBrush"));
+            card.Translation = state.IsHovered || state.IsFocused ? ElevationHover : ElevationRest;
+            card.Opacity = 1.0;
+            card.BorderBrush = GetBrush(card, "PrimaryBrush");
         }
         else
         {
-            border.Translation = ElevationRest;
-            border.Opacity = 1.0;
-            SetBorderBrush(border, GetBrush(border, "OutlineVariantBrush"));
+            card.Translation = ElevationRest;
+            card.Opacity = 1.0;
+            card.BorderBrush = GetBrush(card, "OutlineVariantBrush");
         }
-    }
-
-    private static void SetBackground(FrameworkElement element, Microsoft.UI.Xaml.Media.Brush brush)
-    {
-        if (element is Control control) control.Background = brush;
-        else if (element is Border border) border.Background = brush;
-    }
-
-    private static void SetBorderBrush(FrameworkElement element, Microsoft.UI.Xaml.Media.Brush brush)
-    {
-        if (element is Control control) control.BorderBrush = brush;
-        else if (element is Border border) border.BorderBrush = brush;
     }
 
     // ── Helpers ──────────────────────────────────────────────────────
 
-    private static PointerState GetState(FrameworkElement border) =>
-        _states.GetOrCreateValue(border);
+    private static PointerState GetState(Control card) =>
+        _states.GetOrCreateValue(card);
 
     private static Microsoft.UI.Xaml.Media.Brush GetBrush(FrameworkElement element, string key) =>
         ThemeResources.GetBrush(element, key);

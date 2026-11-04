@@ -15,12 +15,12 @@
 
       <!-- Brand -->
       <StackPanel Spacing="{StaticResource Space8}" HorizontalAlignment="Center">
-        <Border Background="{StaticResource AppBarBackgroundFixedBrush}"
+        <utu:CardContentControl Style="{StaticResource StaticCardStyle}" BorderThickness="0" Background="{StaticResource AppBarBackgroundFixedBrush}"
                 Width="{StaticResource LogoSizeLarge}" Height="{StaticResource LogoSizeLarge}" CornerRadius="{StaticResource RadiusXl}">
           <TextBlock Text="QC" Foreground="{StaticResource AppBarForegroundFixedBrush}"
                      Style="{StaticResource HeadlineSmallBold}"
                      HorizontalAlignment="Center" VerticalAlignment="Center" />
-        </Border>
+        </utu:CardContentControl>
         <TextBlock Text="QuoteCraft"
                    Style="{StaticResource HeadlineSmall}"
                    FontWeight="Bold"
@@ -47,14 +47,14 @@
       <!-- Magic link sent confirmation -->
       <mvux:FeedView Source="{Binding MagicLinkSent}">
         <DataTemplate>
-          <Border Background="{ThemeResource TertiaryContainerBrush}"
+          <utu:CardContentControl Style="{StaticResource StaticCardStyle}" BorderThickness="0" Background="{ThemeResource TertiaryContainerBrush}"
                   CornerRadius="{StaticResource RadiusMd}" Padding="{StaticResource Inset16}"
                   Visibility="{Binding Data, Converter={StaticResource BoolToVisibilityConverter}}">
             <TextBlock Text="Check your email for a sign-in link."
                        Style="{StaticResource BodyMedium}"
                        Foreground="{ThemeResource OnTertiaryContainerBrush}"
                        TextWrapping="Wrap" HorizontalAlignment="Center" />
-          </Border>
+          </utu:CardContentControl>
         </DataTemplate>
       </mvux:FeedView>
 

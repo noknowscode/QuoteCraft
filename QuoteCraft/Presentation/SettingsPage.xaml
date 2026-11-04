@@ -52,7 +52,7 @@
         <!-- Load error, with Retry -->
         <mvux:FeedView Source="{Binding LoadError}">
           <DataTemplate>
-            <Border Background="{ThemeResource ErrorContainerBrush}"
+            <utu:CardContentControl Style="{StaticResource StaticCardStyle}" BorderThickness="0" Background="{ThemeResource ErrorContainerBrush}"
                     CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Inset16x12}"
                     AutomationProperties.LiveSetting="Assertive"
                     Visibility="{Binding Data, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert}">
@@ -68,19 +68,13 @@
                         Command="{Binding DataContext.Reload, ElementName=SettingsRoot}"
                         Style="{StaticResource MaterialOutlinedButtonStyle}" />
               </Grid>
-            </Border>
+            </utu:CardContentControl>
           </DataTemplate>
         </mvux:FeedView>
 
         <!-- Upgrade Banner (only where billing is configured) -->
-        <Border CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Inset24}"
+        <utu:CardContentControl Style="{StaticResource BannerCardStyle}" Padding="{StaticResource Inset24}"
                 Visibility="{Binding LocalModeNote, Converter={StaticResource EmptyToVisibleConverter}}">
-          <Border.Background>
-            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0.5">
-              <GradientStop Color="{StaticResource UpgradeBannerStartColor}" Offset="0" />
-              <GradientStop Color="{StaticResource UpgradeBannerEndColor}" Offset="1" />
-            </LinearGradientBrush>
-          </Border.Background>
           <StackPanel Spacing="{StaticResource Space16}">
             <StackPanel Spacing="{StaticResource Space4}">
               <TextBlock Text="Unlock QuoteCraft Pro"
@@ -99,7 +93,7 @@
                          Style="{StaticResource LabelLargeSemiBold}" />
             </Button>
           </StackPanel>
-        </Border>
+        </utu:CardContentControl>
 
         <!-- BUSINESS INFO -->
         <StackPanel Spacing="{StaticResource Space8}">
@@ -108,9 +102,7 @@
                      Foreground="{ThemeResource OnSurfaceVariantBrush}"
                      FontWeight="Bold" Margin="{StaticResource GapStart4}" AutomationProperties.HeadingLevel="Level2" />
 
-          <Border Background="{ThemeResource SurfaceBrush}"
-                  BorderBrush="{ThemeResource OutlineVariantBrush}"
-                  BorderThickness="1" CornerRadius="{StaticResource RadiusLg}">
+          <utu:CardContentControl Style="{StaticResource StaticCardStyle}">
             <StackPanel>
               <Grid Padding="{StaticResource FormRowInset}" MinHeight="{utu:Responsive Narrow={StaticResource FormRowMinHeightNarrow}, Wide={StaticResource FormRowMinHeight}}">
                 <Grid.ColumnDefinitions>
@@ -220,18 +212,19 @@
                            FontWeight="Medium" VerticalAlignment="Center" />
                 <StackPanel Grid.Column="1" Orientation="Horizontal"
                             HorizontalAlignment="Right" Spacing="{StaticResource Space8}" VerticalAlignment="Center">
-                  <Border x:Name="LogoThumbnailBorder" Width="{StaticResource LogoThumbSize}" Height="{StaticResource LogoThumbSize}" CornerRadius="{StaticResource RadiusSm}"
+                  <!-- xaml-lint: allow card - clips the logo thumbnail to rounded corners with a hairline stroke -->
+                  <Border Width="{StaticResource LogoThumbSize}" Height="{StaticResource LogoThumbSize}" CornerRadius="{StaticResource RadiusSm}"
                           BorderBrush="{ThemeResource OutlineVariantBrush}" BorderThickness="1"
-                          Visibility="Collapsed">
-                    <Image x:Name="LogoThumbnailImage" Stretch="UniformToFill" />
+                          Visibility="{Binding LogoPath, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert, FallbackValue=Collapsed}">
+                    <Image Source="{Binding LogoPath}" Stretch="UniformToFill" AutomationProperties.Name="Business logo" />
                   </Border>
-                  <TextBlock x:Name="LogoFileName"
+                  <TextBlock Text="{Binding LogoFileName}"
                              Style="{StaticResource BodySmall}"
                              Foreground="{ThemeResource OnSurfaceVariantBrush}"
                              VerticalAlignment="Center"
                              MaxWidth="{StaticResource FileNameMaxWidth}" TextTrimming="CharacterEllipsis"
-                             Visibility="Collapsed" />
-                  <Button Click="UploadLogo_Click"
+                             Visibility="{Binding LogoPath, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert, FallbackValue=Collapsed}" />
+                  <Button Command="{Binding UploadLogo}"
                           AutomationProperties.Name="Upload logo"
                           Style="{StaticResource MaterialTextButtonStyle}"
                           MinHeight="{StaticResource TouchTarget}" Padding="{StaticResource InsetX8}">
@@ -244,8 +237,16 @@
                   </Button>
                 </StackPanel>
               </Grid>
+              <!-- What Upload could not do -->
+              <TextBlock Text="{Binding LogoError}"
+                         Style="{StaticResource BodySmall}"
+                         Foreground="{ThemeResource ErrorBrush}"
+                         TextWrapping="Wrap"
+                         Margin="{StaticResource InsetX16}"
+                         AutomationProperties.LiveSetting="Assertive"
+                         Visibility="{Binding LogoError, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert, FallbackValue=Collapsed}" />
             </StackPanel>
-          </Border>
+          </utu:CardContentControl>
         </StackPanel>
 
         <!-- QUOTE SETTINGS -->
@@ -255,9 +256,7 @@
                      Foreground="{ThemeResource OnSurfaceVariantBrush}"
                      FontWeight="Bold" Margin="{StaticResource GapStart4}" AutomationProperties.HeadingLevel="Level2" />
 
-          <Border Background="{ThemeResource SurfaceBrush}"
-                  BorderBrush="{ThemeResource OutlineVariantBrush}"
-                  BorderThickness="1" CornerRadius="{StaticResource RadiusLg}">
+          <utu:CardContentControl Style="{StaticResource StaticCardStyle}">
             <StackPanel>
               <Grid Padding="{StaticResource FormRowInset}" MinHeight="{utu:Responsive Narrow={StaticResource FormRowMinHeightNarrow}, Wide={StaticResource FormRowMinHeight}}">
                 <Grid.ColumnDefinitions>
@@ -392,7 +391,7 @@
                          HorizontalAlignment="Stretch" TextAlignment="Right" />
               </Grid>
             </StackPanel>
-          </Border>
+          </utu:CardContentControl>
         </StackPanel>
 
         <!-- MY CATALOGS -->
@@ -402,9 +401,7 @@
                      Foreground="{ThemeResource OnSurfaceVariantBrush}"
                      FontWeight="Bold" Margin="{StaticResource GapStart4}" AutomationProperties.HeadingLevel="Level2" />
 
-          <Border Background="{ThemeResource SurfaceBrush}"
-                  BorderBrush="{ThemeResource OutlineVariantBrush}"
-                  BorderThickness="1" CornerRadius="{StaticResource RadiusLg}">
+          <utu:CardContentControl Style="{StaticResource StaticCardStyle}">
             <StackPanel>
               <Grid Padding="{StaticResource FormRowInset}" MinHeight="{utu:Responsive Narrow={StaticResource FormRowMinHeightNarrow}, Wide={StaticResource FormRowMinHeight}}">
                 <Grid.ColumnDefinitions>
@@ -439,7 +436,7 @@
                       Padding="{StaticResource FormRowInset}"
                       Content="Manage catalog" />
             </StackPanel>
-          </Border>
+          </utu:CardContentControl>
         </StackPanel>
 
         <!-- APPEARANCE: System (default), Light or Dark; saved and restored at launch -->
@@ -449,9 +446,7 @@
                      Foreground="{ThemeResource OnSurfaceVariantBrush}"
                      FontWeight="Bold" Margin="{StaticResource GapStart4}" AutomationProperties.HeadingLevel="Level2" />
 
-          <Border Background="{ThemeResource SurfaceBrush}"
-                  BorderBrush="{ThemeResource OutlineVariantBrush}"
-                  BorderThickness="1" CornerRadius="{StaticResource RadiusLg}">
+          <utu:CardContentControl Style="{StaticResource StaticCardStyle}">
             <Grid Padding="{StaticResource FormRowInset}" MinHeight="{utu:Responsive Narrow={StaticResource FormRowMinHeightNarrow}, Wide={StaticResource FormRowMinHeight}}">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="140" />
@@ -469,7 +464,7 @@
                 <ComboBoxItem Content="Dark" />
               </ComboBox>
             </Grid>
-          </Border>
+          </utu:CardContentControl>
         </StackPanel>
 
         <!-- LOCAL MODE (no Supabase project configured: no account, sync or plans) -->
@@ -480,9 +475,7 @@
                      Foreground="{ThemeResource OnSurfaceVariantBrush}"
                      FontWeight="Bold" Margin="{StaticResource GapStart4}" AutomationProperties.HeadingLevel="Level2" />
 
-          <Border Background="{ThemeResource SurfaceBrush}"
-                  BorderBrush="{ThemeResource OutlineVariantBrush}"
-                  BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Inset20x12}">
+          <utu:CardContentControl Style="{StaticResource StaticCardStyle}" Padding="{StaticResource Inset20x12}">
             <Grid ColumnSpacing="{StaticResource Space12}">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
@@ -497,7 +490,7 @@
                          Foreground="{ThemeResource OnSurfaceVariantBrush}"
                          TextWrapping="Wrap" />
             </Grid>
-          </Border>
+          </utu:CardContentControl>
         </StackPanel>
 
         <!-- SUBSCRIPTION -->
@@ -508,9 +501,7 @@
                      Foreground="{ThemeResource OnSurfaceVariantBrush}"
                      FontWeight="Bold" Margin="{StaticResource GapStart4}" AutomationProperties.HeadingLevel="Level2" />
 
-          <Border Background="{ThemeResource SurfaceBrush}"
-                  BorderBrush="{ThemeResource OutlineVariantBrush}"
-                  BorderThickness="1" CornerRadius="{StaticResource RadiusLg}">
+          <utu:CardContentControl Style="{StaticResource StaticCardStyle}">
             <StackPanel>
               <Grid Padding="{StaticResource FormRowInset}" MinHeight="{utu:Responsive Narrow={StaticResource FormRowMinHeightNarrow}, Wide={StaticResource FormRowMinHeight}}">
                 <Grid.ColumnDefinitions>
@@ -556,7 +547,7 @@
                 </Button>
               </Grid>
             </StackPanel>
-          </Border>
+          </utu:CardContentControl>
         </StackPanel>
 
         <!-- ACCOUNT (a Supabase project is configured; cloud sync is still off: DECISIONS D8) -->
@@ -571,9 +562,7 @@
                      Foreground="{ThemeResource OnSurfaceVariantBrush}"
                      TextWrapping="Wrap" Margin="{StaticResource GapStart4}" />
 
-          <Border Background="{ThemeResource SurfaceBrush}"
-                  BorderBrush="{ThemeResource OutlineVariantBrush}"
-                  BorderThickness="1" CornerRadius="{StaticResource RadiusLg}">
+          <utu:CardContentControl Style="{StaticResource StaticCardStyle}">
             <Grid Padding="{StaticResource FormRowInset}" MinHeight="{utu:Responsive Narrow={StaticResource FormRowMinHeightNarrow}, Wide={StaticResource FormRowMinHeight}}">
               <Button Command="{Binding SignOut}"
                       HorizontalAlignment="Stretch"
@@ -588,7 +577,7 @@
                 </StackPanel>
               </Button>
             </Grid>
-          </Border>
+          </utu:CardContentControl>
         </StackPanel>
 
         <!-- Save: validation, saving and saved states -->
@@ -634,9 +623,7 @@
         <ScrollViewer Grid.Column="1"
                       Margin="{StaticResource GapStart32}"
                       Visibility="{utu:Responsive Narrowest=Collapsed, Widest=Visible, Layout={StaticResource SplitLayout}}">
-          <Border Background="{ThemeResource SurfaceBrush}"
-                  BorderBrush="{ThemeResource OutlineVariantBrush}"
-                  BorderThickness="1" CornerRadius="{StaticResource RadiusMd}"
+          <utu:CardContentControl Style="{StaticResource StaticCardStyle}" CornerRadius="{StaticResource RadiusMd}"
                   Padding="{StaticResource Inset32x24}"
                   Margin="{StaticResource GapBottom24}"
                   MaxWidth="{StaticResource ReadingMaxWidth}"
@@ -651,17 +638,19 @@
                     <ColumnDefinition Width="Auto" />
                   </Grid.ColumnDefinitions>
 
-                  <!-- Logo placeholder -->
-                  <Border x:Name="PreviewLogoBorder" Width="{StaticResource PreviewLogoSize}" Height="{StaticResource PreviewLogoSize}" CornerRadius="{StaticResource RadiusMd}"
-                          Background="{ThemeResource SurfaceVariantBrush}" Margin="{StaticResource GapEnd16}"
-                          VerticalAlignment="Top">
+                  <!-- Logo placeholder (a top-aligned wrapper: the card template passes its alignment to its own fill) -->
+                  <Grid VerticalAlignment="Top" Margin="{StaticResource GapEnd16}">
+                  <utu:CardContentControl Style="{StaticResource TonalCardStyle}" Width="{StaticResource PreviewLogoSize}" Height="{StaticResource PreviewLogoSize}">
                     <Grid>
-                      <FontIcon x:Name="PreviewLogoPlaceholder" Glyph="&#xE91B;" FontSize="{StaticResource IconSize2xl}"
+                      <FontIcon Glyph="&#xE91B;" FontSize="{StaticResource IconSize2xl}"
                                 Foreground="{ThemeResource OutlineBrush}"
-                                HorizontalAlignment="Center" VerticalAlignment="Center" />
-                      <Image x:Name="PreviewLogoImage" Stretch="UniformToFill" Visibility="Collapsed" />
+                                HorizontalAlignment="Center" VerticalAlignment="Center"
+                                Visibility="{Binding LogoPath, Converter={StaticResource EmptyToVisibleConverter}, FallbackValue=Visible}" />
+                      <Image Source="{Binding LogoPath}" Stretch="UniformToFill" AutomationProperties.Name="Business logo"
+                             Visibility="{Binding LogoPath, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert, FallbackValue=Collapsed}" />
                     </Grid>
-                  </Border>
+                  </utu:CardContentControl>
+                  </Grid>
 
                   <!-- Business details -->
                   <StackPanel Grid.Column="1" Spacing="{StaticResource Space2}" VerticalAlignment="Top">
@@ -766,7 +755,7 @@
                 </StackPanel>
 
                 <!-- Line items table header -->
-                <Border Background="{ThemeResource SurfaceVariantBrush}" CornerRadius="{StaticResource RadiusSm}"
+                <utu:CardContentControl Style="{StaticResource TonalCardStyle}" CornerRadius="{StaticResource RadiusSm}"
                         Padding="{StaticResource Inset16x12}" Margin="{StaticResource GapBottom4}">
                   <Grid>
                     <Grid.ColumnDefinitions>
@@ -784,7 +773,7 @@
                     <TextBlock Grid.Column="3" Text="Total" Style="{StaticResource LabelSmall}"
                                FontWeight="Bold" Foreground="{ThemeResource OnSurfaceVariantBrush}" TextAlignment="Right" />
                   </Grid>
-                </Border>
+                </utu:CardContentControl>
 
                 <!-- Sample line items -->
                 <Border Padding="{StaticResource Inset16x12}" Margin="{StaticResource GapBottom2}">
@@ -808,7 +797,7 @@
                   </Grid>
                 </Border>
 
-                <Border Padding="{StaticResource Inset16x12}" Background="{ThemeResource AlternateRowBrush}" CornerRadius="{StaticResource RadiusSm}" Margin="{StaticResource GapBottom2}">
+                <utu:CardContentControl Style="{StaticResource StaticCardStyle}" BorderThickness="0" Padding="{StaticResource Inset16x12}" Background="{ThemeResource AlternateRowBrush}" CornerRadius="{StaticResource RadiusSm}" Margin="{StaticResource GapBottom2}">
                   <Grid>
                     <Grid.ColumnDefinitions>
                       <ColumnDefinition Width="*" />
@@ -827,7 +816,7 @@
                                FontFamily="{StaticResource MonospaceFontFamily}"
                                Foreground="{ThemeResource OnSurfaceBrush}" TextAlignment="Right" />
                   </Grid>
-                </Border>
+                </utu:CardContentControl>
 
                 <Border Padding="{StaticResource Inset16x12}" Margin="{StaticResource GapBottom2}">
                   <Grid>
@@ -910,7 +899,7 @@
                 </Grid>
 
                 <!-- Notes -->
-                <Border Background="{ThemeResource SurfaceVariantBrush}" CornerRadius="{StaticResource RadiusMd}"
+                <utu:CardContentControl Style="{StaticResource TonalCardStyle}"
                         Padding="{StaticResource CardInset}" Margin="{StaticResource GapTop24}">
                   <StackPanel Spacing="{StaticResource Space8}">
                     <TextBlock Text="NOTES" Style="{StaticResource LabelSmall}"
@@ -920,7 +909,7 @@
                                Foreground="{ThemeResource OnSurfaceVariantBrush}"
                                TextWrapping="Wrap" />
                   </StackPanel>
-                </Border>
+                </utu:CardContentControl>
 
                 <!-- Valid until + currency -->
                 <StackPanel Margin="{StaticResource GapTop16}" Spacing="{StaticResource Space4}">
@@ -953,7 +942,7 @@
                 </mvux:FeedView>
 
               </StackPanel>
-          </Border>
+          </utu:CardContentControl>
         </ScrollViewer>
 
     </Grid>

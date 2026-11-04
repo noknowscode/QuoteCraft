@@ -44,10 +44,6 @@
   <SolidColorBrush x:Key="AppBarForegroundFixedBrush" Color="{StaticResource AppBarForegroundColor}" />
   <Color x:Key="AppBarButtonBackgroundColor">#26FFFFFF</Color>
   <SolidColorBrush x:Key="AppBarButtonBackgroundFixedBrush" Color="{StaticResource AppBarButtonBackgroundColor}" />
-  <Color x:Key="AppBarButtonHoverColor">#40FFFFFF</Color>
-  <SolidColorBrush x:Key="AppBarButtonHoverFixedBrush" Color="{StaticResource AppBarButtonHoverColor}" />
-  <Color x:Key="AppBarButtonPressedColor">#1AFFFFFF</Color>
-  <SolidColorBrush x:Key="AppBarButtonPressedFixedBrush" Color="{StaticResource AppBarButtonPressedColor}" />
   <Color x:Key="UpgradeBannerStartColor">#2B4C7E</Color>
   <Color x:Key="UpgradeBannerEndColor">#1A365D</Color>
   <Color x:Key="UpgradeBannerSubtitleColor">#B0C4DE</Color>

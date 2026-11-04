@@ -19,18 +19,17 @@
       <StackPanel Spacing="{StaticResource Space24}" HorizontalAlignment="Center"
                   Visibility="{Binding CurrentStep, Converter={StaticResource StepVisibilityConverter}, ConverterParameter=1}">
         <!-- Logo badge -->
-        <Border Width="{StaticResource LogoSizeHero}" Height="{StaticResource LogoSizeHero}" CornerRadius="{StaticResource RadiusXl}"
+        <utu:CardContentControl Style="{StaticResource StaticCardStyle}" BorderThickness="0" Width="{StaticResource LogoSizeHero}" Height="{StaticResource LogoSizeHero}" CornerRadius="{StaticResource RadiusXl}"
                 Background="{StaticResource AppBarBackgroundFixedBrush}"
-                HorizontalAlignment="Center"
                 AutomationProperties.AccessibilityView="Raw"
                 Translation="0,0,16">
-          <Border.Shadow>
+          <utu:CardContentControl.Shadow>
             <ThemeShadow />
-          </Border.Shadow>
+          </utu:CardContentControl.Shadow>
           <TextBlock Text="QC" Foreground="{StaticResource AppBarForegroundFixedBrush}"
                      Style="{StaticResource HeadlineMediumBold}"
                      HorizontalAlignment="Center" VerticalAlignment="Center" />
-        </Border>
+        </utu:CardContentControl>
 
         <TextBlock Text="Welcome to QuoteCraft"
                    Style="{StaticResource HeadlineMediumBold}"
@@ -78,12 +77,12 @@
         <!-- Progress: step 1 of 2 (bars and a name, so it isn't colour alone) -->
         <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}" HorizontalAlignment="Center"
                     AutomationProperties.Name="Step 1 of 2">
-          <Border Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" CornerRadius="{StaticResource RadiusXs}"
-                  Background="{StaticResource AppBarAccentInvariantBrush}" />
-          <Border Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" CornerRadius="{StaticResource RadiusXs}"
-                  Background="{ThemeResource OutlineVariantBrush}" />
-          <Border Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" CornerRadius="{StaticResource RadiusXs}"
-                  Background="{ThemeResource OutlineVariantBrush}" />
+          <Rectangle Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" RadiusX="{StaticResource RadiusXsValue}" RadiusY="{StaticResource RadiusXsValue}"
+                     Fill="{StaticResource AppBarAccentInvariantBrush}" />
+          <Rectangle Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" RadiusX="{StaticResource RadiusXsValue}" RadiusY="{StaticResource RadiusXsValue}"
+                     Fill="{ThemeResource OutlineVariantBrush}" />
+          <Rectangle Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" RadiusX="{StaticResource RadiusXsValue}" RadiusY="{StaticResource RadiusXsValue}"
+                     Fill="{ThemeResource OutlineVariantBrush}" />
         </StackPanel>
 
         <TextBox Header="Business Name"
@@ -150,12 +149,12 @@
         <!-- Progress: step 2 of 2 -->
         <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}" HorizontalAlignment="Center"
                     AutomationProperties.Name="Step 2 of 2">
-          <Border Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" CornerRadius="{StaticResource RadiusXs}"
-                  Background="{StaticResource AppBarAccentInvariantBrush}" />
-          <Border Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" CornerRadius="{StaticResource RadiusXs}"
-                  Background="{StaticResource AppBarAccentInvariantBrush}" />
-          <Border Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" CornerRadius="{StaticResource RadiusXs}"
-                  Background="{ThemeResource OutlineVariantBrush}" />
+          <Rectangle Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" RadiusX="{StaticResource RadiusXsValue}" RadiusY="{StaticResource RadiusXsValue}"
+                     Fill="{StaticResource AppBarAccentInvariantBrush}" />
+          <Rectangle Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" RadiusX="{StaticResource RadiusXsValue}" RadiusY="{StaticResource RadiusXsValue}"
+                     Fill="{StaticResource AppBarAccentInvariantBrush}" />
+          <Rectangle Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" RadiusX="{StaticResource RadiusXsValue}" RadiusY="{StaticResource RadiusXsValue}"
+                     Fill="{ThemeResource OutlineVariantBrush}" />
         </StackPanel>
 
         <!-- The two number fields stack on Narrow -->
@@ -186,8 +185,7 @@
                  PlaceholderText="QC-" />
 
         <!-- Catalog note (a Grid, so the text wraps: a horizontal StackPanel gives it unlimited width) -->
-        <Border Background="{ThemeResource SurfaceVariantBrush}"
-                CornerRadius="{StaticResource RadiusMd}" Padding="{StaticResource Inset16x12}">
+        <utu:CardContentControl Style="{StaticResource TonalCardStyle}" Padding="{StaticResource Inset16x12}">
           <Grid ColumnSpacing="{StaticResource Space12}">
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="Auto" />
@@ -205,7 +203,7 @@
                          TextWrapping="Wrap" />
             </StackPanel>
           </Grid>
-        </Border>
+        </utu:CardContentControl>
 
         <!-- Validation Error -->
         <mvux:FeedView Source="{Binding ValidationError}">

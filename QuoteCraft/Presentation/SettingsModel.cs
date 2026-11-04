@@ -14,6 +14,7 @@ public partial record SettingsModel
     private readonly ILogger<SettingsModel> _logger;
     private readonly IThemeService _theme;
     private readonly Services.ThemeChoiceNotifier _themeChoice;
+    private readonly IDispatcher _dispatcher;
 
     public SettingsModel(
         INavigator navigator,
@@ -25,8 +26,10 @@ public partial record SettingsModel
         Data.Remote.SupabaseConfig supabase,
         IThemeService theme,
         Services.ThemeChoiceNotifier themeChoice,
+        IDispatcher dispatcher,
         ILogger<SettingsModel> logger)
     {
+        _dispatcher = dispatcher;
         _theme = theme;
         _themeChoice = themeChoice;
         _navigator = navigator;
@@ -129,6 +132,12 @@ public partial record SettingsModel
     public IState<string> CustomFooter => State<string>.Value(this, () => string.Empty);
     public IState<string> LogoPath => State<string>.Value(this, () => string.Empty);
 
+    /// <summary>The logo's file name, beside its thumbnail.</summary>
+    public IFeed<string> LogoFileName => LogoPath.Select(path => string.IsNullOrEmpty(path) ? string.Empty : Path.GetFileName(path));
+
+    /// <summary>What Upload could not do; shown under the logo row.</summary>
+    public IState<string> LogoError => State<string>.Value(this, () => string.Empty);
+
     public async ValueTask LoadProfile(CancellationToken ct)
     {
         var profile = await _profileRepo.GetAsync();
@@ -211,7 +220,24 @@ public partial record SettingsModel
     /// Copies a picked image into the app's data folder as the logo (Save keeps it). Read through the StorageFile: a
     /// picked file's Path is not readable on every head (WebAssembly, Android, iOS).
     /// </summary>
-    public async Task<string> SetLogoAsync(Windows.Storage.StorageFile file)
+    public async ValueTask UploadLogo(CancellationToken ct)
+    {
+        await LogoError.UpdateAsync(_ => string.Empty, ct);
+        try
+        {
+            if (await ImagePicker.PickAsync(_dispatcher, ct) is { } file)
+            {
+                await SetLogoAsync(file);
+            }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(ex, "Upload logo");
+            await LogoError.UpdateAsync(_ => ErrorReporter.Describe("The logo could not be added.", ex), ct);
+        }
+    }
+
+    private async Task SetLogoAsync(Windows.Storage.StorageFile file)
     {
         var logoDir = AppStorage.Combine("logo");
         Directory.CreateDirectory(logoDir);
@@ -224,7 +250,6 @@ public partial record SettingsModel
         }
 
         await LogoPath.UpdateAsync(_ => destPath, CancellationToken.None);
-        return destPath;
     }
 
     public async ValueTask RemoveLogo(CancellationToken ct)

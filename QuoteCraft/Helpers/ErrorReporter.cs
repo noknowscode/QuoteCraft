@@ -1,27 +1,11 @@
 namespace QuoteCraft.Helpers;
 
 /// <summary>
-/// What happens when something fails. Page event handlers are <c>async void</c>, so an exception that escapes one
-/// reaches the app's unhandled-exception handler with nothing shown; these helpers log the error and tell the user
-/// what did not happen.
+/// What happens when something fails: the log, and the sentence the user sees. Model commands show it in a banner, a
+/// message line or a dialog (<see cref="DialogNavigation.RunAsync"/>).
 /// </summary>
 public static class ErrorReporter
 {
-    /// <summary>A user action (a click, a tap): on failure, log it and show <paramref name="failure"/> in a dialog.</summary>
-    /// <param name="failure">What did not happen, as a sentence: "The quote could not be deleted."</param>
-    public static async Task RunAsync(FrameworkElement page, string failure, Func<Task> action)
-    {
-        try
-        {
-            await action();
-        }
-        catch (Exception ex)
-        {
-            Log(ex, failure);
-            await ShowAsync(page, failure, ex);
-        }
-    }
-
     /// <summary>Work the user did not ask for (a page loading, search suggestions): on failure, log it only.</summary>
     public static async Task RunQuietlyAsync(string context, Func<Task> action)
     {
@@ -52,27 +36,6 @@ public static class ErrorReporter
         {
             // Before the host exists (startup), or after it is gone.
             Console.Error.WriteLine($"{context}: {ex}");
-        }
-    }
-
-    private static async Task ShowAsync(FrameworkElement page, string failure, Exception ex)
-    {
-        if (page.XamlRoot is null)
-        {
-            return;
-        }
-
-        try
-        {
-            var reason = ex is InvalidOperationException { Message.Length: > 0 }
-                ? ex.Message
-                : "Try again. If it keeps happening, restart QuoteCraft.";
-            await DialogHelper.BuildBannerDialog(page.XamlRoot, "", failure, reason, closeButtonText: "OK").ShowAsync();
-        }
-        catch (Exception dialogError)
-        {
-            // Only one dialog can be open at a time; the log has the original error.
-            Log(dialogError, "The error dialog could not open");
         }
     }
 }
