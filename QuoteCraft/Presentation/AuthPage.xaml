@@ -51,6 +51,12 @@
                    AutomationProperties.LiveSetting="Polite" />
       </utu:CardContentControl>
 
+      <!-- While signing in, creating the account or sending the link. IsIndeterminate follows IsBusy too: a collapsed
+           indeterminate bar keeps animating (a full CPU core on Skia). -->
+      <ProgressBar IsIndeterminate="{Binding IsBusy}"
+                   AutomationProperties.Name="Signing in"
+                   Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}" />
+
       <!-- Email field -->
       <TextBox x:Uid="AuthPage.Input.Email"
                Text="{Binding Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"

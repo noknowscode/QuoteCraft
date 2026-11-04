@@ -11,6 +11,5 @@ public interface INotificationService
 
     /// <summary>True when a notification of this type for this quote was created at or after <paramref name="since"/>.</summary>
     Task<bool> ExistsAsync(NotificationType type, string quoteId, DateTimeOffset since);
-    Task MarkAsReadAsync(string notificationId);
     Task MarkAllAsReadAsync();
 }

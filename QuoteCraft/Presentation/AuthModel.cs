@@ -17,6 +17,7 @@ public partial record AuthModel
     public IState<string> Password => State<string>.Value(this, () => string.Empty);
     public IState<string> ErrorMessage => State<string>.Value(this, () => string.Empty);
     public IState<bool> IsSignUp => State<bool>.Value(this, () => false);
+    /// <summary>True while a request to the Supabase project runs (the page shows a progress bar).</summary>
     public IState<bool> IsBusy => State<bool>.Value(this, () => false);
     public IState<bool> MagicLinkSent => State<bool>.Value(this, () => false);
 

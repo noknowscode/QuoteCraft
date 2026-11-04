@@ -85,22 +85,6 @@ public class NotificationService : INotificationService
         return Convert.ToInt32(await cmd.ExecuteScalarAsync()) == 1;
     }
 
-    public async Task MarkAsReadAsync(string notificationId)
-    {
-        await using var conn = await _db.OpenConnectionAsync();
-
-        var cmd = conn.CreateCommand();
-        cmd.CommandText = "UPDATE notifications SET is_read = 1 WHERE id = @id AND is_read = 0";
-        cmd.Parameters.AddWithValue("@id", notificationId);
-        var affected = await cmd.ExecuteNonQueryAsync();
-
-        if (affected > 0)
-        {
-            _unreadCount = Math.Max(0, _unreadCount - 1);
-            UnreadCountChanged?.Invoke(_unreadCount);
-        }
-    }
-
     public async Task MarkAllAsReadAsync()
     {
         await using var conn = await _db.OpenConnectionAsync();

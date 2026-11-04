@@ -210,7 +210,7 @@ public partial record QuoteEditorModel
         {
             await IsSaving.UpdateAsync(_ => false, ct);
         }
-        await GoBack(ct);
+        await GoBackAsync(ct);
     }
 
     /// <summary>Retry after a failed load: read the line items and photos again.</summary>
@@ -263,14 +263,14 @@ public partial record QuoteEditorModel
         {
             return;
         }
-        await GoBack(ct);
+        await GoBackAsync(ct);
     }, ct);
 
     /// <summary>
     /// Back to where the editor was opened from; to the quotes list when there is nothing to go back to (the editor
     /// opened straight after onboarding).
     /// </summary>
-    public async ValueTask GoBack(CancellationToken ct)
+    private async ValueTask GoBackAsync(CancellationToken ct)
     {
         var response = await _navigator.NavigateBackAsync(this, cancellation: ct);
         if (response is not { Success: true })
@@ -334,6 +334,6 @@ public partial record QuoteEditorModel
             await ValidationError.UpdateAsync(_ => ErrorReporter.Describe($"The quote could not be marked {status}.", ex), ct);
             return;
         }
-        await GoBack(ct);
+        await GoBackAsync(ct);
     }
 }

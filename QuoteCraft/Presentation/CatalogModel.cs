@@ -6,18 +6,15 @@ public partial record CatalogCategoryCard(
     string IconGlyph,
     int ItemCount);
 
-// Individual catalog item (flat, no headers needed)
+// An item in an open category
 public partial record CatalogDisplayItem(
     string Id,
     string Description,
     decimal UnitPrice,
-    string Category,
-    bool IsHeader,
-    bool IsExpanded = true,
-    string IconGlyph = "")
+    string Category)
 {
     public static CatalogDisplayItem FromEntity(CatalogItemEntity entity) =>
-        new(entity.Id, entity.Description, entity.UnitPrice, entity.Category, false);
+        new(entity.Id, entity.Description, entity.UnitPrice, entity.Category);
 
     public static string GetCategoryIcon(string category) => category switch
     {
@@ -55,10 +52,6 @@ public partial record CatalogModel
     public IState<int> Version => State<int>.Value(this, () => 0);
 
     public IFeed<int> CatalogItemCount => Version.SelectAsync(async (_, ct) => await _catalogRepo.GetItemCountAsync());
-
-    public IListFeed<string> Categories => Feed.Async(async ct =>
-        (IImmutableList<string>)(await _catalogRepo.GetCategoriesAsync()).ToImmutableList()
-    ).AsListFeed();
 
     // Category cards for the grid
     public IListFeed<CatalogCategoryCard> CategoryCards =>

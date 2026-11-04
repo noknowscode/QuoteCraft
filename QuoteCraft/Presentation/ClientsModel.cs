@@ -73,10 +73,8 @@ public partial record ClientsModel
                 .Where(q => q.Status == QuoteStatus.Accepted)
                 .Sum(q => q.Total);
             var avgPerClient = totalClients > 0 ? Money.RoundToCents(totalRevenue / totalClients) : 0m;
-            var newThisMonth = clients
-                .Count(c => c.UpdatedAt >= new DateTimeOffset(DateTime.Now.Year, DateTime.Now.Month, 1, 0, 0, 0, TimeSpan.Zero));
 
-            return new ClientsAnalytics(totalClients, totalRevenue, avgPerClient, newThisMonth);
+            return new ClientsAnalytics(totalClients, totalRevenue, avgPerClient);
         });
 
     // Combined detail feed: client + quotes (avoids nested FeedView with ElementName). Read again on every Version
