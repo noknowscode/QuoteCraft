@@ -2,7 +2,10 @@ using QuoteCraft.Services;
 
 namespace QuoteCraft.Presentation;
 
-/// <summary>The notifications drawer (route <c>!Notifications</c>, opened from the side rail).</summary>
+/// <summary>
+/// The notifications drawer (route <c>!Notifications</c>), opened by <see cref="MainModel.OpenNotifications"/>: the
+/// rail's bell from 800 px and the bottom tab bar's Alerts below (D18).
+/// </summary>
 public partial record NotificationsModel
 {
     private readonly INotificationService _notificationService;

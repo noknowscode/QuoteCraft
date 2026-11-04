@@ -1,6 +1,7 @@
 <!--
-  Notifications: a drawer from the right (route !Notifications, opened from the side rail; Presentation/DrawerFlyout).
-  The rail only shows from 800 px (D5), so the drawer has one layout.
+  Notifications: a drawer from the right (route !Notifications, Presentation/DrawerFlyout), opened by
+  MainModel.OpenNotifications from the rail's bell (from 800 px) and the Alerts tab (below 800 px, D18). One layout at
+  every width: the drawer is 420 px wide, or the whole window when that is narrower.
 -->
 <Page x:Class="QuoteCraft.Presentation.NotificationsPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"

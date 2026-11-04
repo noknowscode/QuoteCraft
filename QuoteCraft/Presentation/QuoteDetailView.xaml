@@ -148,7 +148,7 @@
                     </StackPanel>
                   </Button>
 
-                  <!-- Full editor: title, client, dates, tax rate and markup (Edit above covers line items and notes) -->
+                  <!-- Full editor: title, client and tax rate, photos and the status buttons (Edit above covers line items and notes) -->
                   <Button Command="{Binding DataContext.EditQuote, ElementName=DetailRoot}"
                           AutomationProperties.Name="Open quote in the full editor"
                           ToolTipService.ToolTip="Open in the full editor"
