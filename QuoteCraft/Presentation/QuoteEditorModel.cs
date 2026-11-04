@@ -102,11 +102,12 @@ public partial record QuoteEditorModel
             await PhotosVersion.UpdateAsync(v => v + 1, ct);
     }, ct);
 
-    public async ValueTask DeletePhoto(string photoPath, CancellationToken ct)
+    /// <summary>A photo's delete button: the file goes and the photos are read again; a failure shows in the message line.</summary>
+    public ValueTask DeletePhoto(string photoPath, CancellationToken ct) => ValidationError.ReportFailureAsync("The photo could not be deleted.", async () =>
     {
         _photoService.DeletePhoto(photoPath);
         await PhotosVersion.UpdateAsync(v => v + 1, ct);
-    }
+    }, ct);
 
     public IListFeed<LineItemEntity> LineItems => LineItemsVersion
         .SelectAsync(async (_, ct) =>
@@ -155,17 +156,21 @@ public partial record QuoteEditorModel
 
     public ValueTask MoveLineItemDown(LineItemEntity item, CancellationToken ct) => MoveLineItemAsync(item, +1, ct);
 
-    private async ValueTask MoveLineItemAsync(LineItemEntity item, int offset, CancellationToken ct)
+    /// <summary>Swaps the item with its neighbour above or below; a failure shows in the message line.</summary>
+    private ValueTask MoveLineItemAsync(LineItemEntity item, int offset, CancellationToken ct) => ValidationError.ReportFailureAsync("The line item could not be moved.", async () =>
     {
         var ids = (await _quoteRepo.GetLineItemsAsync(_quoteId)).Select(i => i.Id).ToList();
         var from = ids.IndexOf(item.Id);
         var to = from + offset;
-        if (from < 0 || to < 0 || to >= ids.Count) return;
+        if (from < 0 || to < 0 || to >= ids.Count)
+        {
+            return;
+        }
 
         (ids[from], ids[to]) = (ids[to], ids[from]);
         await _quoteRepo.ReorderLineItemsAsync(_quoteId, ids);
         await LineItemsChangedAsync(ct);
-    }
+    }, ct);
 
     /// <summary>The items changed: this page reads them again, and so do the quotes list and detail.</summary>
     private async ValueTask LineItemsChangedAsync(CancellationToken ct)

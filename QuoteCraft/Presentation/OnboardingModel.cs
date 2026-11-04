@@ -79,10 +79,7 @@ public partial record OnboardingModel
         }
     }
 
-    public async ValueTask Skip(CancellationToken ct)
-    {
-        await CompleteOnboarding(createQuote: false, ct);
-    }
+    public ValueTask Skip(CancellationToken ct) => CompleteOnboarding(createQuote: false, ct);
 
     public async ValueTask Complete(CancellationToken ct)
     {
@@ -104,7 +101,12 @@ public partial record OnboardingModel
         await CompleteOnboarding(createQuote: true, ct);
     }
 
-    private async Task CompleteOnboarding(bool createQuote, CancellationToken ct)
+    /// <summary>
+    /// Saves what was entered and leaves onboarding: for the editor on a new Draft (Create First Quote), or for the quotes
+    /// list (Skip). A failure stays on the step and says so.
+    /// </summary>
+    private ValueTask CompleteOnboarding(bool createQuote, CancellationToken ct) => ValidationError.ReportFailureAsync(
+        "Your setup could not be finished.", async () =>
     {
         var profile = await _profileRepo.GetAsync();
 
@@ -153,5 +155,5 @@ public partial record OnboardingModel
             // Onboarding is the first route on a first run, so there is nothing to go back to.
             await _navigator.NavigateRouteAsync(this, "Main", qualifier: Qualifiers.ClearBackStack);
         }
-    }
+    }, ct);
 }

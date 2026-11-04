@@ -1,5 +1,6 @@
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
+using QuoteCraft.Data;
 using QuoteCraft.Models;
 using QuoteCraft.Presentation;
 using Uno.Extensions.Reactive;
@@ -140,6 +141,39 @@ public class QuoteEditorModelTests
         await model.MoveLineItemUp((await h.Db.Quotes.GetLineItemsAsync(quote.Id))[0], None);
 
         Assert.Equal(["B", "C", "A"], (await h.Db.Quotes.GetLineItemsAsync(quote.Id)).Select(i => i.Description));
+    }
+
+    [Fact]
+    public async Task A_move_that_cannot_be_saved_says_so()
+    {
+        using var h = new ModelHarness();
+        var quote = await h.AddQuoteAsync("Service call", items: [("A", 1m, 1), ("B", 1m, 1)]);
+        var quotes = Substitute.For<IQuoteRepository>();
+        quotes.GetLineItemsAsync(quote.Id).Returns(quote.LineItems);
+        quotes.ReorderLineItemsAsync(quote.Id, Arg.Any<IReadOnlyList<string>>()).ThrowsAsync(new IOException("The disk is full."));
+        var model = new QuoteEditorModel(quote, h.Navigator, quotes, h.Db.Clients, h.Delivery, h.LineItemDialogs, h.Photos, h.Status, h.Dispatcher, h.Board);
+        _ = await model.ValidationError;
+
+        await model.MoveLineItemDown(quote.LineItems[0], None);
+
+        Assert.Equal("The line item could not be moved. Try again.", await model.ValidationError);
+    }
+
+    [Fact]
+    public async Task Deleting_a_photo_reads_the_photos_again_and_a_failure_says_so()
+    {
+        using var h = new ModelHarness();
+        var model = await Create(h, await h.AddQuoteAsync("Service call"));
+        var version = await model.PhotosVersion;
+
+        await model.DeletePhoto("/photos/a.jpg", None);
+        h.Photos.Received(1).DeletePhoto("/photos/a.jpg");
+        Assert.Equal(version + 1, await model.PhotosVersion);
+
+        h.Photos.When(p => p.DeletePhoto("/photos/b.jpg")).Do(_ => throw new UnauthorizedAccessException("Read-only."));
+        await model.DeletePhoto("/photos/b.jpg", None);
+
+        Assert.Equal("The photo could not be deleted. Try again.", await model.ValidationError);
     }
 
     [Fact]

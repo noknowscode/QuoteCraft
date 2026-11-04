@@ -1,4 +1,6 @@
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
+using QuoteCraft.Data;
 using QuoteCraft.Models;
 using QuoteCraft.Presentation;
 using QuoteCraft.Services;
@@ -101,6 +103,36 @@ public class OnboardingModelTests
         await onboarding.Received(1).MarkCompleteAsync();
         Assert.Equal(Qualifiers.ClearBackStack + "Main", Assert.Single(h.Navigator.Routes));
         Assert.Empty(await h.Db.Quotes.GetAllAsync());
+    }
+
+    [Fact]
+    public async Task A_failed_skip_stays_on_the_step_and_says_so()
+    {
+        using var h = new ModelHarness();
+        var onboarding = Substitute.For<IOnboardingService>();
+        onboarding.MarkCompleteAsync().ThrowsAsync(new IOException("The disk is full."));
+        var model = await Create(h, onboarding);
+
+        await model.Skip(None);
+
+        Assert.Equal("Your setup could not be finished. Try again.", await model.ValidationError);
+        Assert.Empty(h.Navigator.Routes);
+    }
+
+    [Fact]
+    public async Task A_failed_create_first_quote_stays_on_the_step_and_says_so()
+    {
+        using var h = new ModelHarness();
+        var profiles = Substitute.For<IBusinessProfileRepository>();
+        profiles.GetAsync().Returns(new BusinessProfileEntity());
+        profiles.SaveAsync(Arg.Any<BusinessProfileEntity>()).ThrowsAsync(new IOException("The disk is full."));
+        var model = new OnboardingModel(h.Navigator, profiles, Substitute.For<IOnboardingService>(), h.Creation);
+        _ = (await model.TaxRate, await model.ValidDays, await model.ValidationError);
+
+        await model.Complete(None);
+
+        Assert.Equal("Your setup could not be finished. Try again.", await model.ValidationError);
+        Assert.Empty(h.Navigator.Routes);
     }
 
     [Fact]

@@ -56,6 +56,14 @@
                 HorizontalAlignment="Center"
                 Content="Skip for now"
                 AutomationProperties.Name="Skip for now" />
+
+        <!-- What Skip could not do (a string state binds directly) -->
+        <TextBlock Text="{Binding ValidationError}"
+                   Foreground="{ThemeResource ErrorBrush}"
+                   Style="{StaticResource BodyMedium}"
+                   TextAlignment="Center" TextWrapping="Wrap"
+                   AutomationProperties.LiveSetting="Assertive"
+                   Visibility="{Binding ValidationError, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert, FallbackValue=Collapsed}" />
       </StackPanel>
 
       <!-- Step 2: Business Info -->
