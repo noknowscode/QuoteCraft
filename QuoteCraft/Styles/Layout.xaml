@@ -3,7 +3,7 @@
   widths and touch sizes, so one edit here retunes every screen. Colours live in ColorPaletteOverride.xaml (Material
   roles), StatusColors.xaml (quote statuses) and App.xaml (brand and app roles); type comes from the Material ramp.
 
-  Spacing scale: 4-based (2, 4, 8, 12, 16, 20, 24, 28, 32, 48). Off-scale gaps the pages had (6, 10, 14) snap to the
+  Spacing scale: 4-based (2, 4, 8, 12, 16, 20, 24, 28; insets and gaps to 32). Off-scale gaps the pages had (6, 10, 14) snap to the
   nearest step. Thickness names:
     Inset{n}        n on all sides               Inset{h}x{v}    h left and right, v top and bottom
     GapTop{n} / GapBottom{n} / GapStart{n} / GapEnd{n}           one side only
@@ -36,26 +36,20 @@
   <x:Double x:Key="Space20">20</x:Double>
   <x:Double x:Key="Space24">24</x:Double>
   <x:Double x:Key="Space28">28</x:Double>
-  <x:Double x:Key="Space32">32</x:Double>
 
   <!-- Uniform and axis insets on the scale -->
-  <Thickness x:Key="Inset4">4</Thickness>
   <Thickness x:Key="Inset8">8</Thickness>
   <Thickness x:Key="Inset12">12</Thickness>
   <Thickness x:Key="Inset16">16</Thickness>
   <Thickness x:Key="Inset24">24</Thickness>
   <Thickness x:Key="Inset32">32</Thickness>
-  <Thickness x:Key="Inset8x2">8,2</Thickness>
   <Thickness x:Key="Inset8x4">8,4</Thickness>
   <Thickness x:Key="Inset12x4">12,4</Thickness>
   <Thickness x:Key="Inset12x8">12,8</Thickness>
-  <Thickness x:Key="Inset16x8">16,8</Thickness>
   <Thickness x:Key="Inset16x12">16,12</Thickness>
-  <Thickness x:Key="Inset20x0">20,0</Thickness>
   <Thickness x:Key="Inset20x12">20,12</Thickness>
   <Thickness x:Key="Inset20x16">20,16</Thickness>
   <Thickness x:Key="Inset24x12">24,12</Thickness>
-  <Thickness x:Key="Inset32x12">32,12</Thickness>
   <Thickness x:Key="Inset32x16">32,16</Thickness>
   <Thickness x:Key="Inset32x24">32,24</Thickness>
   <Thickness x:Key="InsetY4">0,4</Thickness>
@@ -64,7 +58,6 @@
   <Thickness x:Key="InsetY16">0,16</Thickness>
   <Thickness x:Key="InsetY20">0,20</Thickness>
   <Thickness x:Key="InsetY24">0,24</Thickness>
-  <Thickness x:Key="InsetX4">4,0</Thickness>
   <Thickness x:Key="InsetX8">8,0</Thickness>
   <Thickness x:Key="InsetX12">12,0</Thickness>
   <Thickness x:Key="InsetX16">16,0</Thickness>
@@ -76,21 +69,17 @@
 
   <!-- One-sided gaps (where a parent Spacing can't express it) -->
   <Thickness x:Key="GapTop2">0,2,0,0</Thickness>
-  <Thickness x:Key="GapTop4">0,4,0,0</Thickness>
   <Thickness x:Key="GapTop8">0,8,0,0</Thickness>
   <Thickness x:Key="GapTop12">0,12,0,0</Thickness>
   <Thickness x:Key="GapTop16">0,16,0,0</Thickness>
   <Thickness x:Key="GapTop24">0,24,0,0</Thickness>
-  <Thickness x:Key="GapBottom2">0,0,0,2</Thickness>
   <Thickness x:Key="GapBottom4">0,0,0,4</Thickness>
   <Thickness x:Key="GapBottom8">0,0,0,8</Thickness>
   <Thickness x:Key="GapBottom20">0,0,0,20</Thickness>
   <Thickness x:Key="GapBottom24">0,0,0,24</Thickness>
   <Thickness x:Key="GapStart4">4,0,0,0</Thickness>
   <Thickness x:Key="GapStart8">8,0,0,0</Thickness>
-  <Thickness x:Key="GapStart12">12,0,0,0</Thickness>
   <Thickness x:Key="GapStart32">32,0,0,0</Thickness>
-  <Thickness x:Key="GapEnd4">0,0,4,0</Thickness>
   <Thickness x:Key="GapEnd8">0,0,8,0</Thickness>
   <Thickness x:Key="GapEnd12">0,0,12,0</Thickness>
   <Thickness x:Key="GapEnd16">0,0,16,0</Thickness>
@@ -155,8 +144,6 @@
   <x:Double x:Key="WelcomeMaxWidth">520</x:Double>
   <x:Double x:Key="HintMaxWidth">320</x:Double>
   <x:Double x:Key="DialogMinWidth">380</x:Double>
-  <!-- Width a ContentDialog takes around its content (its padding and its margin to the window) -->
-  <x:Double x:Key="DialogChromeWidth">96</x:Double>
   <!-- Column widths (GridLength: a ColumnDefinition's Width takes no x:Double) -->
   <!-- A Settings row's label -->
   <GridLength x:Key="FormLabelWidth">140</GridLength>
@@ -224,7 +211,6 @@
   <x:Double x:Key="RuleThickness">2</x:Double>
 
   <!-- Corner radii -->
-  <CornerRadius x:Key="RadiusXs">2</CornerRadius>
   <CornerRadius x:Key="RadiusSm">4</CornerRadius>
   <CornerRadius x:Key="RadiusMd">8</CornerRadius>
   <CornerRadius x:Key="RadiusPill">10</CornerRadius>

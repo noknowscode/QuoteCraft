@@ -24,8 +24,7 @@
                    Style="{StaticResource HeadlineSmall}"
                    FontWeight="Bold"
                    HorizontalAlignment="Center" />
-        <TextBlock x:Uid="AuthPage.Label.Subtitle"
-                   Text="Professional quotes for contractors"
+        <TextBlock Text="Professional quotes for contractors"
                    Style="{StaticResource BodyMedium}"
                    Foreground="{ThemeResource OnSurfaceVariantBrush}"
                    HorizontalAlignment="Center" />
@@ -58,16 +57,14 @@
                    Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}" />
 
       <!-- Email field -->
-      <TextBox x:Uid="AuthPage.Input.Email"
-               Text="{Binding Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+      <TextBox Text="{Binding Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                PlaceholderText="Email address"
                InputScope="EmailSmtpAddress"
                AutomationProperties.Name="Email"
                Style="{StaticResource MaterialOutlinedTextBoxStyle}" />
 
       <!-- Password field -->
-      <PasswordBox x:Uid="AuthPage.Input.Password"
-                   Password="{Binding Password, Mode=TwoWay}"
+      <PasswordBox Password="{Binding Password, Mode=TwoWay}"
                    PlaceholderText="Password"
                    AutomationProperties.Name="Password"
                    Style="{StaticResource MaterialOutlinedPasswordBoxStyle}" />

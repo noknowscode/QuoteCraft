@@ -41,8 +41,7 @@
           <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <TextBlock x:Uid="CatalogPage.Label.Title"
-                   Text="Catalog"
+        <TextBlock Text="Catalog"
                    Style="{StaticResource TitleLargeBold}"
                    AutomationProperties.HeadingLevel="Level1"
                    VerticalAlignment="Center" />
@@ -75,7 +74,6 @@
                       Foreground="{ThemeResource OnSurfaceVariantBrush}"
                       VerticalAlignment="Center" Margin="{StaticResource GapEnd8}" />
             <TextBox Grid.Column="1"
-                     x:Uid="CatalogPage.TextBox.Search"
                      Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                      PlaceholderText="Search catalog..."
                      AutomationProperties.Name="Search catalog"
@@ -87,7 +85,6 @@
         </utu:CardContentControl>
 
         <Button Grid.Column="3"
-                x:Uid="CatalogPage.Button.AddItem"
                 Command="{Binding AddItem}"
                 AutomationProperties.Name="Add catalog item"
                 Style="{StaticResource AccentButtonStyle}">
@@ -116,8 +113,7 @@
         </Grid.RowDefinitions>
 
         <!-- Instruction text -->
-        <TextBlock x:Uid="CatalogPage.Label.Instruction"
-                   Text="Select a category to view and manage items"
+        <TextBlock Text="Select a category to view and manage items"
                    Style="{StaticResource BodySmall}"
                    Foreground="{ThemeResource OnSurfaceVariantBrush}"
                    TextWrapping="Wrap"
@@ -278,7 +274,6 @@
 
                 <!-- Add item to category button -->
                 <Button Grid.Column="2"
-                        x:Uid="CatalogPage.Button.AddItemToCategory"
                         Command="{Binding DataContext.AddItemToCategory, ElementName=CatalogRoot}"
                         AutomationProperties.Name="Add item to category"
                         ToolTipService.ToolTip="Add item to category"
@@ -345,12 +340,10 @@
                         Spacing="{StaticResource Space12}" Padding="{StaticResource Inset32}">
               <FontIcon Glyph="&#xE82D;" FontSize="{StaticResource IconSizeHero}"
                         Foreground="{ThemeResource OnSurfaceVariantBrush}" HorizontalAlignment="Center" />
-              <TextBlock x:Uid="CatalogPage.Label.SelectCategory"
-                         Text="Select a category" Style="{StaticResource TitleSmall}"
+              <TextBlock Text="Select a category" Style="{StaticResource TitleSmall}"
                          HorizontalAlignment="Center"
                          Foreground="{ThemeResource OnSurfaceVariantBrush}" />
-              <TextBlock x:Uid="CatalogPage.Label.SelectCategoryHint"
-                         Text="Choose a category from the list to browse and manage items."
+              <TextBlock Text="Choose a category from the list to browse and manage items."
                          Style="{StaticResource BodyMedium}" HorizontalAlignment="Center"
                          Foreground="{ThemeResource OnSurfaceVariantBrush}"
                          TextAlignment="Center" TextWrapping="Wrap" MaxWidth="{StaticResource HintMaxWidth}" />

@@ -22,8 +22,7 @@
       <Grid MaxWidth="{StaticResource PageMaxWidth}"
             Height="{StaticResource PageHeaderHeight}"
             Padding="{utu:Responsive Narrow={StaticResource InsetX16}, Normal={StaticResource PageHeaderInsetNormal}, Wide={StaticResource PageHeaderInsetWide}}">
-        <TextBlock x:Uid="SettingsPage.Label.Title"
-                   Text="Settings"
+        <TextBlock Text="Settings"
                    Style="{StaticResource TitleLargeBold}"
                    AutomationProperties.HeadingLevel="Level1"
                    VerticalAlignment="Center" />
@@ -638,8 +637,7 @@
         </StackPanel>
 
         <!-- Save Button -->
-        <Button x:Uid="SettingsPage.Button.Save"
-                Content="Save Settings"
+        <Button Content="Save Settings"
                 Command="{Binding Save}"
                 AutomationProperties.Name="Save settings"
                 HorizontalAlignment="Stretch"

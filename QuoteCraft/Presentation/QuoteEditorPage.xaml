@@ -101,8 +101,7 @@
                  AutomationProperties.Name="Quote title" />
 
         <!-- Client Name (Material text field, like the fields around it) -->
-        <AutoSuggestBox
-                        Header="Client Name"
+        <AutoSuggestBox Header="Client Name"
                         Text="{Binding ClientName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         PlaceholderText="Search clients or type a name"
                         TextBoxStyle="{StaticResource MaterialOutlinedTextBoxStyle}"

@@ -43,8 +43,7 @@
           <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <TextBlock x:Uid="ClientsPage.Label.Title"
-                   Text="Clients"
+        <TextBlock Text="Clients"
                    Style="{StaticResource TitleLargeBold}"
                    AutomationProperties.HeadingLevel="Level1"
                    VerticalAlignment="Center" />
@@ -77,7 +76,6 @@
                       Foreground="{ThemeResource OnSurfaceVariantBrush}"
                       VerticalAlignment="Center" Margin="{StaticResource GapEnd8}" />
             <TextBox Grid.Column="1"
-                     x:Uid="ClientsPage.TextBox.Search"
                      Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                      PlaceholderText="Search clients..."
                      AutomationProperties.Name="Search clients"
@@ -89,7 +87,6 @@
         </utu:CardContentControl>
 
         <Button Grid.Column="3"
-                x:Uid="ClientsPage.Button.AddClient"
                 Command="{Binding AddClient}"
                 AutomationProperties.Name="Add new client"
                 Style="{StaticResource AccentButtonStyle}">
