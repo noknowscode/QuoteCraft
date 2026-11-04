@@ -142,7 +142,6 @@
                   <DataTemplate>
                     <utu:CardContentControl Style="{StaticResource StaticCardStyle}"
                             Padding="{StaticResource Inset16}"
-                            Translation="0,0,0"
                             AutomationProperties.Name="{Binding Name}"
                             helpers:InteractionHelper.Command="{Binding DataContext.SelectCategoryCard, ElementName=CatalogRoot}"
                             helpers:InteractionHelper.IsInteractive="True">
@@ -305,7 +304,6 @@
                               BorderThickness="1" CornerRadius="{StaticResource RadiusMd}"
                               Padding="{StaticResource Inset16x12}"
                               MinHeight="{StaticResource TouchTargetComfortable}"
-                              Translation="0,0,0"
                               AutomationProperties.Name="{Binding Description}"
                               helpers:InteractionHelper.Command="{Binding DataContext.EditItem, ElementName=CatalogRoot}"
                               helpers:InteractionHelper.RestBackground="BackgroundBrush"

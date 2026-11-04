@@ -51,6 +51,9 @@
       <SolidColorBrush x:Key="FilledCardContentBorderBrushPointerOver" Color="Transparent" />
       <SolidColorBrush x:Key="FilledCardContentBorderBrushPressed" Color="Transparent" />
       <SolidColorBrush x:Key="FilledCardContentBorderBrushFocused" Color="Transparent" />
+      <SolidColorBrush x:Key="ElevatedCardContentBorderBrushPointerOver" Color="Transparent" />
+      <SolidColorBrush x:Key="ElevatedCardContentBorderBrushPressed" Color="Transparent" />
+      <SolidColorBrush x:Key="ElevatedCardContentBorderBrushFocused" Color="Transparent" />
 
       <!-- Bold/SemiBold typography variants (derived from Material styles) -->
       <Style x:Key="HeadlineMediumBold" TargetType="TextBlock" BasedOn="{StaticResource HeadlineMedium}">

@@ -237,7 +237,6 @@
                     <muxc:ItemsRepeater.ItemTemplate>
                       <DataTemplate>
                         <utu:CardContentControl Style="{StaticResource StaticCardStyle}" CornerRadius="{StaticResource RadiusMd}" Padding="{StaticResource Inset12}"
-                                Translation="0,0,0"
                                 AutomationProperties.Name="{Binding Name}"
                                 helpers:InteractionHelper.Command="{Binding DataContext.SelectClient, ElementName=ClientsRoot}"
                                 helpers:InteractionHelper.IsInteractive="True">
@@ -451,13 +450,9 @@
                 </Grid.RowDefinitions>
 
                 <!-- Quote History -->
-                <utu:CardContentControl Style="{StaticResource StaticCardStyle}" Padding="{StaticResource Inset16}"
+                <utu:CardContentControl Style="{StaticResource ElevatedSurfaceCardStyle}" Padding="{StaticResource Inset16}"
                         Grid.ColumnSpan="{utu:Responsive Narrowest=2, Widest=1, Layout={StaticResource SplitLayout}}"
-                        Margin="{utu:Responsive Narrowest='0', Widest={StaticResource GapEnd24}, Layout={StaticResource SplitLayout}}"
-                        Translation="0,0,8">
-                  <utu:CardContentControl.Shadow>
-                    <ThemeShadow />
-                  </utu:CardContentControl.Shadow>
+                        Margin="{utu:Responsive Narrowest='0', Widest={StaticResource GapEnd24}, Layout={StaticResource SplitLayout}}">
                   <StackPanel Spacing="{StaticResource Space8}">
                     <TextBlock Style="{StaticResource LabelSmall}"
                                Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold">
@@ -517,16 +512,12 @@
                 </utu:CardContentControl>
 
                 <!-- Summary -->
-                <utu:CardContentControl Style="{StaticResource StaticCardStyle}" Grid.Row="{utu:Responsive Narrowest=1, Widest=0, Layout={StaticResource SplitLayout}}"
+                <utu:CardContentControl Style="{StaticResource ElevatedSurfaceCardStyle}" Grid.Row="{utu:Responsive Narrowest=1, Widest=0, Layout={StaticResource SplitLayout}}"
                         Grid.Column="{utu:Responsive Narrowest=0, Widest=1, Layout={StaticResource SplitLayout}}"
                         Grid.ColumnSpan="{utu:Responsive Narrowest=2, Widest=1, Layout={StaticResource SplitLayout}}"
                         Margin="{utu:Responsive Narrowest={StaticResource GapTop16}, Widest='0', Layout={StaticResource SplitLayout}}"
                         Width="{utu:Responsive Narrowest=NaN, Widest={StaticResource SummaryColumnWidth}, Layout={StaticResource SplitLayout}}" Padding="{StaticResource Inset16}"
-                        VerticalAlignment="Top"
-                        Translation="0,0,8">
-                  <utu:CardContentControl.Shadow>
-                    <ThemeShadow />
-                  </utu:CardContentControl.Shadow>
+                        VerticalAlignment="Top">
                   <StackPanel Spacing="{StaticResource Space12}">
                     <TextBlock Text="SUMMARY" Style="{StaticResource LabelSmall}"
                                Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold" />

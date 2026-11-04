@@ -19,13 +19,9 @@
       <StackPanel Spacing="{StaticResource Space24}" HorizontalAlignment="Center"
                   Visibility="{Binding CurrentStep, Converter={StaticResource StepVisibilityConverter}, ConverterParameter=1}">
         <!-- Logo badge -->
-        <utu:CardContentControl Style="{StaticResource StaticCardStyle}" BorderThickness="0" Width="{StaticResource LogoSizeHero}" Height="{StaticResource LogoSizeHero}" CornerRadius="{StaticResource RadiusXl}"
+        <utu:CardContentControl Style="{StaticResource ElevatedSurfaceCardStyle}" BorderThickness="0" Width="{StaticResource LogoSizeHero}" Height="{StaticResource LogoSizeHero}" CornerRadius="{StaticResource RadiusXl}"
                 Background="{StaticResource AppBarBackgroundFixedBrush}"
-                AutomationProperties.AccessibilityView="Raw"
-                Translation="0,0,16">
-          <utu:CardContentControl.Shadow>
-            <ThemeShadow />
-          </utu:CardContentControl.Shadow>
+                AutomationProperties.AccessibilityView="Raw">
           <TextBlock Text="QC" Foreground="{StaticResource AppBarForegroundFixedBrush}"
                      Style="{StaticResource HeadlineMediumBold}"
                      HorizontalAlignment="Center" VerticalAlignment="Center" />

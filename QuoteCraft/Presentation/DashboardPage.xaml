@@ -410,7 +410,6 @@
                       <DataTemplate>
                         <utu:CardContentControl Style="{StaticResource PaddedCardStyle}"
                                                 CornerRadius="{StaticResource RadiusMd}"
-                                                Translation="0,0,0"
                                                 AutomationProperties.Name="{Binding Quote.Title}"
                                                 helpers:InteractionHelper.IsSelected="{Binding IsSelected}"
                                                 helpers:InteractionHelper.Command="{Binding DataContext.OpenQuote, ElementName=DashboardRoot}"
@@ -703,10 +702,7 @@
                   <StackPanel Spacing="{StaticResource Space16}"
                               Grid.ColumnSpan="{utu:Responsive Narrowest=2, Widest=1, Layout={StaticResource SplitLayout}}"
                               Margin="{utu:Responsive Narrowest='0', Widest={StaticResource GapEnd24}, Layout={StaticResource SplitLayout}}">
-                    <utu:CardContentControl Style="{StaticResource StaticCardStyle}" Translation="0,0,8">
-                      <utu:CardContentControl.Shadow>
-                        <ThemeShadow />
-                      </utu:CardContentControl.Shadow>
+                    <utu:CardContentControl Style="{StaticResource ElevatedSurfaceCardStyle}">
                       <StackPanel>
                         <TextBlock Text="LINE ITEMS" Style="{StaticResource LabelSmall}"
                                    Foreground="{ThemeResource OnSurfaceVariantBrush}"
@@ -812,10 +808,7 @@
                       </StackPanel>
                     </utu:CardContentControl>
 
-                    <utu:CardContentControl Style="{StaticResource StaticCardStyle}" Translation="0,0,8">
-                      <utu:CardContentControl.Shadow>
-                        <ThemeShadow />
-                      </utu:CardContentControl.Shadow>
+                    <utu:CardContentControl Style="{StaticResource ElevatedSurfaceCardStyle}">
                       <StackPanel>
                         <TextBlock Text="NOTES" Style="{StaticResource LabelSmall}"
                                    Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold"
@@ -1124,13 +1117,9 @@
 
               <!-- Preview Document (white paper in both themes is a print preview; it follows the theme like the app) -->
               <ScrollViewer Grid.Row="1" Padding="{utu:Responsive Narrow={StaticResource PreviewGutterNarrow}, Normal={StaticResource PreviewGutterWide}}">
-                <utu:CardContentControl Style="{StaticResource StaticCardStyle}"
+                <utu:CardContentControl Style="{StaticResource ElevatedSurfaceCardStyle}"
                                         BorderThickness="0"
-                                        MaxWidth="{StaticResource ReadingMaxWidth}" HorizontalAlignment="Center"
-                                        Translation="0,0,16">
-                  <utu:CardContentControl.Shadow>
-                    <ThemeShadow />
-                  </utu:CardContentControl.Shadow>
+                                        MaxWidth="{StaticResource ReadingMaxWidth}" HorizontalAlignment="Center">
                   <StackPanel>
 
                     <!-- Blue Header -->
