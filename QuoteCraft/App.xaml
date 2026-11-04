@@ -86,9 +86,12 @@
       <!--
         Keyboard: a FeedView is a Control and a tab stop by default, so Tab stopped on an invisible wrapper before
         the content it shows. Its templates' controls take focus; the FeedView itself never does.
+        States: every message sets the loading, error and data states (WholeFeedViewStateSelector says why).
       -->
+      <helpers:WholeFeedViewStateSelector x:Key="WholeFeedViewStateSelector" />
       <Style TargetType="mvux:FeedView">
         <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="VisualStateSelector" Value="{StaticResource WholeFeedViewStateSelector}" />
       </Style>
 
       <!-- Value Converters -->

@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using NSubstitute;
 using QuoteCraft.Models;
 using QuoteCraft.Presentation;
@@ -157,5 +158,24 @@ public class ClientsModelTests
         var model = await Create(h);
 
         Assert.Equal("1 quote", (await model.Clients).Single().Summary);
+    }
+
+    [Fact]
+    public async Task Retry_after_a_failed_read_shows_the_clients()
+    {
+        using var h = new ModelHarness();
+        await h.AddClientAsync("Bob Johnson");
+        var clients = Substitute.For<QuoteCraft.Data.IClientRepository>();
+        var fail = true;
+        clients.GetAllAsync().Returns(_ => fail ? throw new IOException("disk I/O error") : h.Db.Clients.GetAllAsync());
+        var model = new ClientsModel(h.Navigator, clients, h.Db.Quotes, h.Creation, h.FeatureGate);
+        _ = (await model.SearchText, await model.Version);
+        await Assert.ThrowsAnyAsync<Exception>(async () => await model.Clients);
+
+        fail = false;
+        await model.RefreshList(None);
+
+        var list = await Settled(async () => { try { return await ListOf(model.Clients); } catch { return ImmutableList<ClientDisplayItem>.Empty; } }, l => l.Count == 1);
+        Assert.Equal(["Bob Johnson"], list.Select(c => c.Name));
     }
 }
