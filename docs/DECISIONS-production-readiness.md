@@ -345,3 +345,54 @@ Open points:
 - **iOS Keychain access.** Uno's vault throws "not allowed to use the keychain" on status -34018, and
   `Platforms/iOS/Entitlements.plist` is empty. Apps normally get their default access group without an entry; confirm on
   the first signed device build.
+
+# Uno audit (2026-11-04)
+
+Proposed by the uno-audit (`docs/UNO-AUDIT.md`); approved by the owner on 2026-11-04.
+
+## D14. Dialogs are XAML `ContentDialog` routes, opened from models with `!` (owner decision, 2026-11-04)
+
+Decision: every dialog is a XAML `ContentDialog` with an MVUX model in `Presentation/Dialogs`, registered as a route in
+`App.xaml.cs` and opened from a model with the `!` qualifier (`Helpers/DialogNavigation`: `Confirm`, `NewQuote`,
+`SendQuote`, `LineItemEditor`, `CatalogBrowser`, `ClientEditor`, `CatalogItemEditor`). Form dialogs keep their actions
+in the content, so the model validates before the dialog closes and the dialog stays open with a message; the result
+goes back through `NavigateBackWithResultAsync`. Cancel is `Navigation.Request="-"`.
+
+Reason: the dialogs were built in C# inside page code-behind (about 1,500 lines of handlers across the pages), so
+their validation and results could not be tested, and a second dialog opened from a code-built one never showed
+(deleting a catalog item). As routes they are XAML with models like the pages, and callers get a typed result.
+
+Tradeoff: a dialog's buttons are ordinary buttons in its content, not the `ContentDialog` primary and close buttons,
+so the keyboard default (Enter) is the focused button rather than the dialog's primary action. The form's own Cancel
+carries a `xaml-lint: allow backbar` comment, since a dialog has no navigation bar.
+
+## D15. `!` routes to a Page open in a right-hand drawer (owner decision, 2026-11-04)
+
+Decision: `Presentation/DrawerFlyout` (a `DrawerFlyoutPresenter`, right-hand, 420 px) replaces the full-window
+`NavigationFlyout` for `!` routes to a Page; it is registered as the navigation `Flyout` after `UseNavigation`. The
+notifications drawer (`!Notifications`) is the one such route today.
+
+Reason: the notifications overlay was a panel shown and filled from MainPage's code-behind, with an empty `catch`
+that hid its failures (it stayed blank on every launch after the first). As a routed Page with its own model it loads
+and fails like any page, and the drawer keeps the page behind it in view.
+
+Tradeoff: the drawer's width is the Toolkit's `DrawerLength`, set through the Toolkit's definition-only workaround
+style (an attached-property setter in a style based on a Toolkit template is otherwise refused on WinAppSDK,
+microsoft-ui-xaml#6388). Below 420 px the drawer fills the window.
+
+## D16. Cards are `CardContentControl`s with the styles in `Styles/Cards.xaml` (owner decision, 2026-11-04)
+
+Decision: rounded containers are Toolkit `CardContentControl`s with the app's styles in `Styles/Cards.xaml`
+(`StaticCardStyle`, `PaddedCardStyle`, `TonalCardStyle`, `BannerCardStyle`, `AvatarCardStyle`,
+`ElevatedSurfaceCardStyle`), not Borders with a corner radius. Material's hover, pressed and focus tints on cards are
+off app-wide (lightweight keys in `App.xaml`): a card is a surface, not a button. Raised cards use Material's elevated
+card, whose `ElevatedView` draws the shadow on every head.
+
+Reason: 71 Borders were cards drawn by hand (the semantic lint gate's CARD rule), each with its own corners, stroke
+and shadow, and `ThemeShadow`/`Translation` on a Toolkit control does not compile for WinAppSDK (WMC0612). One set of
+styles keeps the surfaces consistent in both themes.
+
+Tradeoff: with the tints off, a card that can be tapped needs its states from what it sits in: a list item container
+or a button inside it, never from code-behind. On touch, a swipe that starts on a card can no longer leave a hover
+tint up. The Material card template passes its alignment to its own fill, so a fixed-size card that is centred
+shrinks its fill to its content: avatars stay `Stretch` and are placed by their parent.
