@@ -490,3 +490,7 @@ solution-config.props
 
 # Loose screenshots at repo root (keep /screenshots folder)
 /screenshot*.png
+# Crash dumps and editor or merge backups
+*.dmp
+*.orig
+*.bak
