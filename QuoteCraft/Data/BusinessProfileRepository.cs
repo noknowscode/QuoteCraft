@@ -48,7 +48,6 @@ public class BusinessProfileRepository : IBusinessProfileRepository
             return _cache;
         }
 
-        // Return default profile if none exists
         _cache = new BusinessProfileEntity();
         return _cache;
     }

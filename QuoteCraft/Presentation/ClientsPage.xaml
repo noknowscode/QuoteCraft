@@ -242,14 +242,12 @@
                                 <ColumnDefinition Width="Auto" />
                               </Grid.ColumnDefinitions>
 
-                              <!-- Avatar -->
                               <utu:CardContentControl Style="{StaticResource AvatarCardStyle}" Width="{StaticResource AvatarSize}" Height="{StaticResource AvatarSize}" CornerRadius="{StaticResource RadiusCircle40}" AutomationProperties.AccessibilityView="Raw">
                                 <TextBlock Text="{Binding Initials}" Style="{StaticResource LabelLarge}"
                                            Foreground="{ThemeResource OnPrimaryContainerBrush}"
                                            HorizontalAlignment="Center" VerticalAlignment="Center" />
                               </utu:CardContentControl>
 
-                              <!-- Info -->
                               <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="{StaticResource Space2}">
                                 <TextBlock Text="{Binding Name}" Style="{StaticResource BodyMediumSemiBold}"
                                            TextTrimming="CharacterEllipsis" />
@@ -259,7 +257,6 @@
                                            TextTrimming="CharacterEllipsis" />
                               </StackPanel>
 
-                              <!-- Value -->
                               <StackPanel Grid.Column="2" VerticalAlignment="Center"
                                           HorizontalAlignment="Right">
                                 <TextBlock Text="{Binding TotalValue, Converter={StaticResource CurrencyFormatConverter}}"

@@ -56,7 +56,6 @@
       </utu:NavigationBar.PrimaryCommands>
     </utu:NavigationBar>
 
-    <!-- Saving -->
     <!-- IsIndeterminate follows IsSaving too: a collapsed indeterminate bar keeps animating (a full CPU core on Skia) -->
     <ProgressBar Grid.Row="1" IsIndeterminate="{Binding IsSaving}"
                  AutomationProperties.Name="Saving"
@@ -94,7 +93,6 @@
                       MaxWidth="{StaticResource ReadingMaxWidth}"
                       HorizontalAlignment="Stretch">
 
-        <!-- Quote Title -->
         <TextBox Header="Quote Title"
                  Text="{Binding Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                  PlaceholderText="e.g. Kitchen Renovation"
@@ -109,7 +107,6 @@
                         ItemsSource="{Binding ClientSuggestions}"
                         AutomationProperties.Name="Client name" />
 
-        <!-- Tax Rate -->
         <TextBox Header="Tax Rate (%)"
                  Text="{Binding TaxRate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                  PlaceholderText="13"
@@ -426,7 +423,6 @@
           </mvux:FeedView.ErrorTemplate>
         </mvux:FeedView>
 
-        <!-- Notes -->
         <TextBox Header="Notes"
                  Text="{Binding Notes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                  PlaceholderText="Additional notes for the client"
@@ -435,7 +431,6 @@
                  MinHeight="{StaticResource NotesMinHeight}"
                  AutomationProperties.Name="Notes" />
 
-        <!-- Export PDF -->
         <Button Content="Export PDF"
                 Command="{Binding ExportPdf}"
                 HorizontalAlignment="Stretch"

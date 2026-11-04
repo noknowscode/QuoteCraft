@@ -56,14 +56,12 @@
                    AutomationProperties.Name="Signing in"
                    Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}" />
 
-      <!-- Email field -->
       <TextBox Text="{Binding Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                PlaceholderText="Email address"
                InputScope="EmailSmtpAddress"
                AutomationProperties.Name="Email"
                Style="{StaticResource MaterialOutlinedTextBoxStyle}" />
 
-      <!-- Password field -->
       <PasswordBox Password="{Binding Password, Mode=TwoWay}"
                    PlaceholderText="Password"
                    AutomationProperties.Name="Password"

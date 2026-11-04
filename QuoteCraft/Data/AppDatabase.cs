@@ -184,7 +184,6 @@ public class AppDatabase
             """;
         await cmd.ExecuteNonQueryAsync();
 
-        // Seed catalog items if table is empty
         var countCmd = connection.CreateCommand();
         countCmd.CommandText = "SELECT COUNT(*) FROM catalog_items";
         var count = Convert.ToInt32(await countCmd.ExecuteScalarAsync());
@@ -194,13 +193,11 @@ public class AppDatabase
             await SeedCatalogItemsAsync(connection);
         }
 
-        // Run migrations
         await RunMigrationsAsync(connection);
     }
 
     private static async Task RunMigrationsAsync(SqliteConnection connection)
     {
-        // Get current schema version
         var versionCmd = connection.CreateCommand();
         versionCmd.CommandText = "SELECT COALESCE(MAX(version), 0) FROM schema_version";
         var currentVersion = Convert.ToInt32(await versionCmd.ExecuteScalarAsync());

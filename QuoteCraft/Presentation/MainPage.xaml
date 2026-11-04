@@ -258,7 +258,6 @@
               <FontIcon Glyph="&#xEA8F;" FontSize="{StaticResource IconSizeLg}" />
               <TextBlock x:Name="NotifLabel" Text="Notifications" Style="{StaticResource BodySmall}" />
             </StackPanel>
-            <!-- Unread count -->
             <InfoBadge Value="{Binding UnreadNotificationCount}"
                        Background="{ThemeResource ErrorBrush}"
                        Foreground="{ThemeResource OnErrorBrush}"
@@ -297,7 +296,6 @@
           </StackPanel>
         </Button>
 
-        <!-- Collapse / Expand toggle -->
         <Button x:Name="CollapseToggle"
                 Margin="{StaticResource RailLastActionMargin}"
                 MinHeight="{StaticResource TouchTarget}"

@@ -17,7 +17,6 @@
       <!-- Step 1: Welcome -->
       <StackPanel Spacing="{StaticResource Space24}" HorizontalAlignment="Center"
                   Visibility="{Binding CurrentStep, Converter={StaticResource StepVisibilityConverter}, ConverterParameter=1}">
-        <!-- Logo badge -->
         <utu:CardContentControl Style="{StaticResource ElevatedSurfaceCardStyle}" BorderThickness="0" Width="{StaticResource LogoSizeHero}" Height="{StaticResource LogoSizeHero}" CornerRadius="{StaticResource RadiusXl}"
                 Background="{StaticResource AppBarBackgroundFixedBrush}"
                 AutomationProperties.AccessibilityView="Raw">

@@ -87,7 +87,7 @@
 
     <!-- The detail, or its print preview -->
     <Grid Grid.Row="1">
-      <!-- === DETAIL VIEW === -->
+      <!-- The detail -->
       <mvux:FeedView Source="{Binding Detail}"
                      Visibility="{Binding IsPreviewMode, Converter={StaticResource InverseBoolConverter}, FallbackValue=Visible}">
         <DataTemplate>
@@ -604,7 +604,7 @@
         </mvux:FeedView.ErrorTemplate>
       </mvux:FeedView>
 
-      <!-- === PREVIEW VIEW === -->
+      <!-- The print preview -->
       <mvux:FeedView Source="{Binding Preview}"
                      Visibility="{Binding IsPreviewMode, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
         <DataTemplate>

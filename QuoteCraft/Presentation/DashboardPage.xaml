@@ -389,7 +389,6 @@
                                   <ctrl:StatusPill Grid.Column="1" Status="{Binding Quote.Status}" />
                                 </Grid>
 
-                                <!-- Client -->
                                 <TextBlock Grid.Row="1"
                                            Text="{Binding Quote.ClientName}"
                                            Style="{StaticResource BodySmall}"
@@ -397,7 +396,6 @@
                                            TextTrimming="CharacterEllipsis"
                                            Margin="{StaticResource GapTop2}" />
 
-                                <!-- Divider -->
                                 <Border Grid.Row="2" Height="{StaticResource HairlineThickness}"
                                         Background="{ThemeResource OutlineVariantBrush}"
                                         Margin="{StaticResource GapTop8}" />

@@ -1,12 +1,11 @@
 namespace QuoteCraft.Presentation;
 
-// Summary card for each category
 public partial record CatalogCategoryCard(
     string Name,
     string IconGlyph,
     int ItemCount);
 
-// An item in an open category
+// An item in an open category, as the item list shows it
 public partial record CatalogDisplayItem(
     string Id,
     string Description,
@@ -53,7 +52,6 @@ public partial record CatalogModel
 
     public IFeed<int> CatalogItemCount => Version.SelectAsync(async (_, ct) => await _catalogRepo.GetItemCountAsync());
 
-    // Category cards for the grid
     public IListFeed<CatalogCategoryCard> CategoryCards =>
         Feed.Combine(SearchText, Version).SelectAsync(async (inputs, ct) =>
         {

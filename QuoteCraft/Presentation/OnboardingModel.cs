@@ -40,12 +40,10 @@ public partial record OnboardingModel
 
         if (step == 1)
         {
-            // Welcome -> Business Info (no validation needed)
             await CurrentStep.UpdateAsync(_ => 2, ct);
         }
         else if (step == 2)
         {
-            // Validate business info before advancing
             var email = (await Email)?.Trim();
             if (!EmailAddress.IsValidOrEmpty(email))
             {
@@ -83,7 +81,6 @@ public partial record OnboardingModel
 
     public async ValueTask Complete(CancellationToken ct)
     {
-        // Validate quote settings before completing
         if (!Money.TryParseRate(await TaxRate, out var tax) || tax > 100)
         {
             await ValidationError.UpdateAsync(_ => "Tax rate must be between 0 and 100.", ct);
@@ -110,7 +107,6 @@ public partial record OnboardingModel
     {
         var profile = await _profileRepo.GetAsync();
 
-        // Save business info if provided
         var name = (await BusinessName)?.Trim();
         if (!string.IsNullOrEmpty(name))
             profile.BusinessName = name;
@@ -127,7 +123,6 @@ public partial record OnboardingModel
         if (!string.IsNullOrEmpty(address))
             profile.Address = address;
 
-        // Save quote settings
         if (Money.TryParseRate(await TaxRate, out var taxRate))
             profile.DefaultTaxRate = taxRate;
 

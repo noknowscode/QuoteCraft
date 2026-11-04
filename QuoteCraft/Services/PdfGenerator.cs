@@ -126,7 +126,7 @@ public static class QuotePdf
             using var text = new TextStyles(fonts);
             var page = new PageFlow(document);
 
-            // ── Quote pages ──────────────────────────────────────────────────────────────────────
+            // Quote pages
             var footerLines = new List<(string Text, SKFont Font, SKColor Color, bool Centered, float GapAbove)>();
             if (!string.IsNullOrEmpty(profile.CustomFooter))
             {
@@ -228,7 +228,7 @@ public static class QuotePdf
                 }
             }
 
-            // ── Photo appendix: two photos a row, each fitted to its cell ───────────────────────────
+            // Photo appendix: two photos a row, each fitted to its cell
             var photos = photoPaths.Select(LoadImage).OfType<SKImage>().ToList();
             try
             {

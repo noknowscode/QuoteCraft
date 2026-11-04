@@ -86,7 +86,6 @@ public class ClientRepository : IClientRepository
         {
             var now = DateTimeOffset.UtcNow.ToString("O");
 
-            // Soft-delete the client
             var cmd = conn.CreateCommand();
             cmd.Transaction = tx;
             cmd.CommandText = "UPDATE clients SET is_deleted = 1, updated_at = @updated_at WHERE id = @id";

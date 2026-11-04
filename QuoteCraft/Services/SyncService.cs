@@ -55,10 +55,8 @@ public class SyncService : ISyncService, IDisposable
 
         _connectivity.StartMonitoring();
 
-        // Initial sync on startup
         await SyncNowAsync();
 
-        // Periodic sync every 30 seconds
         _syncTimer?.Dispose();
         _syncTimer = new Timer(async _ => await SyncNowAsync(), null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
     }
@@ -131,7 +129,6 @@ public class SyncService : ISyncService, IDisposable
 
             await _supabase.UpsertBatchAsync("quotes", remoteQuotes);
 
-            // Mark as synced locally
             foreach (var q in dirtyQuotes)
             {
                 q.SyncedAt = DateTimeOffset.UtcNow;
@@ -141,7 +138,6 @@ public class SyncService : ISyncService, IDisposable
             _logger.LogInformation("Pushed {Count} dirty quotes", dirtyQuotes.Count);
         }
 
-        // Push dirty clients
         var allClients = await _clientRepo.GetAllAsync();
         var dirtyClients = allClients.Where(c => c.SyncedAt is null || c.UpdatedAt > c.SyncedAt).ToList();
 
@@ -248,7 +244,6 @@ public class SyncService : ISyncService, IDisposable
         _connectivity.StopMonitoring();
     }
 
-    // DTOs for deserialization from Supabase REST API
     private class RemoteQuote
     {
         public string? Id { get; set; }

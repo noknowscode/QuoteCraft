@@ -34,7 +34,6 @@ public class ShareService : IShareService
 
     public async Task<string?> GenerateAndDownloadPdfAsync(QuoteEntity quote)
     {
-        // Ensure line items are loaded
         if (quote.LineItems.Count == 0)
             quote.LineItems = await _quoteRepo.GetLineItemsAsync(quote.Id);
 

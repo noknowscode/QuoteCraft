@@ -550,7 +550,6 @@
                 </Grid>
                 <Border Height="{StaticResource HairlineThickness}" Background="{ThemeResource OutlineVariantBrush}" Margin="{StaticResource FormRowInset}" />
 
-                <!-- Manage Subscription -->
                 <Grid Padding="{StaticResource FormRowInset}" MinHeight="{utu:Responsive Narrow={StaticResource FormRowMinHeightNarrow}, Wide={StaticResource FormRowMinHeight}}">
                   <Button Command="{Binding ManageSubscription}"
                           HorizontalAlignment="Stretch"
@@ -636,7 +635,6 @@
                        Visibility="{Binding IsSaving, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}" />
         </StackPanel>
 
-        <!-- Save Button -->
         <Button Content="Save Settings"
                 Command="{Binding Save}"
                 AutomationProperties.Name="Save settings"

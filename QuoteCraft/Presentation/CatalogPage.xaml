@@ -112,7 +112,6 @@
           <RowDefinition />
         </Grid.RowDefinitions>
 
-        <!-- Instruction text -->
         <TextBlock Text="Select a category to view and manage items"
                    Style="{StaticResource BodySmall}"
                    Foreground="{ThemeResource OnSurfaceVariantBrush}"
@@ -142,20 +141,17 @@
                               HorizontalContentAlignment="Center"
                               VerticalContentAlignment="Center">
                         <StackPanel Spacing="{StaticResource Space8}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                          <!-- Icon Circle -->
                           <utu:CardContentControl Style="{StaticResource AvatarCardStyle}" Width="{StaticResource AvatarSize}" Height="{StaticResource AvatarSize}" CornerRadius="{StaticResource RadiusCircle40}">
                             <FontIcon Glyph="{Binding IconGlyph}"
                                       FontSize="{StaticResource IconSizeXl}"
                                       Foreground="{ThemeResource OnPrimaryContainerBrush}"
                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
                           </utu:CardContentControl>
-                          <!-- Name -->
                           <TextBlock Text="{Binding Name}"
                                      Style="{StaticResource TitleSmall}"
                                      FontWeight="SemiBold"
                                      HorizontalAlignment="Center"
                                      TextAlignment="Center" TextWrapping="Wrap" />
-                          <!-- Item Count -->
                           <TextBlock Style="{StaticResource BodySmall}"
                                      Foreground="{ThemeResource OnSurfaceVariantBrush}"
                                      HorizontalAlignment="Center">
@@ -272,7 +268,6 @@
                   </TextBlock>
                 </StackPanel>
 
-                <!-- Add item to category button -->
                 <Button Grid.Column="2"
                         Command="{Binding DataContext.AddItemToCategory, ElementName=CatalogRoot}"
                         AutomationProperties.Name="Add item to category"

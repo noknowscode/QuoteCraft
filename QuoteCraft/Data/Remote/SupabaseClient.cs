@@ -112,7 +112,6 @@ public class SupabaseClient
             var refreshed = await _authService.RefreshSessionAsync();
             if (refreshed is { IsAuthenticated: true, AccessToken: { } token })
             {
-                // Clone the request with new token
                 var retry = new HttpRequestMessage(request.Method, request.RequestUri);
                 retry.Headers.Add("apikey", _anonKey);
                 retry.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);

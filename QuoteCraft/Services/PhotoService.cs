@@ -59,7 +59,6 @@ public class PhotoService : IPhotoService
             await source.CopyToAsync(destination);
         }
 
-        // Compress if file exceeds 1 MB
         await CompressIfNeededAsync(destPath);
 
         return destPath;

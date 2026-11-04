@@ -149,7 +149,6 @@ public class QuoteRepository : IQuoteRepository
         await lineCmd.ExecuteNonQueryAsync();
         tx.Commit();
 
-        // Clean up photo files from disk
         _photoService.DeletePhotosForQuote(id);
     }
 
