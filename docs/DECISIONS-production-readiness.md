@@ -496,3 +496,19 @@ resources, so neither its own keys nor WinUI's `ContentDialogMaxWidth` set on th
 What a full-window view would take (not built): a page outside the dialogs. The editor lives in MainPage's Visibility
 region, which has no back stack, so a photo page there would have to hand the editor back with its unsaved edits;
 that is a navigation change, not a small feature.
+
+# Transfer to uno.labs (2026-11-04)
+
+## D23. A quote icon in place of the Uno template's (proposed, 2026-11-04)
+
+Decision: the launcher, splash and gallery icon is a quote: a white sheet with a folded corner and three lines, with
+the amber check (the accent, `SecondaryColor` #F59E0B) on its corner, on the primary slate blue (`PrimaryColor`
+#2B4C7E, `Styles/ColorPaletteOverride.xaml`). `Assets/Icons/icon.svg` is the ground, `icon_foreground.svg` the glyph,
+and `Assets/Splash/splash_screen.svg` the same glyph in slate on the splash's white. The template's viewBoxes stay; the
+glyph spans about 61% of the width and 70% of the height at the foreground scale of 1.0 (desktop, WebAssembly,
+Windows) and stays inside Android's adaptive safe zone at 0.65. Checked: the desktop and Android builds pass, and the
+Android launcher icon Resizetizer generates shows the glyph whole.
+
+Reason: the owner approved a simple custom icon for the apps that still shipped the template's (info file brief).
+
+Tradeoff: flat and generic, and no wordmark; the in-app "QC" mark stays in the rail and onboarding.
