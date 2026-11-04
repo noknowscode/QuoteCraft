@@ -4,7 +4,7 @@ A professional quoting app for contractors and small businesses, built with [Uno
 
 QuoteCraft helps service professionals create, manage, and send quotes to clients — all from a single cross-platform application that runs on Windows, macOS, Linux, iOS, Android, and WebAssembly.
 
-![QuoteCraft Dashboard](screenshots/dashboard-v2.png)
+![QuoteCraft: the quotes list with a quote open](screenshots/quotes.png)
 
 ## Features
 
@@ -22,9 +22,11 @@ QuoteCraft helps service professionals create, manage, and send quotes to client
 
 ## Screenshots
 
-| Dashboard | Clients | Catalog | Settings |
-|:---------:|:-------:|:-------:|:--------:|
-| ![Dashboard](screenshots/dashboard-v2.png) | ![Clients](screenshots/nav-clients-after-chip.png) | ![Catalog](screenshots/nav-catalog-page.png) | ![Settings](screenshots/nav-settings-page.png) |
+| Clients | Catalog | Settings | A quote on a phone |
+|:-------:|:-------:|:--------:|:------------------:|
+| ![Clients](screenshots/clients.png) | ![Catalog](screenshots/catalog.png) | ![Settings](screenshots/settings.png) | ![A quote on a phone](screenshots/quote-phone.png) |
+
+Debug desktop build, sample data (`--qc-seed=sample`), Light theme, 1280 × 800 and 390 × 844.
 
 ## Tech Stack
 
