@@ -9,9 +9,7 @@ public interface ISubscriptionService
     /// on-device feature (docs/DECISIONS-production-readiness.md, D3).
     /// </summary>
     bool IsAvailable { get; }
-    event Action<SubscriptionTier>? TierChanged;
 
-    Task RefreshTierAsync();
     Task<string?> GetCheckoutUrlAsync(string tier = "pro", string interval = "monthly");
     Task<string?> GetCustomerPortalUrlAsync();
 }

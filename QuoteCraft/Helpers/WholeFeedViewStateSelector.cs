@@ -35,7 +35,7 @@ public sealed class WholeFeedViewStateSelector : FeedViewVisualStateSelector
         }
     }
 
-    /// <summary>The visual state names this selector gives a message.</summary>
-    public IEnumerable<string> StatesFor(FeedView feedView, IMessage message) =>
+    /// <summary>The visual state names this selector gives a message: the tests' seam onto the protected override.</summary>
+    internal IEnumerable<string> StatesFor(FeedView feedView, IMessage message) =>
         GetVisualStates(feedView, message).Select(s => s.stateName);
 }

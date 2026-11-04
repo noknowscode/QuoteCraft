@@ -80,12 +80,7 @@ public partial class App : Application
                         .Section<AppConfig>()
                         .Section<Data.Remote.SupabaseOptions>("Supabase")
                 )
-                .UseHttp((context, services) =>
-                {
-#if DEBUG
-                    services.AddTransient<DelegatingHandler, DebugHttpHandler>();
-#endif
-                })
+                .UseHttp()
                 .ConfigureServices((context, services) =>
                 {
                     services.AddSingleton<AppDatabase>();

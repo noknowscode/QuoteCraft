@@ -24,10 +24,6 @@ public interface IFeatureGateService
     int MaxClients { get; }
     bool HasPdfWatermark { get; }
     bool HasCloudSync { get; }
-    bool HasAllCatalogs { get; }
-    bool HasBranding { get; }
-    bool HasNotifications { get; }
-    bool HasAdvancedStatuses { get; }
     string GetUpgradeMessage(string feature);
 }
 
@@ -54,8 +50,6 @@ public class FeatureGateService : IFeatureGateService
     // Free-plan limits apply only where a paid plan can be bought; local-only builds have no plans.
     private bool IsFreePlan => HasPlans && CurrentTier == SubscriptionTier.Free;
 
-    private bool HasPaidFeatures => !HasPlans || CurrentTier >= SubscriptionTier.Pro;
-
     public int MaxQuotesPerMonth => IsFreePlan ? 5 : int.MaxValue;
 
     public int MaxClients => IsFreePlan ? 10 : int.MaxValue;
@@ -67,14 +61,6 @@ public class FeatureGateService : IFeatureGateService
     /// business profile not at all (docs/DECISIONS-production-readiness.md, D8). SyncService stays unstarted.
     /// </summary>
     public bool HasCloudSync => false;
-
-    public bool HasAllCatalogs => HasPaidFeatures;
-
-    public bool HasBranding => HasPaidFeatures;
-
-    public bool HasNotifications => HasPaidFeatures;
-
-    public bool HasAdvancedStatuses => HasPaidFeatures;
 
     public async Task<bool> CanCreateQuoteAsync()
     {

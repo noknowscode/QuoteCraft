@@ -15,5 +15,4 @@ public interface IAuthService
     Task<AuthState> SignInWithMagicLinkAsync(string email);
     Task SignOutAsync();
     Task<AuthState> RefreshSessionAsync();
-    Task<bool> IsSessionValidAsync();
 }

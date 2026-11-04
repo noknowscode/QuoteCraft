@@ -178,15 +178,13 @@ public class FeatureGateServiceTests
     }
 
     [Fact]
-    public void LocalOnly_HasOnDeviceFeatures_ButNoCloudSync()
+    public void LocalOnly_HasNoWatermark_AndNoCloudSync()
     {
         _subscriptionService.IsAvailable.Returns(false);
         _subscriptionService.CurrentTier.Returns(SubscriptionTier.Free);
         var svc = CreateService();
 
         Assert.False(svc.HasPdfWatermark);
-        Assert.True(svc.HasBranding);
-        Assert.True(svc.HasAllCatalogs);
         Assert.False(svc.HasCloudSync);
     }
 

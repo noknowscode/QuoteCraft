@@ -134,36 +134,6 @@ public class AuthService : IAuthService
         }
     }
 
-    public async Task<bool> IsSessionValidAsync()
-    {
-        if (!_currentState.IsAuthenticated || string.IsNullOrEmpty(_currentState.AccessToken))
-            return false;
-
-        try
-        {
-            var url = $"{_supabaseUrl}/auth/v1/user";
-            var request = new HttpRequestMessage(HttpMethod.Get, url);
-            request.Headers.Add("apikey", _supabaseAnonKey);
-            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _currentState.AccessToken);
-
-            var response = await _http.SendAsync(request);
-            if (response.IsSuccessStatusCode) return true;
-
-            // Try refresh if access token expired
-            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-            {
-                var refreshed = await RefreshSessionAsync();
-                return refreshed.IsAuthenticated;
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Session validation failed");
-        }
-
-        return false;
-    }
-
     private HttpRequestMessage CreateAuthRequest(HttpMethod method, string url, object? body = null)
     {
         var request = new HttpRequestMessage(method, url);

@@ -13,7 +13,6 @@ public class SubscriptionService : ISubscriptionService
 
     public SubscriptionTier CurrentTier => _currentTier;
     public bool IsAvailable => _config.IsConfigured;
-    public event Action<SubscriptionTier>? TierChanged;
 
     public SubscriptionService(
         IAuthService authService,
@@ -35,7 +34,7 @@ public class SubscriptionService : ISubscriptionService
         };
     }
 
-    public async Task RefreshTierAsync()
+    private async Task RefreshTierAsync()
     {
         if (!_authService.CurrentState.IsAuthenticated)
         {
@@ -98,11 +97,7 @@ public class SubscriptionService : ISubscriptionService
 
     private void UpdateTier(SubscriptionTier tier)
     {
-        if (_currentTier != tier)
-        {
-            _currentTier = tier;
-            TierChanged?.Invoke(tier);
-        }
+        _currentTier = tier;
     }
 
     private class SubscriptionRecord

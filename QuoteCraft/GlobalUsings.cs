@@ -8,5 +8,4 @@ global using QuoteCraft.Helpers;
 global using QuoteCraft.Models;
 global using QuoteCraft.Presentation;
 global using QuoteCraft.Services;
-global using QuoteCraft.Services.Endpoints;
 [assembly: Uno.Extensions.Reactive.Config.BindableGenerationTool(3)]
