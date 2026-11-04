@@ -5,15 +5,19 @@ Runtime: Debug `net10.0-desktop` on Linux under Xvfb (software rendering), drive
 Post-state was read from the encrypted database (SQLCipher through `libe_sqlcipher`, the key from `.dbkey`), from
 `exports/`, and by relaunching on the same data folder. `dotnet test`: 137 passed, 0 skipped.
 
-Verdict: **Incomplete** (2 Blockers at `928e155`; 1 open after the fix below)
+Verdict: **Complete with gaps** (2 Blockers at `928e155`; 0 open after the fixes below)
 
-**Fixed after the audit (2026-11-04):** the detail's overlapping layout below 1400 px (Blocker 2). The two grids have
-their `RowDefinitions` back. Proven at runtime (R): the detail at 390, 1100, 1280 and 1500 px; the title, actions,
-line items and side column no longer overlap. Blocker 1 (Save and the focused field) stays open.
+**Fixed after the audit (2026-11-04):** both Blockers; details and proof under Findings, Fixed after the audit.
+- The detail's overlapping layout below 1400 px (Blocker 2, `ca89676`). The two grids have their `RowDefinitions`
+  back. Proven at runtime (R): the detail at 390, 1100, 1280 and 1500 px; the title, actions, line items and side
+  column no longer overlap.
+- The editor's top-bar Save dropping the focused field (Blocker 1, `d8a5212`). The editor's fields commit as they are
+  typed. Proven at runtime (R): title, tax rate, client and notes each typed and saved at once, read back from the
+  database and after a relaunch.
 
 Safe to show (desktop, window 1400 px or wider): onboarding to the first quote; adding items by hand and from the
 catalog; totals; Export PDF; Mark Sent, Accepted and Reopen; clients add, search, edit and delete; catalog price edit;
-saving Settings. In the editor, press Tab before the top-bar Save.
+saving Settings.
 
 Keep off screen: the Send email body; notifications and reminders; any validation
 or failure message; logo removal; cloud mode.
@@ -52,13 +56,13 @@ Also checked: an expiry reminder reaches the user (P2, F17.2).
 |---|---|---|---|---|---|---|---|
 | 1 | Screens | Partial | R | 0 | 0 | 1 | All present. Notifications overlay unreachable below 800 px (counted in 9). NotificationsPage is dead code |
 | 2 | Navigation | Complete | R | 0 | 0 | 0 | Tabs, rail, editor back and fallback, Full editor, and Duplicate opening the editor all drove correctly |
-| 3 | Interactions | Broken | R | 1 | 3 | 1 | Editor Save drops the focused field. Send body is truncated. Mark all read is dead. No logo removal |
+| 3 | Interactions | Broken | R | 0 | 3 | 1 | Send body is truncated. Mark all read is dead. No logo removal. Editor Save fixed (`d8a5212`) |
 | 4 | Logic | Complete | R | 0 | 0 | 1 | Tax 8.25 % on $2,621.00 is $216.23. Numbering, status rules and Reopen verified in the database. Viewed is residue (D11) |
 | 5 | Data | Complete | R | 0 | 0 | 0 | Quote, items, notes, client, catalog price, settings and status history survive a relaunch |
 | 6 | States | Broken | R | 0 | 1 | 2 | Every message bound through `FeedView` to an `IState<string>` never renders. The Quotes error state renders |
 | 7 | Forms | Partial | R | 0 | 0 | 3 | Item and client dialogs validate. Discard prompt after Export. Stale item error. Explicit Save, not auto-save |
 | 8 | Authentication | N/A | C | 0 | 2 | 0 | Local-first, no account (D3). Cloud mode not runnable: no Sign In entry, annual billing unbound |
-| 9 | Responsive/adaptive UI | Broken | R | 1 | 1 | 0 | Quote detail overlaps itself at 390, 1100 and 1280 px. No notifications entry below 800 px |
+| 9 | Responsive/adaptive UI | Broken | R | 0 | 1 | 0 | No notifications entry below 800 px. Detail overlap fixed (`ca89676`) |
 | 10 | Platform behavior | Partial | R | 0 | 0 | 1 | Desktop only. PDF writes `exports/`, but nothing opens it without `xdg-open` and nothing says so |
 | 11 | Failure handling | Broken | R | 0 | 0 | 0 | Wrong key shows "Quotes could not be loaded" with Retry. Failed email shows a dialog. Banners dead (counted in 6) |
 | 12 | Accessibility | Partial | C | 0 | 0 | 1 | 91 `AutomationProperties.Name`. Step indicator announces "Step 1 of 2" over 3 bars. Screen readers X |
@@ -72,7 +76,7 @@ Also checked: an expiry reminder reaches the user (P2, F17.2).
 | Workflow | desktop | WinAppSDK | android | ios | wasm |
 |---|---|---|---|---|---|
 | 1. Onboarding to first quote | R, Partial: flag file written; the editor opens with the onboarding tax 8.25; validation messages invisible | X | X | X | X |
-| 2. Create and edit a quote | R, **Broken**: top-bar Save kept "Service call" after typing " - furnace" (detail and database, twice); with Tab first it saved | X | X | X | X |
+| 2. Create and edit a quote | R, Complete after `d8a5212`: title, tax rate, client and notes typed and saved at once with the top-bar Save, in the database and after a relaunch (at `928e155` Save kept "Service call" after " - furnace") | X | X | X | X |
 | 3. Export the quote PDF | R, Complete: `exports/QC-2026-0001.pdf`, 1 page, DM Sans embedded. `pdftotext` shows items in reordered order, subtotal $2,621.00, tax $216.23, total $2,837.23 and the notes | X | X | X | X |
 | 4. Review and send a quote | R, **Broken**: detail overlapped below 1400 px; mailto body only "Hi Dana Reyes,"; no email app reported honestly | X | X | X | X |
 | 5. Status lifecycle | R, Complete: Mark Sent (Sent, valid 2 days), Accepted (history row), Reopen (Draft, valid Dec 04, history row) | X | X | X | X |
@@ -86,6 +90,9 @@ records an earlier headless-Chromium PDF download.
 ## Findings
 
 ### Blockers
+None open.
+
+### Fixed after the audit
 - [Interactions/Forms] **The editor's Save drops the edit in the focused field.**
   - Where: `QuoteEditorPage.xaml:50` (`Command="{Binding Save}"` on the navigation bar).
   - Evidence: R. Typed " - furnace" into the title and pressed Save at once. The quote stayed "Service call" in the
@@ -93,6 +100,26 @@ records an earlier headless-Chromium PDF download.
   - Cause: TextBox two-way bindings commit on LostFocus, and the bar command does not take focus. The same path skips
     validation: an emptied title was saved as the old title with no message.
   - Owner: mvux.
+  - **Fixed in `d8a5212`.** The title, client (`AutoSuggestBox`), tax rate and notes bind with
+    `UpdateSourceTrigger=PropertyChanged`, as the list searches already did, so the model holds the typed text before
+    any command runs. The editor has no markup or valid-until field (markup is a Settings default; validity is set by
+    the status rules). The totals now follow the tax rate as it is typed.
+  - Proof: R. Debug desktop under Xvfb at 1280 × 800, sample data, QC-2026-0001 "Kitchen Renovation"; the database
+    read with SQLCipher and `.dbkey`, then a relaunch on the same data folder.
+    - Control, same driver on the unfixed build: " - furnace" typed into the title and Save pressed at once; Save ran
+      (`updated_at` moved) and the title stayed "Kitchen Renovation".
+    - Title: " - furnace" and Save at once gave "Kitchen Renovation - furnace". Tax rate: 13 replaced with 8.25 and
+      Save at once gave 8.25. Client: "Mike Chen" and Save at once gave `client_name` Mike Chen, linked to that client.
+      Notes: " Gate code 4412." appended, the field still focused, then Save; saved. Each relaunch showed the values.
+    - Money rules (D9) while typing: "9." stays as typed and the totals read "Tax (9 %)" $171.90 on $1,910.00; "9.975"
+      reads "Tax (9.975 %)" $190.52. Nothing rounds, refuses or rewrites the field.
+    - Back straight after typing now asks "Unsaved Changes" (before, by code, it read the old value and left without
+      asking). Discard left the database as it was.
+    - An emptied title now reaches validation: Save keeps the editor open with the field empty, and the database keeps
+      the old title (`updated_at` unchanged). No message shows: "Quote title is required." goes to the dead
+      `ValidationError` `FeedView` (the open Major under Majors). Its slot is also below Notes, out of view from the
+      top bar at 1280 × 1000.
+  - Test: none. The bug lives only in the XAML bindings; the runtime proof stands in for one.
 - [Responsive/Screens] **The quote detail renders on top of itself below 1400 px.**
   - Where: `DashboardPage.xaml:601-606` (title and actions grid) and `:732-740` (main and side columns).
   - What happens: both grids set `Grid.Row="{utu:Responsive Narrowest=1, …}"` but have no `RowDefinitions`. Commit
@@ -102,13 +129,15 @@ records an earlier headless-Chromium PDF download.
   - This is the only detail layout on phones and on laptops narrower than 1400 px. The Phase B evidence sheets predate
     the regression.
   - Owner: uno-toolkit.
+  - **Fixed in `ca89676`.** Both grids have their `RowDefinitions` back. Proof: R at 390, 1100, 1280 and 1500 px; the
+    title, actions, line items and side column no longer overlap.
 
 ### Majors (functional)
 - [States/Forms/Failure] **Messages bound through `FeedView` to an `IState<string>` never render.**
   - Cause: MVUX exposes a string state as a plain `string` on the bindable view model, so a `FeedView` gets no feed.
   - Evidence: R.
     - Onboarding: an invalid email and a tax of "abc" both blocked the step with no message (`OnboardingPage.xaml:105,211`).
-    - Editor: an empty title kept the page open with no message (`QuoteEditorPage.xaml:386`).
+    - Editor: an empty title kept the page open with no message (`QuoteEditorPage.xaml:388`).
     - Settings: saving showed no confirmation (`SettingsPage.xaml:596,607`).
   - Same pattern, not driven (C): the Quotes `ActionError` and `UpgradeMessage` banners (`DashboardPage.xaml:116,157`)
     and the Settings `LoadError` (`:53`). A failed Download PDF on Quotes is therefore silent.
