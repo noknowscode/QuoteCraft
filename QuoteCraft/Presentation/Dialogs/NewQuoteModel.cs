@@ -4,23 +4,14 @@ namespace QuoteCraft.Presentation;
 public partial record NewQuoteModel
 {
     private readonly INavigator _navigator;
-    private readonly IQuoteRepository _quoteRepo;
     private readonly IClientRepository _clientRepo;
-    private readonly IBusinessProfileRepository _profileRepo;
-    private readonly QuoteNumberGenerator _quoteNumberGen;
+    private readonly QuoteCreationService _creation;
 
-    public NewQuoteModel(
-        INavigator navigator,
-        IQuoteRepository quoteRepo,
-        IClientRepository clientRepo,
-        IBusinessProfileRepository profileRepo,
-        QuoteNumberGenerator quoteNumberGen)
+    public NewQuoteModel(INavigator navigator, IClientRepository clientRepo, QuoteCreationService creation)
     {
         _navigator = navigator;
-        _quoteRepo = quoteRepo;
         _clientRepo = clientRepo;
-        _profileRepo = profileRepo;
-        _quoteNumberGen = quoteNumberGen;
+        _creation = creation;
     }
 
     public IState<string> QuoteTitle => State<string>.Value(this, () => string.Empty);
@@ -58,19 +49,7 @@ public partial record NewQuoteModel
 
         try
         {
-            var profile = await _profileRepo.GetAsync();
-            var name = (await ClientName)?.Trim();
-            var quote = new QuoteEntity
-            {
-                Title = title,
-                QuoteNumber = await _quoteNumberGen.GenerateAsync(),
-                Status = QuoteStatus.Draft,
-                TaxRate = profile.DefaultTaxRate,
-                ValidUntil = DateTimeOffset.UtcNow.AddDays(profile.QuoteValidDays),
-                ClientName = string.IsNullOrEmpty(name) ? null : name,
-                ClientId = ClientLink.Resolve(name, null, null, await _clientRepo.GetAllAsync()),
-            };
-            await _quoteRepo.SaveAsync(quote);
+            var quote = await _creation.CreateDraftAsync(title, await ClientName);
             await _navigator.NavigateBackWithResultAsync(this, data: quote, cancellation: ct);
         }
         catch (Exception ex)

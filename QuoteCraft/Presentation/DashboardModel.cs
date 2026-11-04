@@ -22,7 +22,7 @@ public partial record DashboardModel
     private readonly IQuoteRepository _quoteRepo;
     private readonly IClientRepository _clientRepo;
     private readonly IBusinessProfileRepository _profileRepo;
-    private readonly QuoteNumberGenerator _quoteNumberGen;
+    private readonly QuoteCreationService _creation;
     private readonly Services.IShareService _shareService;
     private readonly Services.IFeatureGateService _featureGate;
     private readonly Services.QuoteStatusService _status;
@@ -34,7 +34,7 @@ public partial record DashboardModel
         IQuoteRepository quoteRepo,
         IClientRepository clientRepo,
         IBusinessProfileRepository profileRepo,
-        QuoteNumberGenerator quoteNumberGen,
+        QuoteCreationService creation,
         Services.IShareService shareService,
         Services.IFeatureGateService featureGate,
         Services.QuoteStatusService status,
@@ -48,7 +48,7 @@ public partial record DashboardModel
         _quoteRepo = quoteRepo;
         _clientRepo = clientRepo;
         _profileRepo = profileRepo;
-        _quoteNumberGen = quoteNumberGen;
+        _creation = creation;
         _shareService = shareService;
         _featureGate = featureGate;
     }
@@ -387,37 +387,10 @@ public partial record DashboardModel
             return;
         }
 
-        var freshQuote = await _quoteRepo.GetByIdAsync(quote.Id);
-        if (freshQuote is null) return;
-
-        var quoteNumber = await _quoteNumberGen.GenerateAsync();
-        var newQuote = new QuoteEntity
+        if (await _creation.DuplicateAsync(quote.Id) is { } copy)
         {
-            Title = freshQuote.Title + " (Copy)",
-            QuoteNumber = quoteNumber,
-            Status = QuoteStatus.Draft,
-            ClientId = freshQuote.ClientId,
-            ClientName = freshQuote.ClientName,
-            Notes = freshQuote.Notes,
-            TaxRate = freshQuote.TaxRate,
-            ValidUntil = DateTimeOffset.UtcNow.AddDays(
-                (await _profileRepo.GetAsync()).QuoteValidDays),
-        };
-        await _quoteRepo.SaveAsync(newQuote);
-
-        foreach (var item in freshQuote.LineItems)
-        {
-            var newItem = new LineItemEntity
-            {
-                QuoteId = newQuote.Id,
-                Description = item.Description,
-                UnitPrice = item.UnitPrice,
-                Quantity = item.Quantity,
-            };
-            await _quoteRepo.SaveLineItemAsync(newItem);
+            await _navigator.NavigateRouteAsync(this, "QuoteEditor", data: copy);
         }
-
-        await _navigator.NavigateRouteAsync(this, "QuoteEditor", data: newQuote);
     }, ct);
 
     public async ValueTask DismissUpgrade(CancellationToken ct)

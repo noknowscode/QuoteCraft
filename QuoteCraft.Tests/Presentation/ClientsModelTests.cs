@@ -16,7 +16,7 @@ public class ClientsModelTests
     /// <summary>The page once its selection and search hold their first values (see QuoteEditorModelTests.Create).</summary>
     private static async Task<ClientsModel> Create(ModelHarness h)
     {
-        var model = new ClientsModel(h.Navigator, h.Db.Clients, h.Db.Quotes, h.Db.Profiles, h.Numbers, h.FeatureGate);
+        var model = new ClientsModel(h.Navigator, h.Db.Clients, h.Db.Quotes, h.Creation, h.FeatureGate);
         _ = (await model.SelectedClient, await model.SearchText, await model.Version);
         return model;
     }

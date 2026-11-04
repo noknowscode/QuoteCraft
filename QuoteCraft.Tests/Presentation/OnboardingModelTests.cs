@@ -16,7 +16,7 @@ public class OnboardingModelTests
     /// <summary>The steps once their fields hold their first values (see QuoteEditorModelTests.Create).</summary>
     private static async Task<OnboardingModel> Create(ModelHarness h, IOnboardingService onboarding)
     {
-        var model = new OnboardingModel(h.Navigator, h.Db.Profiles, onboarding, h.Db.Quotes, h.Numbers);
+        var model = new OnboardingModel(h.Navigator, h.Db.Profiles, onboarding, h.Creation);
         _ = (await model.CurrentStep, await model.BusinessName, await model.Phone, await model.Email, await model.Address,
             await model.TaxRate, await model.ValidDays, await model.QuotePrefix, await model.ValidationError);
         return model;

@@ -5,23 +5,20 @@ public partial record ClientsModel
     private readonly INavigator _navigator;
     private readonly IClientRepository _clientRepo;
     private readonly IQuoteRepository _quoteRepo;
-    private readonly IBusinessProfileRepository _profileRepo;
-    private readonly QuoteNumberGenerator _quoteNumberGen;
-    private readonly Services.IFeatureGateService _featureGate;
+    private readonly QuoteCreationService _creation;
+    private readonly IFeatureGateService _featureGate;
 
     public ClientsModel(
         INavigator navigator,
         IClientRepository clientRepo,
         IQuoteRepository quoteRepo,
-        IBusinessProfileRepository profileRepo,
-        QuoteNumberGenerator quoteNumberGen,
-        Services.IFeatureGateService featureGate)
+        QuoteCreationService creation,
+        IFeatureGateService featureGate)
     {
         _navigator = navigator;
         _clientRepo = clientRepo;
         _quoteRepo = quoteRepo;
-        _profileRepo = profileRepo;
-        _quoteNumberGen = quoteNumberGen;
+        _creation = creation;
         _featureGate = featureGate;
     }
 
@@ -181,19 +178,7 @@ public partial record ClientsModel
             throw new InvalidOperationException(_featureGate.GetUpgradeMessage("quotes"));
         }
 
-        var profile = await _profileRepo.GetAsync();
-        var quoteNumber = await _quoteNumberGen.GenerateAsync();
-        var quote = new QuoteEntity
-        {
-            Title = "New Quote",
-            QuoteNumber = quoteNumber,
-            Status = QuoteStatus.Draft,
-            ClientId = client.Id,
-            ClientName = client.Name,
-            TaxRate = profile.DefaultTaxRate,
-            ValidUntil = DateTimeOffset.UtcNow.AddDays(profile.QuoteValidDays),
-        };
-        await _quoteRepo.SaveAsync(quote);
+        var quote = await _creation.CreateDraftForClientAsync("New Quote", client.Entity);
         await _navigator.NavigateRouteAsync(this, "QuoteEditor", data: quote);
     }, ct);
 

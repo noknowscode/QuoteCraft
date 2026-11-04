@@ -87,6 +87,7 @@ public partial class App : Application
                     services.AddSingleton<IBusinessProfileRepository, BusinessProfileRepository>();
                     services.AddSingleton<ICatalogItemRepository, CatalogItemRepository>();
                     services.AddSingleton<QuoteNumberGenerator>();
+                    services.AddSingleton<Services.QuoteCreationService>();
                     services.AddSingleton<Services.IPdfGenerator, Services.PdfGenerator>();
                     services.AddSingleton<Services.IShareService, Services.ShareService>();
                     services.AddSingleton<Services.IFeatureGateService, Services.FeatureGateService>();

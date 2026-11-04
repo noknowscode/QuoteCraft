@@ -25,6 +25,7 @@ public sealed class ModelHarness : IDisposable
         Catalog = new CatalogItemRepository(Db.Database);
         Status = new QuoteStatusService(Db.Quotes, Db.History, Db.Profiles);
         Numbers = new QuoteNumberGenerator(Db.Quotes, Db.Profiles);
+        Creation = new QuoteCreationService(Db.Quotes, Db.Clients, Db.Profiles, Numbers);
         Subscription = Substitute.For<ISubscriptionService>();
         FeatureGate = new FeatureGateService(Db.Quotes, Db.Clients, Subscription);
         Notifications = new NotificationService(Db.Database, NullLogger<NotificationService>.Instance);
@@ -35,6 +36,7 @@ public sealed class ModelHarness : IDisposable
     public CatalogItemRepository Catalog { get; }
     public QuoteStatusService Status { get; }
     public QuoteNumberGenerator Numbers { get; }
+    public QuoteCreationService Creation { get; }
     public ISubscriptionService Subscription { get; }
     public FeatureGateService FeatureGate { get; }
     public NotificationService Notifications { get; }

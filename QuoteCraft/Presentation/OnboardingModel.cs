@@ -5,21 +5,18 @@ public partial record OnboardingModel
     private readonly INavigator _navigator;
     private readonly IBusinessProfileRepository _profileRepo;
     private readonly IOnboardingService _onboardingService;
-    private readonly IQuoteRepository _quoteRepo;
-    private readonly QuoteNumberGenerator _quoteNumberGen;
+    private readonly QuoteCreationService _creation;
 
     public OnboardingModel(
         INavigator navigator,
         IBusinessProfileRepository profileRepo,
         IOnboardingService onboardingService,
-        IQuoteRepository quoteRepo,
-        QuoteNumberGenerator quoteNumberGen)
+        QuoteCreationService creation)
     {
         _navigator = navigator;
         _profileRepo = profileRepo;
         _onboardingService = onboardingService;
-        _quoteRepo = quoteRepo;
-        _quoteNumberGen = quoteNumberGen;
+        _creation = creation;
     }
 
     public IState<int> CurrentStep => State<int>.Value(this, () => 1);
@@ -145,17 +142,8 @@ public partial record OnboardingModel
 
         if (createQuote)
         {
-            // Create a blank quote and navigate directly to the editor
-            var quoteNumber = await _quoteNumberGen.GenerateAsync();
-            var quote = new QuoteEntity
-            {
-                Title = "New Quote",
-                QuoteNumber = quoteNumber,
-                Status = QuoteStatus.Draft,
-                TaxRate = profile.DefaultTaxRate,
-                ValidUntil = DateTimeOffset.UtcNow.AddDays(profile.QuoteValidDays),
-            };
-            await _quoteRepo.SaveAsync(quote);
+            // A blank Draft with the defaults just saved, opened in the editor.
+            var quote = await _creation.CreateDraftAsync("New Quote");
 
             // Onboarding is the first route on a first run: open the editor inside Main, as the other pages do.
             await _navigator.NavigateRouteAsync(this, "Main/QuoteEditor", qualifier: Qualifiers.ClearBackStack, data: quote);

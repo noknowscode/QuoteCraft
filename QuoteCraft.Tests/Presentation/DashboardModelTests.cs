@@ -17,7 +17,7 @@ public class DashboardModelTests
     /// <summary>The page once its states hold their first values (see QuoteEditorModelTests.Create).</summary>
     private static async Task<DashboardModel> Create(ModelHarness h)
     {
-        var model = new DashboardModel(h.Navigator, h.Db.Quotes, h.Db.Clients, h.Db.Profiles, h.Numbers,
+        var model = new DashboardModel(h.Navigator, h.Db.Quotes, h.Db.Clients, h.Db.Profiles, h.Creation,
             h.Share, h.FeatureGate, h.Status, h.Email, NullLogger<DashboardModel>.Instance);
         _ = (await model.SelectedFilter, await model.SearchText, await model.SelectedQuote, await model.SelectedQuoteId,
             await model.IsEditMode, await model.EditingNotes, await model.IsPreviewMode, await model.DetailVersion,

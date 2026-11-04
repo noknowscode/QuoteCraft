@@ -14,7 +14,7 @@ public class NewQuoteModelTests
     /// <summary>The dialog once its fields have their first values (see QuoteEditorModelTests.Create).</summary>
     private static async Task<NewQuoteModel> Create(ModelHarness h)
     {
-        var model = new NewQuoteModel(h.Navigator, h.Db.Quotes, h.Db.Clients, h.Db.Profiles, h.Numbers);
+        var model = new NewQuoteModel(h.Navigator, h.Db.Clients, h.Creation);
         _ = (await model.QuoteTitle, await model.ClientName, await model.ValidationError);
         return model;
     }
