@@ -1,8 +1,10 @@
+using Uno.Extensions.Reactive;
+
 namespace QuoteCraft.Helpers;
 
 /// <summary>
-/// What happens when something fails: the log, and the sentence the user sees. Model commands show it in a banner, a
-/// message line or a dialog (<see cref="DialogNavigation.RunAsync"/>).
+/// What happens when something fails: the log, and the sentence the user sees. Model commands show it in a banner or a
+/// message line (<see cref="ReportFailureAsync"/>) or in a dialog (<see cref="DialogNavigation.RunAsync"/>).
 /// </summary>
 public static class ErrorReporter
 {
@@ -16,6 +18,24 @@ public static class ErrorReporter
         catch (Exception ex)
         {
             Log(ex, context);
+        }
+    }
+
+    /// <summary>
+    /// A user action run from a model command, with <paramref name="message"/> as the page's message line: cleared
+    /// first; on failure, logged and set to what did not happen (<see cref="Describe"/>). Cancelling is not a failure.
+    /// </summary>
+    public static async ValueTask ReportFailureAsync(this IState<string> message, string failure, Func<Task> action, CancellationToken ct)
+    {
+        await message.UpdateAsync(_ => string.Empty, ct);
+        try
+        {
+            await action();
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            Log(ex, failure);
+            await message.UpdateAsync(_ => Describe(failure, ex), ct);
         }
     }
 

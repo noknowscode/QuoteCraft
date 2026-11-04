@@ -17,22 +17,19 @@ public partial record DashboardModel
     private readonly IFeatureGateService _featureGate;
     private readonly QuoteStatusService _status;
     private readonly QuoteBoard _board;
-    private readonly ILogger<DashboardModel> _logger;
 
     public DashboardModel(
         INavigator navigator,
         IQuoteRepository quoteRepo,
         IFeatureGateService featureGate,
         QuoteStatusService status,
-        QuoteBoard board,
-        ILogger<DashboardModel> logger)
+        QuoteBoard board)
     {
         _navigator = navigator;
         _quoteRepo = quoteRepo;
         _featureGate = featureGate;
         _status = status;
         _board = board;
-        _logger = logger;
 
         // A new page starts with no quote open: its detail region is empty.
         _board.Close();
@@ -138,7 +135,7 @@ public partial record DashboardModel
     /// <summary>A tap (or Enter) on a list card: the quote opens in the detail region.</summary>
     public async ValueTask OpenQuote(QuoteListItem item, CancellationToken ct)
     {
-        await ReportFailureAsync("The quote could not be opened.", async () =>
+        await ActionError.ReportFailureAsync("The quote could not be opened.", async () =>
         {
             _board.Open(item.Quote.Id);
             await _navigator.NavigateRouteAsync(this, "./QuoteDetail", data: item.Quote, cancellation: ct);
@@ -150,7 +147,7 @@ public partial record DashboardModel
         await _navigator.NavigateRouteAsync(this, "Settings", cancellation: ct);
 
     /// <summary>New Quote: the plan limit first (only where plans exist), then the dialog, then the editor.</summary>
-    public ValueTask CreateQuote(CancellationToken ct) => ReportFailureAsync("The quote could not be created.", async () =>
+    public ValueTask CreateQuote(CancellationToken ct) => ActionError.ReportFailureAsync("The quote could not be created.", async () =>
     {
         if (!await _featureGate.CanCreateQuoteAsync())
         {
@@ -168,19 +165,4 @@ public partial record DashboardModel
             await _navigator.NavigateRouteAsync(this, "QuoteEditor", data: quote, cancellation: ct);
         }
     }, ct);
-
-    /// <summary>Runs a bound command's work; a failure is logged and shown in the banner instead of vanishing.</summary>
-    private async ValueTask ReportFailureAsync(string failure, Func<Task> action, CancellationToken ct)
-    {
-        await ActionError.UpdateAsync(_ => string.Empty, ct);
-        try
-        {
-            await action();
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            _logger.LogError(ex, "{Failure}", failure);
-            await ActionError.UpdateAsync(_ => ErrorReporter.Describe(failure, ex), ct);
-        }
-    }
 }

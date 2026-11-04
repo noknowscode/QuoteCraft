@@ -28,7 +28,6 @@ public partial record QuoteDetailModel
     private readonly QuoteStatusService _status;
     private readonly IEmailLauncherService _email;
     private readonly QuoteBoard _board;
-    private readonly ILogger<QuoteDetailModel> _logger;
 
     public QuoteDetailModel(
         QuoteEntity? quote,
@@ -41,8 +40,7 @@ public partial record QuoteDetailModel
         IFeatureGateService featureGate,
         QuoteStatusService status,
         IEmailLauncherService email,
-        QuoteBoard board,
-        ILogger<QuoteDetailModel> logger)
+        QuoteBoard board)
     {
         // Navigation can restore the detail region's last route without its data (back from the full editor, when the
         // Quotes page is made again): there is no quote to show then, and the new page has none open (DashboardModel).
@@ -57,7 +55,6 @@ public partial record QuoteDetailModel
         _status = status;
         _email = email;
         _board = board;
-        _logger = logger;
     }
 
     public string QuoteId => _quoteId;
@@ -116,7 +113,7 @@ public partial record QuoteDetailModel
     public async ValueTask BackToDetail(CancellationToken ct) => await IsPreviewMode.UpdateAsync(_ => false, ct);
 
     /// <summary>The full editor (title, client, tax rate), with the quote as stored now.</summary>
-    public ValueTask EditQuote(CancellationToken ct) => ReportFailureAsync("The quote could not be opened.", async () =>
+    public ValueTask EditQuote(CancellationToken ct) => ActionError.ReportFailureAsync("The quote could not be opened.", async () =>
     {
         if (await _quoteRepo.GetByIdAsync(_quoteId) is { } quote)
         {
@@ -129,7 +126,7 @@ public partial record QuoteDetailModel
         await _navigator.NavigateRouteAsync(this, "Settings", cancellation: ct);
 
     /// <summary>The expired banner's Reopen: back to Draft, valid again, ready to edit and send (PRD F17.3).</summary>
-    public ValueTask ReopenQuote(CancellationToken ct) => ReportFailureAsync("The quote could not be reopened.", async () =>
+    public ValueTask ReopenQuote(CancellationToken ct) => ActionError.ReportFailureAsync("The quote could not be reopened.", async () =>
     {
         if (await _status.ReopenAsync(_quoteId) is not null)
         {
@@ -137,7 +134,7 @@ public partial record QuoteDetailModel
         }
     }, ct);
 
-    public ValueTask DeleteQuote(CancellationToken ct) => ReportFailureAsync("The quote could not be deleted.", async () =>
+    public ValueTask DeleteQuote(CancellationToken ct) => ActionError.ReportFailureAsync("The quote could not be deleted.", async () =>
     {
         if (!await _navigator.ConfirmAsync(this, new ConfirmRequest("", "Delete Quote?",
                 "This quote and its line items will be removed from your quotes.", "Delete", "Cancel"), ct))
@@ -151,7 +148,7 @@ public partial record QuoteDetailModel
     }, ct);
 
     public ValueTask DownloadPdf(CancellationToken ct) =>
-        ReportFailureAsync("The PDF could not be created.", ExportPdfAsync, ct);
+        ActionError.ReportFailureAsync("The PDF could not be created.", ExportPdfAsync, ct);
 
     /// <summary>
     /// Saves the quote's PDF (<see cref="IShareService"/>); the quote's status does not change. When nothing opened the
@@ -170,7 +167,7 @@ public partial record QuoteDetailModel
     /// Send: the dialog, then either the PDF alone, or the PDF, the email and the quote marked Sent (with a fresh
     /// validity period) unless the client has already answered. Without an email app the quote stays as it was.
     /// </summary>
-    public ValueTask SendQuote(CancellationToken ct) => ReportFailureAsync("The quote could not be sent.", async () =>
+    public ValueTask SendQuote(CancellationToken ct) => ActionError.ReportFailureAsync("The quote could not be sent.", async () =>
     {
         if (await GetSendDetailsAsync() is not { } details
             || await _navigator.ShowDialogAsync<SendQuoteChoice>(this, "SendQuote", details, ct) is not { } choice)
@@ -207,7 +204,7 @@ public partial record QuoteDetailModel
     }
 
     /// <summary>A Draft copy with the same items, opened in the editor; the plan limit first (only where plans exist).</summary>
-    public ValueTask DuplicateQuote(CancellationToken ct) => ReportFailureAsync("The quote could not be duplicated.", async () =>
+    public ValueTask DuplicateQuote(CancellationToken ct) => ActionError.ReportFailureAsync("The quote could not be duplicated.", async () =>
     {
         if (!await _featureGate.CanCreateQuoteAsync())
         {
@@ -223,7 +220,7 @@ public partial record QuoteDetailModel
     }, ct);
 
     /// <summary>Edit: the notes go into the editor box, and taps on line items open them.</summary>
-    public ValueTask StartEdit(CancellationToken ct) => ReportFailureAsync("The quote could not be opened for editing.", async () =>
+    public ValueTask StartEdit(CancellationToken ct) => ActionError.ReportFailureAsync("The quote could not be opened for editing.", async () =>
     {
         var quote = await _quoteRepo.GetByIdAsync(_quoteId);
         await EditingNotes.UpdateAsync(_ => quote?.Notes ?? string.Empty, ct);
@@ -231,7 +228,7 @@ public partial record QuoteDetailModel
     }, ct);
 
     /// <summary>Done: saves the notes if they changed.</summary>
-    public ValueTask FinishEdit(CancellationToken ct) => ReportFailureAsync("Your notes could not be saved.", async () =>
+    public ValueTask FinishEdit(CancellationToken ct) => ActionError.ReportFailureAsync("Your notes could not be saved.", async () =>
     {
         if (await _quoteRepo.GetByIdAsync(_quoteId) is { } quote)
         {
@@ -258,7 +255,7 @@ public partial record QuoteDetailModel
     }
 
     /// <summary>The line-item dialog: a new item goes last; an edited one keeps its place.</summary>
-    private ValueTask EditLineItemAsync(LineItemEntity? item, CancellationToken ct) => ReportFailureAsync("The line item could not be saved.", async () =>
+    private ValueTask EditLineItemAsync(LineItemEntity? item, CancellationToken ct) => ActionError.ReportFailureAsync("The line item could not be saved.", async () =>
     {
         if (await _navigator.ShowDialogAsync<LineItemEditResult>(this, "LineItemEditor", new LineItemEditRequest(item), ct) is not { } result)
         {
@@ -278,24 +275,9 @@ public partial record QuoteDetailModel
     }, ct);
 
     /// <summary>From Catalog: the browser adds items as they are tapped; the quote reloads when it closes.</summary>
-    public ValueTask OpenCatalog(CancellationToken ct) => ReportFailureAsync("The catalog could not be opened.", async () =>
+    public ValueTask OpenCatalog(CancellationToken ct) => ActionError.ReportFailureAsync("The catalog could not be opened.", async () =>
     {
         await _navigator.ShowDialogAsync<object>(this, "CatalogBrowser", new CatalogBrowserRequest(_quoteId), ct);
         _board.QuotesChanged();
     }, ct);
-
-    /// <summary>Runs a bound command's work; a failure is logged and shown in the banner instead of vanishing.</summary>
-    private async ValueTask ReportFailureAsync(string failure, Func<Task> action, CancellationToken ct)
-    {
-        await ActionError.UpdateAsync(_ => string.Empty, ct);
-        try
-        {
-            await action();
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            _logger.LogError(ex, "{Failure}", failure);
-            await ActionError.UpdateAsync(_ => ErrorReporter.Describe(failure, ex), ct);
-        }
-    }
 }

@@ -79,7 +79,7 @@ public partial record QuoteEditorModel
         .AsListFeed();
 
     /// <summary>Add Photo: the limit first, then the picker; a failure shows next to the buttons.</summary>
-    public ValueTask AddPhoto(CancellationToken ct) => ReportFailureAsync("The photo could not be added.", async () =>
+    public ValueTask AddPhoto(CancellationToken ct) => ValidationError.ReportFailureAsync("The photo could not be added.", async () =>
     {
         if (_photoService.GetPhotos(_quoteId).Count >= _photoService.MaxPhotos)
         {
@@ -136,7 +136,7 @@ public partial record QuoteEditorModel
     public ValueTask EditLineItem(LineItemEntity item, CancellationToken ct) => EditLineItemAsync(item, ct);
 
     /// <summary>The line-item dialog: a new item goes last; an edited one keeps its place; Delete removes it.</summary>
-    private ValueTask EditLineItemAsync(LineItemEntity? item, CancellationToken ct) => ReportFailureAsync("The line item could not be saved.", async () =>
+    private ValueTask EditLineItemAsync(LineItemEntity? item, CancellationToken ct) => ValidationError.ReportFailureAsync("The line item could not be saved.", async () =>
     {
         if (await _navigator.ShowDialogAsync<LineItemEditResult>(this, "LineItemEditor", new LineItemEditRequest(item), ct) is not { } result)
         {
@@ -156,26 +156,11 @@ public partial record QuoteEditorModel
     }, ct);
 
     /// <summary>From Catalog: the browser adds items as they are tapped; the list reloads when it closes.</summary>
-    public ValueTask OpenCatalog(CancellationToken ct) => ReportFailureAsync("The catalog could not be opened.", async () =>
+    public ValueTask OpenCatalog(CancellationToken ct) => ValidationError.ReportFailureAsync("The catalog could not be opened.", async () =>
     {
         await _navigator.ShowDialogAsync<object>(this, "CatalogBrowser", new CatalogBrowserRequest(_quoteId), ct);
         await LineItemsChangedAsync(ct);
     }, ct);
-
-    /// <summary>Runs an action's work; a failure is logged and shown in the editor's message line.</summary>
-    private async ValueTask ReportFailureAsync(string failure, Func<Task> action, CancellationToken ct)
-    {
-        await ValidationError.UpdateAsync(_ => string.Empty, ct);
-        try
-        {
-            await action();
-        }
-        catch (Exception ex)
-        {
-            ErrorReporter.Log(ex, failure);
-            await ValidationError.UpdateAsync(_ => ErrorReporter.Describe(failure, ex), ct);
-        }
-    }
 
     public ValueTask MoveLineItemUp(LineItemEntity item, CancellationToken ct) => MoveLineItemAsync(item, -1, ct);
 
@@ -277,7 +262,7 @@ public partial record QuoteEditorModel
     }
 
     /// <summary>The back arrow: asks before dropping unsaved edits.</summary>
-    public ValueTask Back(CancellationToken ct) => ReportFailureAsync("The editor could not close.", async () =>
+    public ValueTask Back(CancellationToken ct) => ValidationError.ReportFailureAsync("The editor could not close.", async () =>
     {
         if (await HasUnsavedChangesAsync()
             && !await _navigator.ConfirmAsync(this, new ConfirmRequest("\uE7BA", "Unsaved Changes",

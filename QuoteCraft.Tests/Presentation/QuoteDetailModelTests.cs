@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using QuoteCraft.Models;
@@ -20,7 +19,7 @@ public class QuoteDetailModelTests
     {
         h.Board.Open(quote.Id);
         var model = new QuoteDetailModel(quote, h.Navigator, h.Db.Quotes, h.Db.Clients, h.Db.Profiles, h.Creation, h.Share,
-            h.FeatureGate, h.Status, h.Email, h.Board, NullLogger<QuoteDetailModel>.Instance);
+            h.FeatureGate, h.Status, h.Email, h.Board);
         _ = (await model.IsEditMode, await model.EditingNotes, await model.IsPreviewMode, await model.ActionError, await model.UpgradeMessage);
         return model;
     }

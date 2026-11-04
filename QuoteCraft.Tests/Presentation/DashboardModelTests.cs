@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Logging.Abstractions;
 using QuoteCraft.Models;
 using QuoteCraft.Presentation;
 using Uno.Extensions.Reactive;
@@ -15,7 +14,7 @@ public class DashboardModelTests
     /// <summary>The page once its states hold their first values (see QuoteEditorModelTests.Create).</summary>
     internal static async Task<DashboardModel> Create(ModelHarness h)
     {
-        var model = new DashboardModel(h.Navigator, h.Db.Quotes, h.FeatureGate, h.Status, h.Board, NullLogger<DashboardModel>.Instance);
+        var model = new DashboardModel(h.Navigator, h.Db.Quotes, h.FeatureGate, h.Status, h.Board);
         _ = (await model.SelectedFilter, await model.SearchText, await model.ActionError);
         return model;
     }
