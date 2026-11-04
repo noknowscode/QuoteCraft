@@ -1,6 +1,6 @@
 # QuoteCraft
 
-A professional quoting and invoicing app for contractors and small businesses, built with [Uno Platform](https://platform.uno) and .NET 10.
+A professional quoting app for contractors and small businesses, built with [Uno Platform](https://platform.uno) and .NET 10.
 
 QuoteCraft helps service professionals create, manage, and send quotes to clients — all from a single cross-platform application that runs on Windows, macOS, Linux, iOS, Android, and WebAssembly.
 
@@ -14,7 +14,7 @@ QuoteCraft helps service professionals create, manage, and send quotes to client
 - **PDF Generation** — Generate professional PDF quotes ready to send to clients, on every platform (saved, downloaded or offered to the system's save dialog; see [Platform notes](#platform-notes))
 - **Email Integration** — Send quotes directly to clients via email
 - **Dashboard Analytics** — At-a-glance metrics including monthly totals, send counts, and acceptance rates with sparkline charts
-- **Quote Editor** — Line-item editor with quantity, pricing, tax rate, markup, and custom footer support; subtotal, tax and total as the PDF shows them, and the quote's status history
+- **Quote Editor** — Line-item editor with quantity and pricing, the quote's tax rate and valid-until date (both start at the Settings defaults), notes and job photos; subtotal, tax and total as the PDF shows them, and the quote's status history. Catalog items come in with the markup set in Settings, and the PDF prints the Settings custom footer
 - **Light, Dark or System theme** — Follows the system by default; choose Light or Dark in Settings (Appearance) or from the side rail's Theme menu, and the choice is remembered
 - **Responsive Layout** — Four layouts, from a 360 px phone to a wide desktop: bottom tabs and one pane below 800 px, the side rail from 800 px, list and detail side by side from 1080 px (see [Layouts](#layouts))
 - **Business Profile** — Configure company name, phone, email, address, logo (upload or remove), and default quote settings, with a preview of a new quote that follows the fields as they are typed (from 1400 px)
