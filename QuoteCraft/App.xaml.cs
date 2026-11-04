@@ -121,6 +121,10 @@ public partial class App : Application
                     services.AddSingleton<Services.ThemeChoiceNotifier>();
                     services.AddSingleton<Services.QuoteBoard>();
                     services.AddSingleton(currency);
+                    services.AddSingleton<Services.LogoStore>();
+                    // Settings' account and theme parts, made in the page's scope with it (SettingsViewModel.cs)
+                    services.AddTransient<AccountSettingsModel>();
+                    services.AddTransient<ThemeSettingsModel>();
                     // The open quote's view, created by the Quotes page's detail region (route ./QuoteDetail)
                     services.AddTransient<QuoteDetailView>();
                 })

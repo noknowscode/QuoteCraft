@@ -70,8 +70,9 @@
           </Grid>
         </utu:CardContentControl>
 
-        <!-- Upgrade Banner (only where billing is configured) -->
+        <!-- Upgrade Banner (only where billing is configured; AccountSettingsModel) -->
         <utu:CardContentControl Style="{StaticResource BannerCardStyle}" Padding="{StaticResource Inset24}"
+                DataContext="{Binding Account}"
                 Visibility="{Binding LocalModeNote, Converter={StaticResource EmptyToVisibleConverter}}">
           <StackPanel Spacing="{StaticResource Space16}">
             <StackPanel Spacing="{StaticResource Space4}">
@@ -456,8 +457,8 @@
           </utu:CardContentControl>
         </StackPanel>
 
-        <!-- APPEARANCE: System (default), Light or Dark; saved and restored at launch -->
-        <StackPanel Spacing="{StaticResource Space8}">
+        <!-- APPEARANCE: System (default), Light or Dark; saved and restored at launch (ThemeSettingsModel) -->
+        <StackPanel Spacing="{StaticResource Space8}" DataContext="{Binding Appearance}">
           <TextBlock Text="APPEARANCE"
                      Style="{StaticResource LabelSmall}"
                      Foreground="{ThemeResource OnSurfaceVariantBrush}"
@@ -484,132 +485,135 @@
           </utu:CardContentControl>
         </StackPanel>
 
-        <!-- LOCAL MODE (no Supabase project configured: no account, sync or plans) -->
-        <StackPanel Spacing="{StaticResource Space8}"
-                    Visibility="{Binding LocalModeNote, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert}">
-          <TextBlock Text="ACCOUNT"
-                     Style="{StaticResource LabelSmall}"
-                     Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                     FontWeight="Bold" Margin="{StaticResource GapStart4}" AutomationProperties.HeadingLevel="Level2" />
+        <!-- Account and billing (AccountSettingsModel): the local-mode note, or the subscription and the account -->
+        <StackPanel Spacing="{StaticResource Space28}" DataContext="{Binding Account}">
+          <!-- LOCAL MODE (no Supabase project configured: no account, sync or plans) -->
+          <StackPanel Spacing="{StaticResource Space8}"
+                      Visibility="{Binding LocalModeNote, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert}">
+            <TextBlock Text="ACCOUNT"
+                       Style="{StaticResource LabelSmall}"
+                       Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                       FontWeight="Bold" Margin="{StaticResource GapStart4}" AutomationProperties.HeadingLevel="Level2" />
 
-          <utu:CardContentControl Style="{StaticResource StaticCardStyle}" Padding="{StaticResource Inset20x12}">
-            <Grid ColumnSpacing="{StaticResource Space12}">
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-              </Grid.ColumnDefinitions>
-              <FontIcon Glyph="&#xE977;" FontSize="{StaticResource IconSizeLg}"
-                        Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                        VerticalAlignment="Top" Margin="{StaticResource GapTop2}" />
-              <TextBlock Grid.Column="1"
-                         Text="{Binding LocalModeNote}"
-                         Style="{StaticResource BodyMedium}"
-                         Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                         TextWrapping="Wrap" />
-            </Grid>
-          </utu:CardContentControl>
-        </StackPanel>
-
-        <!-- SUBSCRIPTION -->
-        <StackPanel Spacing="{StaticResource Space8}"
-                    Visibility="{Binding LocalModeNote, Converter={StaticResource EmptyToVisibleConverter}}">
-          <TextBlock Text="SUBSCRIPTION"
-                     Style="{StaticResource LabelSmall}"
-                     Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                     FontWeight="Bold" Margin="{StaticResource GapStart4}" AutomationProperties.HeadingLevel="Level2" />
-
-          <utu:CardContentControl Style="{StaticResource StaticCardStyle}">
-            <StackPanel>
-              <Grid Padding="{StaticResource FormRowInset}" MinHeight="{utu:Responsive Narrow={StaticResource FormRowMinHeightNarrow}, Wide={StaticResource FormRowMinHeight}}">
+            <utu:CardContentControl Style="{StaticResource StaticCardStyle}" Padding="{StaticResource Inset20x12}">
+              <Grid ColumnSpacing="{StaticResource Space12}">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="Auto" />
                   <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="Current Plan" Style="{StaticResource BodyMedium}"
-                           FontWeight="Medium" VerticalAlignment="Center" />
-                <TextBlock Grid.Column="1" Text="{Binding CurrentPlanName}"
+                <FontIcon Glyph="&#xE977;" FontSize="{StaticResource IconSizeLg}"
+                          Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                          VerticalAlignment="Top" Margin="{StaticResource GapTop2}" />
+                <TextBlock Grid.Column="1"
+                           Text="{Binding LocalModeNote}"
                            Style="{StaticResource BodyMedium}"
                            Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                           HorizontalAlignment="Right" VerticalAlignment="Center" />
+                           TextWrapping="Wrap" />
               </Grid>
-              <Border Height="{StaticResource HairlineThickness}" Background="{ThemeResource OutlineVariantBrush}" Margin="{StaticResource FormRowInset}" />
+            </utu:CardContentControl>
+          </StackPanel>
 
-              <Grid Padding="{StaticResource FormRowInset}" MinHeight="{utu:Responsive Narrow={StaticResource FormRowMinHeightNarrow}, Wide={StaticResource FormRowMinHeight}}">
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="Auto" />
-                  <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <TextBlock Text="Quotes Used" Style="{StaticResource BodyMedium}"
-                           FontWeight="Medium" VerticalAlignment="Center" />
-                <TextBlock Grid.Column="1" Text="{Binding QuotaUsage}"
-                           Style="{StaticResource BodyMedium}"
-                           Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                           HorizontalAlignment="Right" VerticalAlignment="Center" />
-              </Grid>
-              <Border Height="{StaticResource HairlineThickness}" Background="{ThemeResource OutlineVariantBrush}" Margin="{StaticResource FormRowInset}" />
+          <!-- SUBSCRIPTION -->
+          <StackPanel Spacing="{StaticResource Space8}"
+                      Visibility="{Binding LocalModeNote, Converter={StaticResource EmptyToVisibleConverter}}">
+            <TextBlock Text="SUBSCRIPTION"
+                       Style="{StaticResource LabelSmall}"
+                       Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                       FontWeight="Bold" Margin="{StaticResource GapStart4}" AutomationProperties.HeadingLevel="Level2" />
 
-              <!-- Manage Subscription -->
+            <utu:CardContentControl Style="{StaticResource StaticCardStyle}">
+              <StackPanel>
+                <Grid Padding="{StaticResource FormRowInset}" MinHeight="{utu:Responsive Narrow={StaticResource FormRowMinHeightNarrow}, Wide={StaticResource FormRowMinHeight}}">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                  </Grid.ColumnDefinitions>
+                  <TextBlock Text="Current Plan" Style="{StaticResource BodyMedium}"
+                             FontWeight="Medium" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="1" Text="{Binding CurrentPlanName}"
+                             Style="{StaticResource BodyMedium}"
+                             Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                             HorizontalAlignment="Right" VerticalAlignment="Center" />
+                </Grid>
+                <Border Height="{StaticResource HairlineThickness}" Background="{ThemeResource OutlineVariantBrush}" Margin="{StaticResource FormRowInset}" />
+
+                <Grid Padding="{StaticResource FormRowInset}" MinHeight="{utu:Responsive Narrow={StaticResource FormRowMinHeightNarrow}, Wide={StaticResource FormRowMinHeight}}">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                  </Grid.ColumnDefinitions>
+                  <TextBlock Text="Quotes Used" Style="{StaticResource BodyMedium}"
+                             FontWeight="Medium" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="1" Text="{Binding QuotaUsage}"
+                             Style="{StaticResource BodyMedium}"
+                             Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                             HorizontalAlignment="Right" VerticalAlignment="Center" />
+                </Grid>
+                <Border Height="{StaticResource HairlineThickness}" Background="{ThemeResource OutlineVariantBrush}" Margin="{StaticResource FormRowInset}" />
+
+                <!-- Manage Subscription -->
+                <Grid Padding="{StaticResource FormRowInset}" MinHeight="{utu:Responsive Narrow={StaticResource FormRowMinHeightNarrow}, Wide={StaticResource FormRowMinHeight}}">
+                  <Button Command="{Binding ManageSubscription}"
+                          HorizontalAlignment="Stretch"
+                          Style="{StaticResource MaterialTextButtonStyle}"
+                          AutomationProperties.Name="Manage subscription">
+                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
+                      <FontIcon Glyph="&#xE8A7;" FontSize="{StaticResource IconSizeLg}"
+                                Foreground="{ThemeResource PrimaryBrush}" />
+                      <TextBlock Text="Manage Subscription"
+                                 Style="{StaticResource BodyMedium}"
+                                 Foreground="{ThemeResource PrimaryBrush}" />
+                    </StackPanel>
+                  </Button>
+                </Grid>
+              </StackPanel>
+            </utu:CardContentControl>
+          </StackPanel>
+
+          <!-- ACCOUNT (a Supabase project is configured; cloud sync is still off: DECISIONS D8) -->
+          <StackPanel Spacing="{StaticResource Space8}"
+                      Visibility="{Binding LocalModeNote, Converter={StaticResource EmptyToVisibleConverter}}">
+            <TextBlock Text="ACCOUNT"
+                       Style="{StaticResource LabelSmall}"
+                       Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                       FontWeight="Bold" Margin="{StaticResource GapStart4}" AutomationProperties.HeadingLevel="Level2" />
+            <TextBlock Text="Cloud sync is off in this version: your quotes, clients and settings stay on this device. Your account is used for your plan."
+                       Style="{StaticResource BodySmall}"
+                       Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                       TextWrapping="Wrap" Margin="{StaticResource GapStart4}" />
+
+            <utu:CardContentControl Style="{StaticResource StaticCardStyle}">
               <Grid Padding="{StaticResource FormRowInset}" MinHeight="{utu:Responsive Narrow={StaticResource FormRowMinHeightNarrow}, Wide={StaticResource FormRowMinHeight}}">
-                <Button Command="{Binding ManageSubscription}"
+                <!-- Signed out: Sign In opens the sign-in page; signed in: Sign Out -->
+                <Button Command="{Binding SignIn}"
                         HorizontalAlignment="Stretch"
                         Style="{StaticResource MaterialTextButtonStyle}"
-                        AutomationProperties.Name="Manage subscription">
+                        AutomationProperties.Name="Sign in"
+                        Visibility="{Binding IsSignedIn, Converter={StaticResource InverseBoolConverter}, FallbackValue=Visible}">
                   <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-                    <FontIcon Glyph="&#xE8A7;" FontSize="{StaticResource IconSizeLg}"
+                    <FontIcon Glyph="&#xE77B;" FontSize="{StaticResource IconSizeLg}"
                               Foreground="{ThemeResource PrimaryBrush}" />
-                    <TextBlock Text="Manage Subscription"
+                    <TextBlock Text="Sign In"
                                Style="{StaticResource BodyMedium}"
                                Foreground="{ThemeResource PrimaryBrush}" />
                   </StackPanel>
                 </Button>
+                <Button Command="{Binding SignOut}"
+                        HorizontalAlignment="Stretch"
+                        Style="{StaticResource MaterialTextButtonStyle}"
+                        AutomationProperties.Name="Sign out"
+                        Visibility="{Binding IsSignedIn, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
+                  <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
+                    <FontIcon Glyph="&#xE7E8;" FontSize="{StaticResource IconSizeLg}"
+                              Foreground="{ThemeResource ErrorBrush}" />
+                    <TextBlock Text="Sign Out"
+                               Style="{StaticResource BodyMedium}"
+                               Foreground="{ThemeResource ErrorBrush}" />
+                  </StackPanel>
+                </Button>
               </Grid>
-            </StackPanel>
-          </utu:CardContentControl>
-        </StackPanel>
-
-        <!-- ACCOUNT (a Supabase project is configured; cloud sync is still off: DECISIONS D8) -->
-        <StackPanel Spacing="{StaticResource Space8}"
-                    Visibility="{Binding LocalModeNote, Converter={StaticResource EmptyToVisibleConverter}}">
-          <TextBlock Text="ACCOUNT"
-                     Style="{StaticResource LabelSmall}"
-                     Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                     FontWeight="Bold" Margin="{StaticResource GapStart4}" AutomationProperties.HeadingLevel="Level2" />
-          <TextBlock Text="Cloud sync is off in this version: your quotes, clients and settings stay on this device. Your account is used for your plan."
-                     Style="{StaticResource BodySmall}"
-                     Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                     TextWrapping="Wrap" Margin="{StaticResource GapStart4}" />
-
-          <utu:CardContentControl Style="{StaticResource StaticCardStyle}">
-            <Grid Padding="{StaticResource FormRowInset}" MinHeight="{utu:Responsive Narrow={StaticResource FormRowMinHeightNarrow}, Wide={StaticResource FormRowMinHeight}}">
-              <!-- Signed out: Sign In opens the sign-in page; signed in: Sign Out -->
-              <Button Command="{Binding SignIn}"
-                      HorizontalAlignment="Stretch"
-                      Style="{StaticResource MaterialTextButtonStyle}"
-                      AutomationProperties.Name="Sign in"
-                      Visibility="{Binding IsSignedIn, Converter={StaticResource InverseBoolConverter}, FallbackValue=Visible}">
-                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-                  <FontIcon Glyph="&#xE77B;" FontSize="{StaticResource IconSizeLg}"
-                            Foreground="{ThemeResource PrimaryBrush}" />
-                  <TextBlock Text="Sign In"
-                             Style="{StaticResource BodyMedium}"
-                             Foreground="{ThemeResource PrimaryBrush}" />
-                </StackPanel>
-              </Button>
-              <Button Command="{Binding SignOut}"
-                      HorizontalAlignment="Stretch"
-                      Style="{StaticResource MaterialTextButtonStyle}"
-                      AutomationProperties.Name="Sign out"
-                      Visibility="{Binding IsSignedIn, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
-                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-                  <FontIcon Glyph="&#xE7E8;" FontSize="{StaticResource IconSizeLg}"
-                            Foreground="{ThemeResource ErrorBrush}" />
-                  <TextBlock Text="Sign Out"
-                             Style="{StaticResource BodyMedium}"
-                             Foreground="{ThemeResource ErrorBrush}" />
-                </StackPanel>
-              </Button>
-            </Grid>
-          </utu:CardContentControl>
+            </utu:CardContentControl>
+          </StackPanel>
         </StackPanel>
 
         <!-- Save: validation, saving and saved states -->

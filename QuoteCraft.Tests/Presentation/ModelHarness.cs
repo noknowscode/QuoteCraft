@@ -47,6 +47,7 @@ public sealed class ModelHarness : IDisposable
     public ThemeChoiceNotifier ThemeChoice { get; } = new();
     public QuoteBoard Board { get; } = new();
     public CurrencyService Currency { get; } = new();
+    public LogoStore Logos { get; } = new();
 
     /// <summary>A client in the database.</summary>
     public async Task<ClientEntity> AddClientAsync(string name, string? email = null, string? address = null)

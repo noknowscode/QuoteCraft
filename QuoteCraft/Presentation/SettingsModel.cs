@@ -1,60 +1,56 @@
-using Uno.Extensions.Toolkit;
-
 namespace QuoteCraft.Presentation;
 
+/// <summary>
+/// The Settings page: the business profile and quote defaults with the preview beside them, the logo, the catalog
+/// count, and Save. Its account and billing (<see cref="AccountSettingsModel"/>) and its theme row
+/// (<see cref="ThemeSettingsModel"/>) are models of their own, bound through <c>Account</c> and <c>Appearance</c>
+/// (SettingsViewModel.cs).
+/// </summary>
 public partial record SettingsModel
 {
     private readonly INavigator _navigator;
     private readonly IBusinessProfileRepository _profileRepo;
     private readonly ICatalogItemRepository _catalogRepo;
-    private readonly Services.IFeatureGateService _featureGate;
-    private readonly Services.ISubscriptionService _subscriptionService;
-    private readonly Services.IAuthService _authService;
-    private readonly Data.Remote.SupabaseConfig _supabase;
-    private readonly ILogger<SettingsModel> _logger;
-    private readonly IThemeService _theme;
-    private readonly Services.ThemeChoiceNotifier _themeChoice;
-    private readonly IDispatcher _dispatcher;
     private readonly CurrencyService _currency;
+    private readonly LogoStore _logos;
+    private readonly IDispatcher _dispatcher;
 
     public SettingsModel(
         INavigator navigator,
         IBusinessProfileRepository profileRepo,
         ICatalogItemRepository catalogRepo,
-        Services.IFeatureGateService featureGate,
-        Services.ISubscriptionService subscriptionService,
-        Services.IAuthService authService,
-        Data.Remote.SupabaseConfig supabase,
-        IThemeService theme,
-        Services.ThemeChoiceNotifier themeChoice,
-        IDispatcher dispatcher,
         CurrencyService currency,
-        ILogger<SettingsModel> logger)
+        LogoStore logos,
+        IDispatcher dispatcher,
+        AccountSettingsModel account,
+        ThemeSettingsModel appearance)
     {
-        _currency = currency;
-        _dispatcher = dispatcher;
-        _theme = theme;
-        _themeChoice = themeChoice;
         _navigator = navigator;
         _profileRepo = profileRepo;
         _catalogRepo = catalogRepo;
-        _featureGate = featureGate;
-        _subscriptionService = subscriptionService;
-        _authService = authService;
-        _supabase = supabase;
-        _logger = logger;
+        _currency = currency;
+        _logos = logos;
+        _dispatcher = dispatcher;
+        AccountSettings = account;
+        ThemeSettings = appearance;
         _ = InitializeAsync();
     }
+
+    /// <summary>The account and billing sections and the upgrade banner.</summary>
+    internal AccountSettingsModel AccountSettings { get; }
+
+    /// <summary>The Appearance row.</summary>
+    internal ThemeSettingsModel ThemeSettings { get; }
 
     private async Task InitializeAsync()
     {
         try
         {
-            await LoadProfile(CancellationToken.None);
+            await LoadProfileAsync(CancellationToken.None);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to initialize settings");
+            ErrorReporter.Log(ex, "Failed to initialize settings");
             await LoadError.UpdateAsync(_ => "Your settings could not be loaded.", CancellationToken.None);
         }
     }
@@ -70,45 +66,7 @@ public partial record SettingsModel
 
     public IState<bool> IsSaving => State<bool>.Value(this, () => false);
 
-    /// <summary>
-    /// 0 System (the default), 1 Light, 2 Dark: the window's theme service applies and saves it. The row follows a
-    /// choice made in the rail's menu too (<see cref="Services.ThemeChoiceNotifier"/>); either side changes the theme
-    /// only when the choice differs from the saved one, so the two never call each other in a loop.
-    /// </summary>
-    public IState<int> ThemeIndex => State<int>.AsyncEnumerable(this, WatchThemeIndexAsync)
-        .ForEach(async (index, ct) =>
-        {
-            var choice = ToTheme(index);
-            if (choice != _theme.Theme)
-            {
-                await _theme.SetThemeAsync(choice);
-                _themeChoice.Raise();
-            }
-        });
-
-    private static AppTheme ToTheme(int index) => index switch { 1 => AppTheme.Light, 2 => AppTheme.Dark, _ => AppTheme.System };
-
-    private static int ToIndex(AppTheme theme) => theme switch { AppTheme.Light => 1, AppTheme.Dark => 2, _ => 0 };
-
-    private async IAsyncEnumerable<int> WatchThemeIndexAsync([System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct)
-    {
-        var changed = new ChangeSignal();
-        Action handler = changed.Raise;
-        _themeChoice.Changed += handler;
-        try
-        {
-            while (true)
-            {
-                yield return ToIndex(_theme.Theme);
-                await changed.WaitAsync(ct);
-            }
-        }
-        finally
-        {
-            _themeChoice.Changed -= handler;
-        }
-    }
-
+    /// <summary>Retry after a failed read: the profile again.</summary>
     public async ValueTask Reload(CancellationToken ct)
     {
         await LoadError.UpdateAsync(_ => string.Empty, ct);
@@ -134,32 +92,6 @@ public partial record SettingsModel
     public IFeed<int> CatalogItemCount => Feed.Async(async ct =>
         await _catalogRepo.GetItemCountAsync());
 
-    // Empty when a Supabase project is configured (plans, subscription and account sections show); otherwise the
-    // local-mode note that takes their place.
-    public IFeed<string> LocalModeNote => Feed.Async(ct => ValueTask.FromResult(
-        _supabase.IsConfigured ? string.Empty : Data.Remote.SupabaseConfig.NotConfiguredMessage));
-
-    // Subscription info feeds
-    public IFeed<string> CurrentPlanName => Feed.Async(async ct =>
-    {
-        var tier = _featureGate.CurrentTier;
-        var maxQuotes = _featureGate.MaxQuotesPerMonth;
-        return tier switch
-        {
-            Services.SubscriptionTier.Free => $"Free ({maxQuotes} quotes/mo)",
-            Services.SubscriptionTier.Pro => "Pro (Unlimited)",
-            Services.SubscriptionTier.Business => "Business (Unlimited)",
-            _ => "Free"
-        };
-    });
-
-    public IFeed<string> QuotaUsage => Feed.Async(async ct =>
-    {
-        var used = await _featureGate.GetQuotesUsedThisMonthAsync();
-        var max = _featureGate.MaxQuotesPerMonth;
-        return max == int.MaxValue ? $"{used} this month" : $"{used} of {max}";
-    });
-
     public IState<string> BusinessName => State<string>.Value(this, () => string.Empty);
     public IState<string> Phone => State<string>.Value(this, () => string.Empty);
     public IState<string> Email => State<string>.Value(this, () => string.Empty);
@@ -177,10 +109,10 @@ public partial record SettingsModel
     /// <summary>The logo's file name, beside its thumbnail.</summary>
     public IFeed<string> LogoFileName => LogoPath.Select(path => string.IsNullOrEmpty(path) ? string.Empty : Path.GetFileName(path));
 
-    /// <summary>What Upload could not do; shown under the logo row.</summary>
+    /// <summary>What Upload or Remove could not do; shown under the logo row.</summary>
     public IState<string> LogoError => State<string>.Value(this, () => string.Empty);
 
-    public async ValueTask LoadProfile(CancellationToken ct)
+    private async ValueTask LoadProfileAsync(CancellationToken ct)
     {
         var profile = await _profileRepo.GetAsync();
         await BusinessName.UpdateAsync(_ => profile.BusinessName ?? string.Empty, ct);
@@ -216,7 +148,7 @@ public partial record SettingsModel
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to save settings");
+            ErrorReporter.Log(ex, "Failed to save settings");
             await ValidationError.UpdateAsync(_ => "Your settings could not be saved. Try again.", ct);
         }
         finally
@@ -259,117 +191,28 @@ public partial record SettingsModel
     }
 
     /// <summary>
-    /// Copies a picked image into the app's data folder as the logo (Save keeps it). Read through the StorageFile: a
-    /// picked file's Path is not readable on every head (WebAssembly, Android, iOS).
+    /// Upload: a picked image becomes the logo (<see cref="LogoStore"/>); Save keeps it. Read through the StorageFile:
+    /// a picked file's Path is not readable on every head (WebAssembly, Android, iOS).
     /// </summary>
-    public async ValueTask UploadLogo(CancellationToken ct)
+    public ValueTask UploadLogo(CancellationToken ct) => LogoError.ReportFailureAsync("The logo could not be added.", async () =>
     {
-        await LogoError.UpdateAsync(_ => string.Empty, ct);
-        try
+        if (await ImagePicker.PickAsync(_dispatcher, ct) is not { } file)
         {
-            if (await ImagePicker.PickAsync(_dispatcher, ct) is { } file)
-            {
-                await SetLogoAsync(file);
-            }
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            _logger.LogError(ex, "Upload logo");
-            await LogoError.UpdateAsync(_ => ErrorReporter.Describe("The logo could not be added.", ex), ct);
-        }
-    }
-
-    private async Task SetLogoAsync(Windows.Storage.StorageFile file)
-    {
-        var logoDir = AppStorage.Combine("logo");
-        Directory.CreateDirectory(logoDir);
-
-        var destPath = Path.Combine(logoDir, $"logo{Path.GetExtension(file.Name)}");
-        await using (var source = await file.OpenStreamForReadAsync())
-        await using (var destination = File.Create(destPath))
-        {
-            await source.CopyToAsync(destination);
+            return;
         }
 
-        await LogoPath.UpdateAsync(_ => destPath, CancellationToken.None);
-    }
+        string path;
+        await using (var image = await file.OpenStreamForReadAsync())
+        {
+            path = await _logos.SaveAsync(image, Path.GetExtension(file.Name));
+        }
+        await LogoPath.UpdateAsync(_ => path, ct);
+    }, ct);
 
     /// <summary>Remove: the logo's copy goes, and Save stores the profile without one.</summary>
-    public async ValueTask RemoveLogo(CancellationToken ct)
+    public ValueTask RemoveLogo(CancellationToken ct) => LogoError.ReportFailureAsync("The logo could not be removed.", async () =>
     {
-        await LogoError.UpdateAsync(_ => string.Empty, ct);
-        try
-        {
-            var currentPath = await LogoPath;
-            if (!string.IsNullOrEmpty(currentPath) && File.Exists(currentPath))
-            {
-                File.Delete(currentPath);
-            }
-            await LogoPath.UpdateAsync(_ => string.Empty, ct);
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            _logger.LogError(ex, "Remove logo");
-            await LogoError.UpdateAsync(_ => ErrorReporter.Describe("The logo could not be removed.", ex), ct);
-        }
-    }
-
-    /// <summary>Pro, billed monthly: Stripe Checkout in the browser.</summary>
-    public ValueTask UpgradeToPro(CancellationToken ct) => OpenCheckoutAsync("monthly", ct);
-
-    /// <summary>Pro, billed yearly at the annual discount (PRD F13.6): Stripe Checkout in the browser.</summary>
-    public ValueTask UpgradeToProAnnual(CancellationToken ct) => OpenCheckoutAsync("annual", ct);
-
-    private ValueTask OpenCheckoutAsync(string interval, CancellationToken ct) => _navigator.RunAsync(this, "Checkout could not open.", async () =>
-    {
-        var url = await _subscriptionService.GetCheckoutUrlAsync("pro", interval);
-        await LaunchAsync(url, "Checkout is not available right now. Try again later.");
-    }, ct);
-
-    public ValueTask ManageSubscription(CancellationToken ct) => _navigator.RunAsync(this, "The billing portal could not open.", async () =>
-    {
-        var url = await _subscriptionService.GetCustomerPortalUrlAsync();
-        await LaunchAsync(url, "The billing portal is not available right now. Try again later.");
-    }, ct);
-
-    /// <summary>Opens a billing page in the browser; says so when there is none or nothing opened it.</summary>
-    private static async Task LaunchAsync(string? url, string unavailable)
-    {
-        if (string.IsNullOrEmpty(url) || !await Windows.System.Launcher.LaunchUriAsync(new Uri(url)))
-        {
-            throw new InvalidOperationException(unavailable);
-        }
-    }
-
-    /// <summary>Signed in to the configured Supabase project (only then is Sign Out offered; Sign In otherwise).</summary>
-    public IFeed<bool> IsSignedIn => Feed.AsyncEnumerable(WatchSignedInAsync);
-
-    private async IAsyncEnumerable<bool> WatchSignedInAsync([System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct)
-    {
-        var changed = new ChangeSignal();
-        Action<Services.AuthState> handler = _ => changed.Raise();
-        _authService.AuthStateChanged += handler;
-        try
-        {
-            while (true)
-            {
-                yield return _authService.CurrentState.IsAuthenticated;
-                await changed.WaitAsync(ct);
-            }
-        }
-        finally
-        {
-            _authService.AuthStateChanged -= handler;
-        }
-    }
-
-    /// <summary>Sign In (a Supabase project is configured and nobody is signed in): the sign-in page.</summary>
-    public ValueTask SignIn(CancellationToken ct) => _navigator.RunAsync(this, "The sign-in page could not open.",
-        async () => await _navigator.NavigateRouteAsync(this, "Auth", cancellation: ct), ct);
-
-    public ValueTask SignOut(CancellationToken ct) => _navigator.RunAsync(this, "You could not be signed out.", async () =>
-    {
-        await _authService.SignOutAsync();
-        await _navigator.NavigateRouteAsync(this, "Auth", qualifier: Qualifiers.ClearBackStack, cancellation: ct);
+        _logos.Delete(await LogoPath);
+        await LogoPath.UpdateAsync(_ => string.Empty, ct);
     }, ct);
 }
