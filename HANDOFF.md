@@ -21,7 +21,9 @@ Branch `feat/production-readiness`. Read first: `docs/COMPLETENESS.md` (verdict 
   The harness drops xUnit's synchronization context: on it, a state update racing a state's first value can be lost.
 - States: `Helpers/WholeFeedViewStateSelector` (implicit FeedView style in `App.xaml`) sets the data, error and progress
   states on every message; keep it unless MVUX changes that.
-- Accessibility: 194 automation names over 6,277 XAML lines (30.9 per 1,000).
+- Accessibility: 194 automation names over 6,221 XAML lines (31.2 per 1,000).
+- Cleanup before the transfer (dead code, comments, leftovers, the Http and Serialization features): `docs/UNO-AUDIT.md`,
+  last section.
 - Lint gate (`xaml-semantic-lint.ps1 -Path QuoteCraft`): 0 on every gating rule.
 - Evidence: `docs/evidence` (page sheets, `fault-retry.jpg`, `wasm-create-and-pdf.jpg`, and from A pass 2
   `editor-valid-until-and-photo.jpg`, `wasm-valid-until-and-pdf.jpg`).

@@ -210,6 +210,32 @@ target .NET 10.
 Gates at `9502f00`: 301 tests pass; the lint gate 0 on every gating rule; 194 automation names over 6,277 XAML lines
 (30.9 per 1,000); warnings stay errors.
 
+### Cleanup before the transfer to uno.labs (2026-11-04)
+
+Behaviour unchanged; one concern per commit (`1b90986` to `4cad7c3`).
+
+- Analyzer pass (IDE0005, IDE0051, IDE0052, IDE0060, IDE0035, CA1823 raised for one local build): 54 unnecessary usings,
+  three never-read fields (and the constructor parameters that fed them), five unused command parameters. A second
+  pass reports nothing.
+- Unused members: three `SupabaseClient` methods, `IAuthService.IsSessionValidAsync`, the subscription service's
+  `TierChanged` event (and `RefreshTierAsync` off its interface), four feature gates, the template's `DebugHttpHandler`.
+  `WholeFeedViewStateSelector.StatesFor`, read only by tests, is an `internal` seam (`InternalsVisibleTo`).
+- Resources: 12 layout tokens, `DialogChromeWidth`, `SecondaryOpacity`; 18 `x:Uid` attributes that named strings
+  `Resources.resw` never had.
+- Template leftovers: `ReadMe.md`, `SharedAssets.md`, the Android `AboutResources.txt`, an empty
+  `Directory.Build.targets`, an empty `ItemGroup`, the win-x86 publish profile, the unread `AppConfig` and `ApiClient`
+  settings (and `appsettings.development.json`, which held only them).
+- Packages: the `Http` and `Serialization` Uno features (nothing used them; Serialization still arrives through
+  Configuration). Desktop, WebAssembly and Android build with 0 warnings.
+- The last null-forgiving operators (7) replaced by patterns or a clear exception; a failed photo compression is logged.
+- Comments that restated the code (about 45) and the PDF's banner rules; 41 unreferenced screenshots, and the
+  README's four out-of-date ones replaced by current captures.
+- Kept on purpose: `SyncService` and `ISyncService` (D8 keeps them for the sync pass), `.vscode/`, `.run/` and
+  `.vsconfig` (shared run configurations, as the other samples keep them), `Strings/en/Resources.resw` (the Windows
+  package's `x-generate` resource languages), the Supabase response DTOs' unread properties (serialization shapes).
+- C# 9,114 → 8,911 lines in the app and 4,332 → 4,299 in the tests; XAML 6,277 → 6,221. 301 tests pass; the lint gate
+  stays at 0; 194 automation names over 6,221 XAML lines (31.2 per 1,000).
+
 ## Decisions (approved by the owner on 2026-11-04; recorded in DECISIONS-production-readiness.md)
 
 - D14. Dialogs are XAML `ContentDialog` routes with models, opened with the `!` qualifier; forms keep their actions in

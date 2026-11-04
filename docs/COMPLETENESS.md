@@ -85,7 +85,7 @@ At `928e155` with the A pass's outcome after each row (R: runtime-proven, C: cod
 | 9 | Responsive/adaptive UI | Complete | R | 0 | 0 | 0 | Four categories at 360 to 1920 px in both themes (`docs/evidence`); Alerts below 800 px |
 | 10 | Platform behavior | Partial | R | 0 | 0 | 0 | Desktop and WebAssembly run here (PDF saved or downloaded; an unopened PDF says where it is). Other heads CI-built |
 | 11 | Failure handling | Complete | R | 0 | 0 | 0 | Banners render (a failed send says why); load failures show Retry, which recovers (`75e0022`) |
-| 12 | Accessibility | Partial | R | 0 | 0 | 0 | 194 names (192 in XAML, 2 in C#) over 6,277 XAML lines (30.9 per 1,000); every page walked with Tab (`--qc-focus=log`), the editor's photos again in A pass 2. Screen readers X |
+| 12 | Accessibility | Partial | R | 0 | 0 | 0 | 194 names (192 in XAML, 2 in C#) over 6,221 XAML lines (31.2 per 1,000, after the cleanup); every page walked with Tab (`--qc-focus=log`), the editor's photos again in A pass 2. Screen readers X |
 | 13 | Performance | Partial | R | 0 | 0 | 0 | Idle CPU 0 % on every page (a hidden indeterminate bar kept a core busy; fixed). Startup not measured |
 | 14 | Security/privacy | Complete | C | 0 | 0 | 0 | No service-role key in the app. Desktop key file and unencrypted WebAssembly are settled (D1, D13) |
 | 15 | Visual quality | Complete | R | 0 | 0 | 2 | Settings preview real; residue fixed except the first-run theme label; dialogs Light in the Dark theme (found in A pass 2) |
