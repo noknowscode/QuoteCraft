@@ -77,7 +77,6 @@ public partial class App : Application
                 .UseConfiguration(configure: configBuilder =>
                     configBuilder
                         .EmbeddedSource<App>()
-                        .Section<AppConfig>()
                         .Section<Data.Remote.SupabaseOptions>("Supabase")
                 )
                 .UseHttp()
