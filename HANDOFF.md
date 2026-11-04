@@ -1,7 +1,7 @@
-# Handoff: QuoteCraft (2026-11-04, A pass 2)
+# Handoff: QuoteCraft (2026-11-04, A pass 2, cleanup and the showcase info file)
 
 Branch `feat/production-readiness`. Read first: `docs/COMPLETENESS.md` (verdict and what is proven), then
-`docs/DECISIONS-production-readiness.md` (D1 to D22; D17 to D20 and D22 are proposed), then `docs/UNO-AUDIT.md`.
+`docs/DECISIONS-production-readiness.md` (D1 to D24; D17 to D20 and D22 to D24 are proposed), then `docs/UNO-AUDIT.md`.
 
 ## Where it stands
 
@@ -24,6 +24,8 @@ Branch `feat/production-readiness`. Read first: `docs/COMPLETENESS.md` (verdict 
 - Accessibility: 194 automation names over 6,221 XAML lines (31.2 per 1,000).
 - Cleanup before the transfer (dead code, comments, leftovers, the Http and Serialization features): `docs/UNO-AUDIT.md`,
   last section.
+- Showcase: `.studiolive/` (sample id `quotecraft`; `sample.json`, agent context, conversation, icon, four
+  screenshots). `validate_studiolive.py` prints OK. The icon is the app's own since D23 (`Assets/Icons`, the splash).
 - Lint gate (`xaml-semantic-lint.ps1 -Path QuoteCraft`): 0 on every gating rule.
 - Evidence: `docs/evidence` (page sheets, `fault-retry.jpg`, `wasm-create-and-pdf.jpg`, and from A pass 2
   `editor-valid-until-and-photo.jpg`, `wasm-valid-until-and-pdf.jpg`).
@@ -37,7 +39,7 @@ element), `--qc-fault=load` (the database fails for the first 20 s). Under Xvfb 
 
 ## Open
 
-- Owner: D17 to D20 and D22 are proposed.
+- Owner: D17 to D20 and D22 to D24 are proposed (D23 the custom icon, D24 the `.studiolive` URLs).
 - Dialogs are drawn Light in the Dark theme (found in A pass 2, outside its closed scope); flyouts follow the theme.
 - A photo opens at most 560 px wide (Material's dialog); a full-window viewer would need a page outside the dialogs
   (D22).
