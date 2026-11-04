@@ -179,7 +179,23 @@ target .NET 10.
   `BasedOn` Material styles with lightweight keys: half a day.
 - New Quote keeps its "Enter a title" message until the next Create after the title is typed: a small model change.
 
-## Proposed decisions (for the owner)
+### Done in the A pass (2026-11-04)
+
+- `DashboardModel` split into the list (`DashboardModel`) and the open quote (`QuoteDetailModel` in a `ContentControl`
+  region, `QuoteDetailView`), sharing `Services/QuoteBoard` (D19).
+- `InteractionHelper` (and `ThemeResources`) removed: list cards hold a `ListCardButtonStyle` Material button (D19).
+- Settings' theme row hears the rail (`ThemeChoiceNotifier`), with no loop.
+- Table and form column widths are `GridLength` tokens (`FormLabelWidth`, `TableQtyWidth`, `TableMoneyWidth`,
+  `TotalsValueWidth`).
+- New Quote's "Enter a title" goes when a title is typed.
+- Every `FeedView` sets its data, error and progress states on each message (`WholeFeedViewStateSelector` in the
+  implicit style): a list that failed to load no longer keeps its error template once a reopened tab's new view model
+  has read the data.
+- Not done: the three app `ControlTemplate`s (`AccentButtonStyle`, `InlineTextBoxStyle`, `SideNavTabBarItemStyle`)
+  stay; with the definition-only workaround style for microsoft-ui-xaml#6388 the lint gate reports 4 as TEMPLATE info,
+  not gating.
+
+## Decisions (approved by the owner on 2026-11-04; recorded in DECISIONS-production-readiness.md)
 
 - D14. Dialogs are XAML `ContentDialog` routes with models, opened with the `!` qualifier; forms keep their actions in
   the content so the model can validate before closing; Cancel uses `Navigation.Request="-"`.

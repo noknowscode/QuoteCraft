@@ -8,7 +8,7 @@ QuoteCraft helps service professionals create, manage, and send quotes to client
 
 ## Features
 
-- **Quote Management** — Create, edit, duplicate, and track quotes with status indicators (Draft, Sent, Viewed, Accepted, Declined, Expired); sent quotes expire after their validity period, with a reminder 3 days before, and an expired quote can be reopened and sent again
+- **Quote Management** — Create, edit, duplicate, and track quotes with status indicators (Draft, Sent, Viewed, Accepted, Declined, Expired); sent quotes expire after their validity period, with a reminder 3 days before (the rail's bell, or Alerts in the bottom tab bar on a phone), and an expired quote can be reopened and sent again
 - **Client Directory** — Maintain a searchable client database with contact details and quote history
 - **Service Catalog** — Organize services and materials into categories (Electrical, Plumbing, HVAC, etc.) with preset pricing
 - **PDF Generation** — Generate professional PDF quotes ready to send to clients, on every platform (saved, downloaded or offered to the system's save dialog; see [Platform notes](#platform-notes))
@@ -17,7 +17,7 @@ QuoteCraft helps service professionals create, manage, and send quotes to client
 - **Quote Editor** — Line-item editor with quantity, pricing, tax rate, markup, and custom footer support; subtotal, tax and total as the PDF shows them, and the quote's status history
 - **Light, Dark or System theme** — Follows the system by default; choose Light or Dark in Settings (Appearance) or from the side rail's Theme menu, and the choice is remembered
 - **Responsive Layout** — Four layouts, from a 360 px phone to a wide desktop: bottom tabs and one pane below 800 px, the side rail from 800 px, list and detail side by side from 1080 px (see [Layouts](#layouts))
-- **Business Profile** — Configure company name, phone, email, address, logo, and default quote settings
+- **Business Profile** — Configure company name, phone, email, address, logo (upload or remove), and default quote settings, with a preview of a new quote that follows the fields as they are typed (from 1400 px)
 - **Onboarding Flow** — Guided setup for new users to configure their business profile
 
 ## Screenshots
@@ -48,15 +48,17 @@ QuoteCraft helps service professionals create, manage, and send quotes to client
 ├── Directory.Build.props
 ├── Directory.Packages.props
 ├── docs/                                # PRD, architecture, design and revenue-model briefs; production-readiness decisions
-├── QuoteCraft.Tests/                    # xUnit tests: money rules, quote numbering and migrations, status and expiry, line items,
-│                                        # client links, concurrent database access (real temporary databases), feature gates, …
+├── QuoteCraft.Tests/                    # xUnit tests: the page models (Presentation/, driven as the pages drive them over real
+│                                        # temporary SQLCipher databases), money rules, quote numbering and migrations, status and
+│                                        # expiry, quote creation, line items, client links, concurrent access, feature gates, …
 └── QuoteCraft/
     ├── QuoteCraft.csproj
     ├── App.xaml / App.xaml.cs          # App shell, DI, routing, styles
     ├── Presentation/                    # Pages and MVUX models
     │   ├── Shell.xaml                   # Splash screen container
     │   ├── MainPage.xaml                # Side rail + content region layout
-    │   ├── DashboardPage.xaml           # Quote list with analytics
+    │   ├── DashboardPage.xaml           # Quote list with analytics (DashboardModel)
+    │   ├── QuoteDetailView.xaml         # The open quote, in the Quotes page's detail region (QuoteDetailModel)
     │   ├── ClientsPage.xaml             # Client directory
     │   ├── CatalogPage.xaml             # Service/material catalog
     │   ├── SettingsPage.xaml            # Business profile & quote config
@@ -64,7 +66,7 @@ QuoteCraft helps service professionals create, manage, and send quotes to client
     │   └── OnboardingPage.xaml          # First-run setup wizard
     ├── Models/                          # Data entities
     ├── Data/                            # SQLite database & repositories
-    ├── Services/                        # PDF, email, sharing, feature gates
+    ├── Services/                        # PDF, email, sharing, feature gates, quote creation, status and expiry rules
     ├── Styles/                          # Color palette, status colors, layout tokens (Layout.xaml)
     ├── Helpers/                         # Value converters & utilities
     ├── Controls/                        # Custom controls (sparkline, status pill)
@@ -135,10 +137,10 @@ Every page uses the Uno Toolkit's `utu:Responsive` with the default breakpoints:
 
 | Category | Window width | Navigation | Quotes, Clients, Catalog | Settings, editor, onboarding |
 |---|---|---|---|---|
-| Narrow | below 600 | bottom tabs | one pane: the list, or the picked item with a back button; search under the title | one column, 16 px sides |
-| Normal | 600 to 800 | bottom tabs | one pane, header on one row | one column, 24 px sides |
+| Narrow | below 600 | bottom tabs, with Alerts (notifications) | one pane: the list, or the picked item with a back button; search under the title | one column, 16 px sides |
+| Normal | 600 to 800 | bottom tabs, with Alerts (notifications) | one pane, header on one row | one column, 24 px sides |
 | Wide | 800 to 1080 | side rail | one pane, stat cards above the list | one column, capped and centred |
-| Widest | 1080 and up | side rail | list and detail side by side, page capped at 1600 px | Settings adds the live quote preview from 1400 px |
+| Widest | 1080 and up | side rail | list and detail side by side, page capped at 1600 px | Settings adds the quote preview from 1400 px |
 
 Spacing, insets, widths, radii and touch sizes are tokens in `QuoteCraft/Styles/Layout.xaml`; colours are theme
 resources (`Styles/ColorPaletteOverride.xaml`, `Styles/StatusColors.xaml`, `App.xaml`). Screenshots of each page at
@@ -171,8 +173,9 @@ app: it bypasses row-level security and belongs to the Edge Functions only. Keep
 device, and Settings says so. The sync service would upload quotes without their line items (so they arrive at $0),
 and never the catalog or the business profile; what it needs before it is turned on is in
 [docs/DECISIONS-production-readiness.md](docs/DECISIONS-production-readiness.md) (D8). Other gaps with a project
-configured: the sign-in page is reachable only through Sign Out, and on desktop and in the browser the sign-in
-refresh token is kept in a file in the app's data folder (Android, iOS and Windows keep it in `PasswordVault`).
+configured: on desktop and in the browser the sign-in refresh token is kept in a file in the app's data folder
+(Android, iOS and Windows keep it in `PasswordVault`). Settings offers Sign In while nobody is signed in, and the
+yearly plan beside the monthly one (D17).
 
 ## UnoFeatures
 
