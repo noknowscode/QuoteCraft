@@ -112,32 +112,57 @@ public partial record ClientsModel
         await Version.UpdateAsync(v => v + 1, ct);
     }
 
-    public async ValueTask DeleteClient(CancellationToken ct)
+    public ValueTask DeleteClient(CancellationToken ct) => _navigator.RunAsync(this, "The client could not be deleted.", async () =>
     {
-        var client = await SelectedClient;
-        if (client is not null)
+        if (await SelectedClient is not { } client
+            || !await _navigator.ConfirmAsync(this, new ConfirmRequest("\uE74D", "Delete Client?",
+                "This client will be permanently removed from your contact list.", "Delete", "Cancel"), ct))
         {
-            await _clientRepo.DeleteAsync(client.Id);
-            await SelectedClient.UpdateAsync(_ => null!, ct);
+            return;
+        }
+
+        await _clientRepo.DeleteAsync(client.Id);
+        await SelectedClient.UpdateAsync(_ => null!, ct);
+        await Version.UpdateAsync(v => v + 1, ct);
+    }, ct);
+
+    /// <summary>Add Client: the plan limit first (only where plans exist), then the client dialog.</summary>
+    public ValueTask AddClient(CancellationToken ct) => _navigator.RunAsync(this, "The client could not be added.", async () =>
+    {
+        if (!await _featureGate.CanAddClientAsync())
+        {
+            if (await _navigator.ConfirmAsync(this, new ConfirmRequest("\uE77B", "Client Limit Reached",
+                    _featureGate.GetUpgradeMessage("clients"), "Upgrade", "OK"), ct))
+            {
+                await OpenSettings(ct);
+            }
+            return;
+        }
+
+        await EditInDialogAsync(new ClientEditRequest(new ClientEntity(), IsNew: true), ct);
+    }, ct);
+
+    /// <summary>Edit: the client as stored now, in the client dialog.</summary>
+    public ValueTask EditClient(CancellationToken ct) => _navigator.RunAsync(this, "The client could not be opened.", async () =>
+    {
+        if (await SelectedClient is { } selected && await _clientRepo.GetByIdAsync(selected.Id) is { } client)
+        {
+            await EditInDialogAsync(new ClientEditRequest(client, IsNew: false), ct);
+        }
+    }, ct);
+
+    /// <summary>The dialog saves the client; the list and the detail read it again.</summary>
+    private async Task EditInDialogAsync(ClientEditRequest request, CancellationToken ct)
+    {
+        if (await _navigator.ShowDialogAsync<ClientEntity>(this, "ClientEditor", request, ct) is not null)
+        {
             await Version.UpdateAsync(v => v + 1, ct);
         }
     }
 
-    /// <summary>Null when a client can be added; otherwise the plan-limit message (only where plans exist).</summary>
-    public async Task<string?> GetClientLimitMessageAsync() =>
-        await _featureGate.CanAddClientAsync() ? null : _featureGate.GetUpgradeMessage("clients");
-
-    /// <summary>The selected client as stored now (the edit dialog starts from it), or null.</summary>
-    public async Task<ClientEntity?> GetSelectedClientAsync() =>
-        await SelectedClient is { } selected ? await _clientRepo.GetByIdAsync(selected.Id) : null;
-
-    /// <summary>The client dialog's Save; the list and the detail read the client again.</summary>
-    public async Task SaveClientAsync(ClientEntity client)
-    {
-        client.UpdatedAt = DateTimeOffset.UtcNow;
-        await _clientRepo.SaveAsync(client);
-        await Version.UpdateAsync(v => v + 1, CancellationToken.None);
-    }
+    /// <summary>A quote in the client's list: open it in the editor.</summary>
+    public ValueTask OpenQuote(QuoteEntity quote, CancellationToken ct) => _navigator.RunAsync(this, "The quote could not be opened.",
+        async () => await _navigator.NavigateRouteAsync(this, "QuoteEditor", data: quote, cancellation: ct), ct);
 
     /// <summary>Plans and the upgrade live in Settings.</summary>
     public async ValueTask OpenSettings(CancellationToken ct)
@@ -145,12 +170,12 @@ public partial record ClientsModel
         await _navigator.NavigateRouteAsync(this, "Settings", cancellation: ct);
     }
 
-    public async ValueTask CreateQuoteForClient(CancellationToken ct)
+    public ValueTask CreateQuoteForClient(CancellationToken ct) => _navigator.RunAsync(this, "The quote could not be created.", async () =>
     {
         var client = await SelectedClient;
         if (client is null) return;
 
-        // A plan limit (only where plans exist) is reported like any failure: the page's handler shows it.
+        // A plan limit (only where plans exist) is reported like any failure.
         if (!await _featureGate.CanCreateQuoteAsync())
         {
             throw new InvalidOperationException(_featureGate.GetUpgradeMessage("quotes"));
@@ -170,7 +195,7 @@ public partial record ClientsModel
         };
         await _quoteRepo.SaveAsync(quote);
         await _navigator.NavigateRouteAsync(this, "QuoteEditor", data: quote);
-    }
+    }, ct);
 
     private static string GetInitials(string name)
     {

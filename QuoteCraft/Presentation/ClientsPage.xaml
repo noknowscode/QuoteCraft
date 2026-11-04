@@ -62,11 +62,9 @@
         </mvux:FeedView>
 
         <!-- Search (under the title row on Narrow) -->
-        <Border Grid.Row="{utu:Responsive Narrow=1, Normal=0}"
+        <utu:CardContentControl Style="{StaticResource TonalCardStyle}" Grid.Row="{utu:Responsive Narrow=1, Normal=0}"
                 Grid.Column="{utu:Responsive Narrow=0, Normal=2}"
                 Grid.ColumnSpan="{utu:Responsive Narrow=4, Normal=1}"
-                Background="{ThemeResource SurfaceVariantBrush}"
-                CornerRadius="{StaticResource RadiusMd}"
                 Padding="{StaticResource InsetX12}"
                 Height="{StaticResource SearchHeight}"
                 MinWidth="{utu:Responsive Narrow=0, Normal={StaticResource SearchMinWidth}}"
@@ -92,11 +90,11 @@
                      VerticalAlignment="Center"
                      VerticalContentAlignment="Center" />
           </Grid>
-        </Border>
+        </utu:CardContentControl>
 
         <Button Grid.Column="3"
                 x:Uid="ClientsPage.Button.AddClient"
-                Click="AddClient_Click"
+                Command="{Binding AddClient}"
                 AutomationProperties.Name="Add new client"
                 Style="{StaticResource AccentButtonStyle}">
           <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
@@ -118,9 +116,7 @@
             <ColumnDefinition Width="*" />
           </Grid.ColumnDefinitions>
 
-          <Border Background="{ThemeResource SurfaceBrush}"
-                  BorderBrush="{ThemeResource OutlineVariantBrush}"
-                  BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource CardInset}">
+          <utu:CardContentControl Style="{StaticResource PaddedCardStyle}">
             <StackPanel Spacing="{StaticResource Space4}" VerticalAlignment="Center">
               <TextBlock Text="TOTAL CLIENTS" Style="{StaticResource LabelSmall}"
                          Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold" />
@@ -132,12 +128,9 @@
                            VerticalAlignment="Bottom" Margin="{StaticResource BaselineNudge}" />
               </StackPanel>
             </StackPanel>
-          </Border>
+          </utu:CardContentControl>
 
-          <Border Grid.Column="1"
-                  Background="{ThemeResource SurfaceBrush}"
-                  BorderBrush="{ThemeResource OutlineVariantBrush}"
-                  BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource CardInset}">
+          <utu:CardContentControl Style="{StaticResource PaddedCardStyle}" Grid.Column="1">
             <StackPanel Spacing="{StaticResource Space4}" VerticalAlignment="Center">
               <TextBlock Text="ACCEPTED REVENUE" Style="{StaticResource LabelSmall}"
                          Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold" />
@@ -145,12 +138,9 @@
                          Style="{StaticResource HeadlineSmallBold}"
                          FontFamily="{StaticResource MonospaceFontFamily}" />
             </StackPanel>
-          </Border>
+          </utu:CardContentControl>
 
-          <Border Grid.Column="2"
-                  Background="{ThemeResource SurfaceBrush}"
-                  BorderBrush="{ThemeResource OutlineVariantBrush}"
-                  BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource CardInset}">
+          <utu:CardContentControl Style="{StaticResource PaddedCardStyle}" Grid.Column="2">
             <StackPanel Spacing="{StaticResource Space4}" VerticalAlignment="Center">
               <TextBlock Text="AVG PER CLIENT" Style="{StaticResource LabelSmall}"
                          Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold" />
@@ -158,7 +148,7 @@
                          Style="{StaticResource HeadlineSmallBold}"
                          FontFamily="{StaticResource MonospaceFontFamily}" />
             </StackPanel>
-          </Border>
+          </utu:CardContentControl>
         </Grid>
       </DataTemplate>
 
@@ -198,10 +188,7 @@
             <mvux:FeedView Source="{Binding Analytics}"
                            Visibility="{utu:Responsive Narrow=Visible, Wide=Collapsed}">
               <DataTemplate>
-                <Border Margin="{utu:Responsive Narrow={StaticResource BandInsetNarrow}, Normal={StaticResource BandInsetNormal}}"
-                        Background="{ThemeResource SurfaceBrush}"
-                        BorderBrush="{ThemeResource OutlineVariantBrush}"
-                        BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource CardInset}">
+                <utu:CardContentControl Style="{StaticResource PaddedCardStyle}" Margin="{utu:Responsive Narrow={StaticResource BandInsetNarrow}, Normal={StaticResource BandInsetNormal}}">
                   <Grid RowSpacing="{StaticResource Space8}" ColumnSpacing="{StaticResource Space12}">
                     <Grid.ColumnDefinitions>
                       <ColumnDefinition Width="*" />
@@ -224,7 +211,7 @@
                     <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Data.AvgPerClient, Converter={StaticResource CurrencyFormatConverter}}"
                                Style="{StaticResource TitleMediumBold}" FontFamily="{StaticResource MonospaceFontFamily}" />
                   </Grid>
-                </Border>
+                </utu:CardContentControl>
               </DataTemplate>
               <mvux:FeedView.NoneTemplate>
                 <DataTemplate>
@@ -249,9 +236,7 @@
                     </muxc:ItemsRepeater.Layout>
                     <muxc:ItemsRepeater.ItemTemplate>
                       <DataTemplate>
-                        <Border Background="{ThemeResource SurfaceBrush}"
-                                BorderBrush="{ThemeResource OutlineVariantBrush}"
-                                BorderThickness="1" CornerRadius="{StaticResource RadiusMd}" Padding="{StaticResource Inset12}"
+                        <utu:CardContentControl Style="{StaticResource StaticCardStyle}" CornerRadius="{StaticResource RadiusMd}" Padding="{StaticResource Inset12}"
                                 Translation="0,0,0"
                                 AutomationProperties.Name="{Binding Name}"
                                 helpers:InteractionHelper.Command="{Binding DataContext.SelectClient, ElementName=ClientsRoot}"
@@ -264,14 +249,11 @@
                             </Grid.ColumnDefinitions>
 
                             <!-- Avatar -->
-                            <Border Width="{StaticResource AvatarSize}" Height="{StaticResource AvatarSize}" CornerRadius="{StaticResource RadiusCircle40}"
-                                    Background="{ThemeResource PrimaryContainerBrush}"
-                                    VerticalAlignment="Center"
-                                    AutomationProperties.AccessibilityView="Raw">
+                            <utu:CardContentControl Style="{StaticResource AvatarCardStyle}" Width="{StaticResource AvatarSize}" Height="{StaticResource AvatarSize}" CornerRadius="{StaticResource RadiusCircle40}">
                               <TextBlock Text="{Binding Initials}" Style="{StaticResource LabelLarge}"
                                          Foreground="{ThemeResource OnPrimaryContainerBrush}"
                                          HorizontalAlignment="Center" VerticalAlignment="Center" />
-                            </Border>
+                            </utu:CardContentControl>
 
                             <!-- Info -->
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="{StaticResource Space2}">
@@ -299,7 +281,7 @@
                                          HorizontalAlignment="Right" />
                             </StackPanel>
                           </Grid>
-                        </Border>
+                        </utu:CardContentControl>
                       </DataTemplate>
                     </muxc:ItemsRepeater.ItemTemplate>
                   </muxc:ItemsRepeater>
@@ -318,7 +300,7 @@
                                Style="{StaticResource BodyMedium}"
                                HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"
                                Foreground="{ThemeResource OnSurfaceVariantBrush}" />
-                    <Button Click="AddClient_Click"
+                    <Button Command="{Binding DataContext.AddClient, ElementName=ClientsRoot}"
                             Style="{StaticResource AccentButtonStyle}"
                             HorizontalAlignment="Center" Margin="{StaticResource GapTop8}">
                       <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
@@ -399,7 +381,7 @@
                 <StackPanel Grid.Row="{utu:Responsive Narrowest=1, Widest=0, Layout={StaticResource SplitLayout}}"
                             Grid.Column="{utu:Responsive Narrowest=0, Widest=1, Layout={StaticResource SplitLayout}}"
                             Orientation="Horizontal" Spacing="{StaticResource Space8}" VerticalAlignment="Center">
-                  <Button Click="EditClient_Click"
+                  <Button Command="{Binding DataContext.EditClient, ElementName=ClientsRoot}"
                           AutomationProperties.Name="Edit client"
                           ToolTipService.ToolTip="Edit client"
                           Style="{StaticResource MaterialOutlinedButtonStyle}"
@@ -411,7 +393,7 @@
                     </StackPanel>
                   </Button>
 
-                  <Button Click="DeleteClient_Click"
+                  <Button Command="{Binding DataContext.DeleteClient, ElementName=ClientsRoot}"
                           AutomationProperties.Name="Delete client"
                           ToolTipService.ToolTip="Delete client"
                           Style="{StaticResource MaterialOutlinedButtonStyle}"
@@ -426,7 +408,7 @@
                     </StackPanel>
                   </Button>
 
-                  <Button Click="NewQuoteForClient_Click"
+                  <Button Command="{Binding DataContext.CreateQuoteForClient, ElementName=ClientsRoot}"
                           AutomationProperties.Name="Create new quote for client"
                           Style="{StaticResource AccentButtonStyle}">
                     <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
@@ -469,15 +451,13 @@
                 </Grid.RowDefinitions>
 
                 <!-- Quote History -->
-                <Border Background="{ThemeResource SurfaceBrush}"
-                        BorderBrush="{ThemeResource OutlineVariantBrush}"
-                        BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Inset16}"
+                <utu:CardContentControl Style="{StaticResource StaticCardStyle}" Padding="{StaticResource Inset16}"
                         Grid.ColumnSpan="{utu:Responsive Narrowest=2, Widest=1, Layout={StaticResource SplitLayout}}"
                         Margin="{utu:Responsive Narrowest='0', Widest={StaticResource GapEnd24}, Layout={StaticResource SplitLayout}}"
                         Translation="0,0,8">
-                  <Border.Shadow>
+                  <utu:CardContentControl.Shadow>
                     <ThemeShadow />
-                  </Border.Shadow>
+                  </utu:CardContentControl.Shadow>
                   <StackPanel Spacing="{StaticResource Space8}">
                     <TextBlock Style="{StaticResource LabelSmall}"
                                Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold">
@@ -491,17 +471,19 @@
                       </muxc:ItemsRepeater.Layout>
                       <muxc:ItemsRepeater.ItemTemplate>
                         <DataTemplate>
-                          <Grid Padding="{StaticResource InsetY12}"
-                                MinHeight="{StaticResource TouchTargetComfortable}"
-                                ColumnSpacing="{StaticResource Space12}"
-                                BorderBrush="{ThemeResource OutlineVariantBrush}"
-                                BorderThickness="0,0,0,1"
-                                Tapped="QuoteRow_Tapped"
-                                KeyDown="QuoteRow_KeyDown"
-                                IsTabStop="True"
-                                UseSystemFocusVisuals="True"
-                                AutomationProperties.Name="{Binding Title}"
-                                Background="Transparent">
+                          <!-- Each quote is a button: tap, Enter or Space opens it in the editor -->
+                          <Button Command="{Binding DataContext.OpenQuote, ElementName=ClientsRoot}"
+                                  CommandParameter="{Binding}"
+                                  AutomationProperties.Name="{Binding Title}"
+                                  Style="{StaticResource MaterialTextButtonStyle}"
+                                  Foreground="{ThemeResource OnSurfaceBrush}"
+                                  BorderBrush="{ThemeResource OutlineVariantBrush}"
+                                  BorderThickness="0,0,0,1"
+                                  CornerRadius="0"
+                                  MinHeight="{StaticResource TouchTargetComfortable}"
+                                  Padding="{StaticResource InsetY12}"
+                                  HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                          <Grid ColumnSpacing="{StaticResource Space12}">
                             <Grid.ColumnDefinitions>
                               <ColumnDefinition Width="*" />
                               <ColumnDefinition Width="Auto" />
@@ -523,6 +505,7 @@
                                        VerticalAlignment="Center" />
                             <ctrl:StatusPill Grid.Column="2" Status="{Binding Status}" />
                           </Grid>
+                          </Button>
                         </DataTemplate>
                       </muxc:ItemsRepeater.ItemTemplate>
                     </muxc:ItemsRepeater>
@@ -531,22 +514,19 @@
                                Style="{StaticResource BodyMedium}"
                                Foreground="{ThemeResource OnSurfaceVariantBrush}" />
                   </StackPanel>
-                </Border>
+                </utu:CardContentControl>
 
                 <!-- Summary -->
-                <Border Grid.Row="{utu:Responsive Narrowest=1, Widest=0, Layout={StaticResource SplitLayout}}"
+                <utu:CardContentControl Style="{StaticResource StaticCardStyle}" Grid.Row="{utu:Responsive Narrowest=1, Widest=0, Layout={StaticResource SplitLayout}}"
                         Grid.Column="{utu:Responsive Narrowest=0, Widest=1, Layout={StaticResource SplitLayout}}"
                         Grid.ColumnSpan="{utu:Responsive Narrowest=2, Widest=1, Layout={StaticResource SplitLayout}}"
                         Margin="{utu:Responsive Narrowest={StaticResource GapTop16}, Widest='0', Layout={StaticResource SplitLayout}}"
-                        Width="{utu:Responsive Narrowest=NaN, Widest={StaticResource SummaryColumnWidth}, Layout={StaticResource SplitLayout}}"
-                        Background="{ThemeResource SurfaceBrush}"
-                        BorderBrush="{ThemeResource OutlineVariantBrush}"
-                        BorderThickness="1" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Inset16}"
+                        Width="{utu:Responsive Narrowest=NaN, Widest={StaticResource SummaryColumnWidth}, Layout={StaticResource SplitLayout}}" Padding="{StaticResource Inset16}"
                         VerticalAlignment="Top"
                         Translation="0,0,8">
-                  <Border.Shadow>
+                  <utu:CardContentControl.Shadow>
                     <ThemeShadow />
-                  </Border.Shadow>
+                  </utu:CardContentControl.Shadow>
                   <StackPanel Spacing="{StaticResource Space12}">
                     <TextBlock Text="SUMMARY" Style="{StaticResource LabelSmall}"
                                Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold" />
@@ -572,7 +552,7 @@
                                  Style="{StaticResource BodySmallSemiBold}" />
                     </Grid>
                   </StackPanel>
-                </Border>
+                </utu:CardContentControl>
               </Grid>
             </StackPanel>
           </ScrollViewer>

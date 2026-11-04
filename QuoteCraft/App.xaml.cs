@@ -454,6 +454,7 @@ public partial class App : Application
             new ResultDataViewMap<SendQuoteDialog, SendQuoteModel, SendQuoteChoice>(Data: new DataMap<QuoteSendDetails>()),
             new ResultDataViewMap<LineItemEditorDialog, LineItemEditorModel, LineItemEditResult>(Data: new DataMap<LineItemEditRequest>()),
             new DataViewMap<CatalogBrowserDialog, CatalogBrowserModel, CatalogBrowserRequest>(),
+            new ResultDataViewMap<ClientEditorDialog, ClientEditorModel, ClientEntity>(Data: new DataMap<ClientEditRequest>()),
             new DataViewMap<QuoteEditorPage, QuoteEditorModel, QuoteEntity>()
         );
 
@@ -469,6 +470,7 @@ public partial class App : Application
                     new ("SendQuote", View: views.FindByViewModel<SendQuoteModel>()),
                     new ("LineItemEditor", View: views.FindByViewModel<LineItemEditorModel>()),
                     new ("CatalogBrowser", View: views.FindByViewModel<CatalogBrowserModel>()),
+                    new ("ClientEditor", View: views.FindByViewModel<ClientEditorModel>()),
                     new ("Main", View: views.FindByViewModel<MainModel>(), IsDefault: true,
                         Nested:
                         [
