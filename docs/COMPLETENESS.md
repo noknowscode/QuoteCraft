@@ -15,9 +15,9 @@ Verdict: **Complete with gaps** (2 Blockers at `928e155`; 0 open after the fixes
   typed. Proven at runtime (R): title, tax rate, client and notes each typed and saved at once, read back from the
   database and after a relaunch.
 
-Safe to show (desktop, window 1400 px or wider): onboarding to the first quote; adding items by hand and from the
+Safe to show (desktop, any width from 360 px): onboarding to the first quote; adding items by hand and from the
 catalog; totals; Export PDF; Mark Sent, Accepted and Reopen; clients add, search, edit and delete; catalog price edit;
-saving Settings.
+saving Settings; editing a quote and saving from the top bar.
 
 Keep off screen: the Send email body; notifications and reminders; any validation
 or failure message; logo removal; cloud mode.
