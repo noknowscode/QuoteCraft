@@ -332,10 +332,10 @@
                             CommandParameter="{Binding}"
                             AutomationProperties.Name="Delete photo"
                             ToolTipService.ToolTip="Delete photo"
-                            Background="{StaticResource ScrimBrush}"
+                            Background="{StaticResource ScrimFixedBrush}"
                             MinWidth="{StaticResource TouchTarget}" MinHeight="{StaticResource TouchTarget}"
                             Padding="0" CornerRadius="{StaticResource RadiusMd}">
-                      <FontIcon Glyph="&#xE711;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource AppBarForegroundBrush}" />
+                      <FontIcon Glyph="&#xE711;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource AppBarForegroundFixedBrush}" />
                     </Button>
                   </Grid>
                 </DataTemplate>

@@ -27,34 +27,10 @@
             </ResourceDictionary>
           </utum:MaterialToolkitTheme.FontOverrideDictionary>
         </utum:MaterialToolkitTheme>
+        <ResourceDictionary Source="ms-appx:///Styles/BrandColors.xaml" />
         <ResourceDictionary Source="ms-appx:///Styles/StatusColors.xaml" />
         <ResourceDictionary Source="ms-appx:///Styles/Layout.xaml" />
       </ResourceDictionary.MergedDictionaries>
-
-      <!-- App roles that change with the theme (Material roles are in Styles/ColorPaletteOverride.xaml). -->
-      <ResourceDictionary.ThemeDictionaries>
-        <ResourceDictionary x:Key="Light">
-          <Color x:Key="AlternateRowColor">#FAFBFC</Color>
-          <SolidColorBrush x:Key="AlternateRowBrush" Color="{StaticResource AlternateRowColor}" />
-          <Color x:Key="SuccessColor">#16A34A</Color>
-          <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}" />
-          <!-- Side rail: hover and selection washes of the primary colour -->
-          <Color x:Key="NavRailHoverColor">#1F2B4C7E</Color>
-          <SolidColorBrush x:Key="NavRailHoverBrush" Color="{StaticResource NavRailHoverColor}" />
-          <Color x:Key="NavRailSelectionColor">#332B4C7E</Color>
-          <SolidColorBrush x:Key="NavRailSelectionBrush" Color="{StaticResource NavRailSelectionColor}" />
-        </ResourceDictionary>
-        <ResourceDictionary x:Key="Dark">
-          <Color x:Key="AlternateRowColor">#1A2332</Color>
-          <SolidColorBrush x:Key="AlternateRowBrush" Color="{StaticResource AlternateRowColor}" />
-          <Color x:Key="SuccessColor">#4ADE80</Color>
-          <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}" />
-          <Color x:Key="NavRailHoverColor">#1F93B5E1</Color>
-          <SolidColorBrush x:Key="NavRailHoverBrush" Color="{StaticResource NavRailHoverColor}" />
-          <Color x:Key="NavRailSelectionColor">#3393B5E1</Color>
-          <SolidColorBrush x:Key="NavRailSelectionBrush" Color="{StaticResource NavRailSelectionColor}" />
-        </ResourceDictionary>
-      </ResourceDictionary.ThemeDictionaries>
 
       <!-- Bold/SemiBold typography variants (derived from Material styles) -->
       <Style x:Key="HeadlineMediumBold" TargetType="TextBlock" BasedOn="{StaticResource HeadlineMedium}">
@@ -98,42 +74,6 @@
       <helpers:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
       <helpers:ZeroToVisibleConverter x:Key="ZeroToVisibleConverter" />
 
-      <!-- Brand colours: the same in Light and Dark (the slate band, the amber accent). -->
-      <SolidColorBrush x:Key="ScrimBrush" Color="#80000000" />
-      <Color x:Key="AppBarBackgroundColor">#2B4C7E</Color>
-      <SolidColorBrush x:Key="AppBarBackgroundBrush" Color="{StaticResource AppBarBackgroundColor}" />
-      <Color x:Key="AppBarForegroundColor">#FFFFFF</Color>
-      <SolidColorBrush x:Key="AppBarForegroundBrush" Color="{StaticResource AppBarForegroundColor}" />
-      <Color x:Key="AppBarAccentColor">#F59E0B</Color>
-      <SolidColorBrush x:Key="AppBarAccentBrush" Color="{StaticResource AppBarAccentColor}" />
-      <Color x:Key="AppBarButtonBackgroundColor">#26FFFFFF</Color>
-      <SolidColorBrush x:Key="AppBarButtonBackgroundBrush" Color="{StaticResource AppBarButtonBackgroundColor}" />
-      <!-- Text and icons on the amber accent: 5.6:1 (the slate band colour reached 4.0:1). -->
-      <Color x:Key="OnAccentColor">#1A365D</Color>
-      <SolidColorBrush x:Key="OnAccentBrush" Color="{StaticResource OnAccentColor}" />
-
-      <!-- Upgrade banner and dialog header gradient -->
-      <Color x:Key="UpgradeBannerStartColor">#2B4C7E</Color>
-      <Color x:Key="UpgradeBannerEndColor">#1A365D</Color>
-      <Color x:Key="UpgradeBannerSubtitleColor">#B0C4DE</Color>
-      <SolidColorBrush x:Key="UpgradeBannerSubtitleBrush" Color="{StaticResource UpgradeBannerSubtitleColor}" />
-      <LinearGradientBrush x:Key="BannerGradientBrush" StartPoint="0,0" EndPoint="1,0.5">
-        <GradientStop Color="{StaticResource UpgradeBannerStartColor}" Offset="0" />
-        <GradientStop Color="{StaticResource UpgradeBannerEndColor}" Offset="1" />
-      </LinearGradientBrush>
-
-      <!-- Accent hover / pressed: lighter amber keeps the dark label above 4.5:1 (darker amber dropped it to 2.4:1) -->
-      <Color x:Key="AppBarAccentHoverColor">#FBBF24</Color>
-      <SolidColorBrush x:Key="AppBarAccentHoverBrush" Color="{StaticResource AppBarAccentHoverColor}" />
-      <Color x:Key="AppBarAccentPressedColor">#FCD34D</Color>
-      <SolidColorBrush x:Key="AppBarAccentPressedBrush" Color="{StaticResource AppBarAccentPressedColor}" />
-
-      <!-- Pill buttons on the slate band: hover and pressed washes -->
-      <Color x:Key="AppBarButtonHoverColor">#40FFFFFF</Color>
-      <SolidColorBrush x:Key="AppBarButtonHoverBrush" Color="{StaticResource AppBarButtonHoverColor}" />
-      <Color x:Key="AppBarButtonPressedColor">#1AFFFFFF</Color>
-      <SolidColorBrush x:Key="AppBarButtonPressedBrush" Color="{StaticResource AppBarButtonPressedColor}" />
-
       <!-- Disabled controls -->
       <x:Double x:Key="DisabledOpacity">0.4</x:Double>
       <x:Double x:Key="SecondaryOpacity">0.7</x:Double>
@@ -143,8 +83,8 @@
 
       <!-- Accent Button Style (orange with darker hover/pressed) -->
       <Style x:Key="AccentButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource AppBarAccentBrush}" />
-        <Setter Property="Foreground" Value="{StaticResource OnAccentBrush}" />
+        <Setter Property="Background" Value="{StaticResource AppBarAccentInvariantBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource OnAccentFixedBrush}" />
         <Setter Property="CornerRadius" Value="{StaticResource RadiusMd}" />
         <Setter Property="Padding" Value="{StaticResource ButtonInset}" />
         <Setter Property="MinHeight" Value="{StaticResource TouchTarget}" />
@@ -168,7 +108,7 @@
                       <Storyboard>
                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootBorder"
                                                        Storyboard.TargetProperty="Background">
-                          <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource AppBarAccentHoverBrush}" />
+                          <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource AppBarAccentHoverFixedBrush}" />
                         </ObjectAnimationUsingKeyFrames>
                       </Storyboard>
                     </VisualState>
@@ -176,7 +116,7 @@
                       <Storyboard>
                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootBorder"
                                                        Storyboard.TargetProperty="Background">
-                          <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource AppBarAccentPressedBrush}" />
+                          <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource AppBarAccentPressedFixedBrush}" />
                         </ObjectAnimationUsingKeyFrames>
                       </Storyboard>
                     </VisualState>
@@ -280,8 +220,8 @@
 
       <!-- App Bar Pill Button Style (with full interaction states) -->
       <Style x:Key="AppBarPillButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource AppBarButtonBackgroundBrush}" />
-        <Setter Property="Foreground" Value="{StaticResource AppBarForegroundBrush}" />
+        <Setter Property="Background" Value="{StaticResource AppBarButtonBackgroundFixedBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource AppBarForegroundFixedBrush}" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="CornerRadius" Value="{StaticResource RadiusMd}" />
         <Setter Property="Padding" Value="{StaticResource Inset16x8}" />
@@ -305,7 +245,7 @@
                       <Storyboard>
                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootBorder"
                                                        Storyboard.TargetProperty="Background">
-                          <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource AppBarButtonHoverBrush}" />
+                          <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource AppBarButtonHoverFixedBrush}" />
                         </ObjectAnimationUsingKeyFrames>
                       </Storyboard>
                     </VisualState>
@@ -313,7 +253,7 @@
                       <Storyboard>
                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootBorder"
                                                        Storyboard.TargetProperty="Background">
-                          <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource AppBarButtonPressedBrush}" />
+                          <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource AppBarButtonPressedFixedBrush}" />
                         </ObjectAnimationUsingKeyFrames>
                       </Storyboard>
                     </VisualState>

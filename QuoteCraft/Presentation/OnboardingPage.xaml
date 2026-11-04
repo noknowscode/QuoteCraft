@@ -20,14 +20,14 @@
                   Visibility="{Binding CurrentStep, Converter={StaticResource StepVisibilityConverter}, ConverterParameter=1}">
         <!-- Logo badge -->
         <Border Width="{StaticResource LogoSizeHero}" Height="{StaticResource LogoSizeHero}" CornerRadius="{StaticResource RadiusXl}"
-                Background="{StaticResource AppBarBackgroundBrush}"
+                Background="{StaticResource AppBarBackgroundFixedBrush}"
                 HorizontalAlignment="Center"
                 AutomationProperties.AccessibilityView="Raw"
                 Translation="0,0,16">
           <Border.Shadow>
             <ThemeShadow />
           </Border.Shadow>
-          <TextBlock Text="QC" Foreground="{StaticResource AppBarForegroundBrush}"
+          <TextBlock Text="QC" Foreground="{StaticResource AppBarForegroundFixedBrush}"
                      Style="{StaticResource HeadlineMediumBold}"
                      HorizontalAlignment="Center" VerticalAlignment="Center" />
         </Border>
@@ -49,9 +49,9 @@
                 Padding="{StaticResource ButtonInsetWide}" Margin="{StaticResource GapTop8}">
           <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
             <TextBlock Text="Get Started" Style="{StaticResource LabelLargeSemiBold}"
-                       Foreground="{StaticResource OnAccentBrush}" />
+                       Foreground="{StaticResource OnAccentFixedBrush}" />
             <FontIcon Glyph="&#xE72A;" FontSize="{StaticResource IconSizeMd}"
-                      Foreground="{StaticResource OnAccentBrush}" />
+                      Foreground="{StaticResource OnAccentFixedBrush}" />
           </StackPanel>
         </Button>
 
@@ -79,7 +79,7 @@
         <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}" HorizontalAlignment="Center"
                     AutomationProperties.Name="Step 1 of 2">
           <Border Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" CornerRadius="{StaticResource RadiusXs}"
-                  Background="{StaticResource AppBarAccentBrush}" />
+                  Background="{StaticResource AppBarAccentInvariantBrush}" />
           <Border Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" CornerRadius="{StaticResource RadiusXs}"
                   Background="{ThemeResource OutlineVariantBrush}" />
           <Border Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" CornerRadius="{StaticResource RadiusXs}"
@@ -126,9 +126,9 @@
                   Style="{StaticResource AccentButtonStyle}">
             <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
               <TextBlock Text="Next" Style="{StaticResource LabelLargeSemiBold}"
-                         Foreground="{StaticResource OnAccentBrush}" />
+                         Foreground="{StaticResource OnAccentFixedBrush}" />
               <FontIcon Glyph="&#xE72A;" FontSize="{StaticResource IconSizeMd}"
-                        Foreground="{StaticResource OnAccentBrush}" />
+                        Foreground="{StaticResource OnAccentFixedBrush}" />
             </StackPanel>
           </Button>
         </Grid>
@@ -151,9 +151,9 @@
         <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}" HorizontalAlignment="Center"
                     AutomationProperties.Name="Step 2 of 2">
           <Border Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" CornerRadius="{StaticResource RadiusXs}"
-                  Background="{StaticResource AppBarAccentBrush}" />
+                  Background="{StaticResource AppBarAccentInvariantBrush}" />
           <Border Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" CornerRadius="{StaticResource RadiusXs}"
-                  Background="{StaticResource AppBarAccentBrush}" />
+                  Background="{StaticResource AppBarAccentInvariantBrush}" />
           <Border Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" CornerRadius="{StaticResource RadiusXs}"
                   Background="{ThemeResource OutlineVariantBrush}" />
         </StackPanel>
@@ -232,9 +232,9 @@
                   Style="{StaticResource AccentButtonStyle}">
             <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
               <TextBlock Text="Create First Quote" Style="{StaticResource LabelLargeSemiBold}"
-                         Foreground="{StaticResource OnAccentBrush}" />
+                         Foreground="{StaticResource OnAccentFixedBrush}" />
               <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeMd}"
-                        Foreground="{StaticResource OnAccentBrush}" />
+                        Foreground="{StaticResource OnAccentFixedBrush}" />
             </StackPanel>
           </Button>
         </Grid>

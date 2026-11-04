@@ -18,14 +18,14 @@ public static class DialogHelper
         {
             Text = title,
             Style = (Style)Application.Current.Resources["TitleMediumBold"],
-            Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["AppBarForegroundBrush"],
+            Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["AppBarForegroundFixedBrush"],
             TextWrapping = TextWrapping.Wrap,
         };
         var headerSubtitle = new TextBlock
         {
             Text = subtitle,
             Style = (Style)Application.Current.Resources["BodySmall"],
-            Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["UpgradeBannerSubtitleBrush"],
+            Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["UpgradeBannerSubtitleFixedBrush"],
             TextWrapping = TextWrapping.Wrap,
         };
         var textStack = new StackPanel { Spacing = (double)Application.Current.Resources["Space2"] };
@@ -36,7 +36,7 @@ public static class DialogHelper
         {
             Glyph = iconGlyph,
             FontSize = (double)Application.Current.Resources["IconSize2xl"],
-            Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["AppBarAccentBrush"],
+            Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["AppBarAccentInvariantBrush"],
             VerticalAlignment = VerticalAlignment.Center,
             Margin = (Thickness)Application.Current.Resources["GapEnd12"],
         };
@@ -114,9 +114,9 @@ public static class DialogHelper
         });
     }
 
-    /// <summary>The banner gradient (App.xaml BannerGradientBrush: brand colours, the same in both themes).</summary>
+    /// <summary>The banner gradient (App.xaml BannerGradientFixedBrush: brand colours, the same in both themes).</summary>
     public static Microsoft.UI.Xaml.Media.Brush BuildGradientBrush() =>
-        (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["BannerGradientBrush"];
+        (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["BannerGradientFixedBrush"];
 
     /// <summary>
     /// The Material dialog style, so code-built dialogs match the rest of the app (buttons, surface, corner radius).

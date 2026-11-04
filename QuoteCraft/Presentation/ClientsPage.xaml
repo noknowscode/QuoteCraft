@@ -100,8 +100,8 @@
                 AutomationProperties.Name="Add new client"
                 Style="{StaticResource AccentButtonStyle}">
           <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-            <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource OnAccentBrush}" />
-            <TextBlock Text="Add Client" Foreground="{StaticResource OnAccentBrush}" Style="{StaticResource LabelLargeSemiBold}" />
+            <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource OnAccentFixedBrush}" />
+            <TextBlock Text="Add Client" Foreground="{StaticResource OnAccentFixedBrush}" Style="{StaticResource LabelLargeSemiBold}" />
           </StackPanel>
         </Button>
       </Grid>
@@ -322,8 +322,8 @@
                             Style="{StaticResource AccentButtonStyle}"
                             HorizontalAlignment="Center" Margin="{StaticResource GapTop8}">
                       <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-                        <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource OnAccentBrush}" />
-                        <TextBlock Text="Add Client" Foreground="{StaticResource OnAccentBrush}" Style="{StaticResource LabelLargeSemiBold}" />
+                        <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource OnAccentFixedBrush}" />
+                        <TextBlock Text="Add Client" Foreground="{StaticResource OnAccentFixedBrush}" Style="{StaticResource LabelLargeSemiBold}" />
                       </StackPanel>
                     </Button>
                   </StackPanel>
@@ -430,8 +430,8 @@
                           AutomationProperties.Name="Create new quote for client"
                           Style="{StaticResource AccentButtonStyle}">
                     <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-                      <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource OnAccentBrush}" />
-                      <TextBlock Text="New Quote" Foreground="{StaticResource OnAccentBrush}" Style="{StaticResource LabelLargeSemiBold}" />
+                      <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource OnAccentFixedBrush}" />
+                      <TextBlock Text="New Quote" Foreground="{StaticResource OnAccentFixedBrush}" Style="{StaticResource LabelLargeSemiBold}" />
                     </StackPanel>
                   </Button>
                 </StackPanel>

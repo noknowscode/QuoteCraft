@@ -10,18 +10,18 @@
   <StackPanel Spacing="{StaticResource Space16}" MinWidth="{utu:Responsive Narrow=0, Normal={StaticResource DialogMinWidth}}">
 
     <!-- Gradient Header Banner -->
-    <Border x:Name="HeaderBanner" Background="{StaticResource BannerGradientBrush}" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource BannerInset}" Margin="{StaticResource GapBottom4}">
+    <Border x:Name="HeaderBanner" Background="{StaticResource BannerGradientFixedBrush}" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource BannerInset}" Margin="{StaticResource GapBottom4}">
       <Grid>
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="Auto" />
           <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <FontIcon x:Name="HeaderIcon" Foreground="{StaticResource AppBarAccentBrush}" Glyph="&#xE70F;" FontSize="{StaticResource IconSize2xl}"
+        <FontIcon x:Name="HeaderIcon" Foreground="{StaticResource AppBarAccentInvariantBrush}" Glyph="&#xE70F;" FontSize="{StaticResource IconSize2xl}"
                   VerticalAlignment="Center" Margin="{StaticResource GapEnd12}" />
         <StackPanel Grid.Column="1" Spacing="{StaticResource Space2}">
-          <TextBlock x:Name="HeaderTitle" Foreground="{StaticResource AppBarForegroundBrush}" TextWrapping="Wrap" Text="Line Item"
+          <TextBlock x:Name="HeaderTitle" Foreground="{StaticResource AppBarForegroundFixedBrush}" TextWrapping="Wrap" Text="Line Item"
                      Style="{StaticResource TitleMediumBold}" />
-          <TextBlock x:Name="HeaderSubtitle" Foreground="{StaticResource UpgradeBannerSubtitleBrush}" TextWrapping="Wrap"
+          <TextBlock x:Name="HeaderSubtitle" Foreground="{StaticResource UpgradeBannerSubtitleFixedBrush}" TextWrapping="Wrap"
                      Text="Add or edit a line item for this quote"
                      Style="{StaticResource BodySmall}" />
         </StackPanel>
@@ -70,16 +70,16 @@
                AutomationProperties.LiveSetting="Assertive" />
 
     <!-- Line Total -->
-    <Border x:Name="TotalBorder" Background="{StaticResource BannerGradientBrush}" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource BannerInset}">
+    <Border x:Name="TotalBorder" Background="{StaticResource BannerGradientFixedBrush}" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource BannerInset}">
       <Grid>
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*" />
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
-        <TextBlock x:Name="TotalLabel" Foreground="{StaticResource UpgradeBannerSubtitleBrush}" Text="Line Total"
+        <TextBlock x:Name="TotalLabel" Foreground="{StaticResource UpgradeBannerSubtitleFixedBrush}" Text="Line Total"
                    Style="{StaticResource BodyMedium}"
                    VerticalAlignment="Center" />
-        <TextBlock x:Name="LineTotalText" Foreground="{StaticResource AppBarForegroundBrush}" FontFamily="{StaticResource MonospaceFontFamily}" Grid.Column="1"
+        <TextBlock x:Name="LineTotalText" Foreground="{StaticResource AppBarForegroundFixedBrush}" FontFamily="{StaticResource MonospaceFontFamily}" Grid.Column="1"
                    Style="{StaticResource TitleLarge}"
                    FontWeight="Bold" VerticalAlignment="Center" />
       </Grid>

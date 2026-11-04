@@ -104,8 +104,8 @@
                 AutomationProperties.Name="Create new quote"
                 Style="{StaticResource AccentButtonStyle}">
           <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-            <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource OnAccentBrush}" />
-            <TextBlock Text="New Quote" Foreground="{StaticResource OnAccentBrush}" Style="{StaticResource LabelLargeSemiBold}" />
+            <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource OnAccentFixedBrush}" />
+            <TextBlock Text="New Quote" Foreground="{StaticResource OnAccentFixedBrush}" Style="{StaticResource LabelLargeSemiBold}" />
           </StackPanel>
         </Button>
       </Grid>
@@ -115,7 +115,7 @@
     <StackPanel Grid.Row="1">
       <mvux:FeedView Source="{Binding UpgradeMessage}">
         <DataTemplate>
-          <Border Background="{StaticResource AppBarBackgroundBrush}"
+          <Border Background="{StaticResource AppBarBackgroundFixedBrush}"
                   Padding="{StaticResource Inset16x12}"
                   Visibility="{Binding Data, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert}">
             <Grid ColumnSpacing="{StaticResource Space8}">
@@ -125,16 +125,16 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
               </Grid.ColumnDefinitions>
-              <FontIcon Glyph="&#xE7BA;" FontSize="{StaticResource IconSizeXl}" Foreground="{StaticResource AppBarForegroundBrush}"
+              <FontIcon Glyph="&#xE7BA;" FontSize="{StaticResource IconSizeXl}" Foreground="{StaticResource AppBarForegroundFixedBrush}"
                         VerticalAlignment="Center" />
               <TextBlock Grid.Column="1" Text="{Binding Data}"
-                         Style="{StaticResource BodyMedium}" Foreground="{StaticResource AppBarForegroundBrush}"
+                         Style="{StaticResource BodyMedium}" Foreground="{StaticResource AppBarForegroundFixedBrush}"
                          VerticalAlignment="Center" TextWrapping="Wrap" />
               <Button Grid.Column="2"
                       Command="{Binding DataContext.OpenSettings, ElementName=DashboardRoot}"
                       Style="{StaticResource AccentButtonStyle}"
                       Padding="{StaticResource ButtonInsetCompact}">
-                <TextBlock Text="Upgrade" Style="{StaticResource LabelLargeSemiBold}" Foreground="{StaticResource OnAccentBrush}" />
+                <TextBlock Text="Upgrade" Style="{StaticResource LabelLargeSemiBold}" Foreground="{StaticResource OnAccentFixedBrush}" />
               </Button>
               <Button Grid.Column="3"
                       Command="{Binding DataContext.DismissUpgrade, ElementName=DashboardRoot}"
@@ -142,7 +142,7 @@
                       ToolTipService.ToolTip="Dismiss"
                       Style="{StaticResource MaterialTextButtonStyle}"
                       MinWidth="{StaticResource TouchTarget}" MinHeight="{StaticResource TouchTarget}">
-                <FontIcon Glyph="&#xE711;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource AppBarForegroundBrush}" />
+                <FontIcon Glyph="&#xE711;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource AppBarForegroundFixedBrush}" />
               </Button>
             </Grid>
           </Border>
@@ -246,7 +246,7 @@
               <ctrl:SparklineControl Grid.Column="1" Height="{StaticResource SparklineHeight}"
                                      AutomationProperties.AccessibilityView="Raw"
                                      Values="{Binding Data.SentDailyValues}"
-                                     StrokeColor="{StaticResource AppBarAccentBrush}" />
+                                     StrokeColor="{StaticResource AppBarAccentInvariantBrush}" />
             </Grid>
           </Border>
 
@@ -536,8 +536,8 @@
                             Style="{StaticResource AccentButtonStyle}"
                             HorizontalAlignment="Center" Margin="{StaticResource GapTop8}">
                       <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-                        <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource OnAccentBrush}" />
-                        <TextBlock Text="Create Quote" Foreground="{StaticResource OnAccentBrush}" Style="{StaticResource LabelLargeSemiBold}" />
+                        <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource OnAccentFixedBrush}" />
+                        <TextBlock Text="Create Quote" Foreground="{StaticResource OnAccentFixedBrush}" Style="{StaticResource LabelLargeSemiBold}" />
                       </StackPanel>
                     </Button>
                   </StackPanel>
@@ -657,8 +657,8 @@
                             Style="{StaticResource AccentButtonStyle}"
                             Visibility="{Binding IsEditMode, ElementName=DashboardRoot, Converter={StaticResource BoolToVisibilityConverter}}">
                       <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-                        <FontIcon Glyph="&#xE73E;" FontSize="{StaticResource IconSizeMd}" Foreground="{StaticResource OnAccentBrush}" />
-                        <TextBlock Text="Done" Foreground="{StaticResource OnAccentBrush}" Style="{StaticResource LabelLargeSemiBold}" />
+                        <FontIcon Glyph="&#xE73E;" FontSize="{StaticResource IconSizeMd}" Foreground="{StaticResource OnAccentFixedBrush}" />
+                        <TextBlock Text="Done" Foreground="{StaticResource OnAccentFixedBrush}" Style="{StaticResource LabelLargeSemiBold}" />
                       </StackPanel>
                     </Button>
 
@@ -683,8 +683,8 @@
                             Style="{StaticResource AccentButtonStyle}"
                             Visibility="{Binding IsEditMode, ElementName=DashboardRoot, Converter={StaticResource InverseBoolConverter}}">
                       <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-                        <TextBlock Text="Send" Foreground="{StaticResource OnAccentBrush}" Style="{StaticResource LabelLargeSemiBold}" />
-                        <FontIcon Glyph="&#xE724;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource OnAccentBrush}" />
+                        <TextBlock Text="Send" Foreground="{StaticResource OnAccentFixedBrush}" Style="{StaticResource LabelLargeSemiBold}" />
+                        <FontIcon Glyph="&#xE724;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource OnAccentFixedBrush}" />
                       </StackPanel>
                     </Button>
                   </StackPanel>
@@ -851,7 +851,7 @@
                           <!-- From Catalog with orange border -->
                           <Button Click="InlineCatalogBrowser_Click"
                                   Style="{StaticResource MaterialOutlinedButtonStyle}"
-                                  BorderBrush="{StaticResource AppBarAccentBrush}"
+                                  BorderBrush="{StaticResource AppBarAccentInvariantBrush}"
                                   MinHeight="{StaticResource TouchTarget}"
                                   CornerRadius="{StaticResource RadiusMd}" Padding="{StaticResource Inset12x4}">
                             <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
@@ -1168,9 +1168,9 @@
                           Style="{StaticResource AccentButtonStyle}">
                     <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
                       <FontIcon Glyph="&#xE724;" FontSize="{StaticResource IconSizeMd}"
-                                Foreground="{StaticResource OnAccentBrush}" />
+                                Foreground="{StaticResource OnAccentFixedBrush}" />
                       <TextBlock Text="Send Quote"
-                                 Foreground="{StaticResource OnAccentBrush}" Style="{StaticResource LabelLargeSemiBold}" />
+                                 Foreground="{StaticResource OnAccentFixedBrush}" Style="{StaticResource LabelLargeSemiBold}" />
                     </StackPanel>
                   </Button>
                 </Grid>
@@ -1188,7 +1188,7 @@
                   <StackPanel>
 
                     <!-- Blue Header -->
-                    <Border Background="{StaticResource AppBarBackgroundBrush}"
+                    <Border Background="{StaticResource AppBarBackgroundFixedBrush}"
                             CornerRadius="{StaticResource RadiusTopLg}"
                             Padding="{utu:Responsive Narrow={StaticResource DocumentInsetNarrow}, Normal={StaticResource DocumentInsetWide}}">
                       <StackPanel Spacing="{StaticResource Space20}">
@@ -1202,10 +1202,10 @@
                           <!-- Logo or Initials badge -->
                           <Grid Width="{StaticResource LogoSize}" Height="{StaticResource LogoSize}">
                             <Border CornerRadius="{StaticResource RadiusMd}"
-                                    Background="{StaticResource AppBarButtonBackgroundBrush}"
+                                    Background="{StaticResource AppBarButtonBackgroundFixedBrush}"
                                     Visibility="{Binding Data.Profile.LogoPath, Converter={StaticResource EmptyToVisibleConverter}}">
                               <TextBlock Text="{Binding Data.Profile.BusinessName, Converter={StaticResource InitialsConverter}}"
-                                         Foreground="{StaticResource AppBarForegroundBrush}"
+                                         Foreground="{StaticResource AppBarForegroundFixedBrush}"
                                          Style="{StaticResource TitleMediumBold}"
                                          HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
@@ -1218,15 +1218,15 @@
                           <!-- Company info -->
                           <StackPanel Grid.Column="1" HorizontalAlignment="Right" Spacing="{StaticResource Space2}">
                             <TextBlock Text="{Binding Data.Profile.BusinessName}"
-                                       Foreground="{StaticResource AppBarForegroundBrush}"
+                                       Foreground="{StaticResource AppBarForegroundFixedBrush}"
                                        Style="{StaticResource TitleMediumBold}"
                                        TextWrapping="Wrap" TextAlignment="Right"
                                        HorizontalAlignment="Right" />
                             <TextBlock Text="{Binding Data.Profile.Phone}"
-                                       Foreground="{StaticResource UpgradeBannerSubtitleBrush}" Style="{StaticResource BodySmall}"
+                                       Foreground="{StaticResource UpgradeBannerSubtitleFixedBrush}" Style="{StaticResource BodySmall}"
                                        HorizontalAlignment="Right" />
                             <TextBlock Text="{Binding Data.Profile.Email}"
-                                       Foreground="{StaticResource UpgradeBannerSubtitleBrush}" Style="{StaticResource BodySmall}"
+                                       Foreground="{StaticResource UpgradeBannerSubtitleFixedBrush}" Style="{StaticResource BodySmall}"
                                        HorizontalAlignment="Right" TextTrimming="CharacterEllipsis" />
                           </StackPanel>
                         </Grid>
@@ -1240,29 +1240,29 @@
                           </Grid.ColumnDefinitions>
 
                           <StackPanel Spacing="{StaticResource Space2}">
-                            <TextBlock Text="Quote #" Foreground="{StaticResource UpgradeBannerSubtitleBrush}"
+                            <TextBlock Text="Quote #" Foreground="{StaticResource UpgradeBannerSubtitleFixedBrush}"
                                        Style="{StaticResource LabelSmall}" />
                             <TextBlock Text="{Binding Data.Quote.QuoteNumber}"
-                                       Foreground="{StaticResource AppBarForegroundBrush}"
+                                       Foreground="{StaticResource AppBarForegroundFixedBrush}"
                                        Style="{StaticResource BodySmallSemiBold}" TextWrapping="Wrap" />
                           </StackPanel>
 
                           <StackPanel Grid.Column="1" HorizontalAlignment="Center" Spacing="{StaticResource Space2}">
-                            <TextBlock Text="Date" Foreground="{StaticResource UpgradeBannerSubtitleBrush}"
+                            <TextBlock Text="Date" Foreground="{StaticResource UpgradeBannerSubtitleFixedBrush}"
                                        Style="{StaticResource LabelSmall}"
                                        HorizontalAlignment="Center" />
                             <TextBlock Text="{Binding Data.Quote.CreatedAt, Converter={StaticResource ShortDateConverter}}"
-                                       Foreground="{StaticResource AppBarForegroundBrush}"
+                                       Foreground="{StaticResource AppBarForegroundFixedBrush}"
                                        Style="{StaticResource BodySmallSemiBold}"
                                        HorizontalAlignment="Center" />
                           </StackPanel>
 
                           <StackPanel Grid.Column="2" HorizontalAlignment="Right" Spacing="{StaticResource Space2}">
-                            <TextBlock Text="Valid Until" Foreground="{StaticResource UpgradeBannerSubtitleBrush}"
+                            <TextBlock Text="Valid Until" Foreground="{StaticResource UpgradeBannerSubtitleFixedBrush}"
                                        Style="{StaticResource LabelSmall}"
                                        HorizontalAlignment="Right" />
                             <TextBlock Text="{Binding Data.Quote.ValidUntil, Converter={StaticResource ShortDateConverter}}"
-                                       Foreground="{StaticResource AppBarForegroundBrush}"
+                                       Foreground="{StaticResource AppBarForegroundFixedBrush}"
                                        Style="{StaticResource BodySmallSemiBold}"
                                        HorizontalAlignment="Right" />
                           </StackPanel>

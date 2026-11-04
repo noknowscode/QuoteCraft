@@ -10,18 +10,18 @@
   <StackPanel Spacing="{StaticResource Space12}" MinWidth="{utu:Responsive Narrow=0, Normal={StaticResource DialogMinWidth}}" MinHeight="{StaticResource BrowserMinHeight}">
 
     <!-- Gradient Header Banner -->
-    <Border x:Name="HeaderBanner" Background="{StaticResource BannerGradientBrush}" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource BannerInset}" Margin="{StaticResource GapBottom4}">
+    <Border x:Name="HeaderBanner" Background="{StaticResource BannerGradientFixedBrush}" CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource BannerInset}" Margin="{StaticResource GapBottom4}">
       <Grid>
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="Auto" />
           <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <FontIcon x:Name="HeaderIcon" Foreground="{StaticResource AppBarAccentBrush}" Glyph="&#xE82D;" FontSize="{StaticResource IconSize2xl}"
+        <FontIcon x:Name="HeaderIcon" Foreground="{StaticResource AppBarAccentInvariantBrush}" Glyph="&#xE82D;" FontSize="{StaticResource IconSize2xl}"
                   VerticalAlignment="Center" Margin="{StaticResource GapEnd12}" />
         <StackPanel Grid.Column="1" Spacing="{StaticResource Space2}">
-          <TextBlock x:Name="HeaderTitle" Foreground="{StaticResource AppBarForegroundBrush}" TextWrapping="Wrap" Text="Add from Catalog"
+          <TextBlock x:Name="HeaderTitle" Foreground="{StaticResource AppBarForegroundFixedBrush}" TextWrapping="Wrap" Text="Add from Catalog"
                      Style="{StaticResource TitleMediumBold}" />
-          <TextBlock x:Name="HeaderSubtitle" Foreground="{StaticResource UpgradeBannerSubtitleBrush}" TextWrapping="Wrap"
+          <TextBlock x:Name="HeaderSubtitle" Foreground="{StaticResource UpgradeBannerSubtitleFixedBrush}" TextWrapping="Wrap"
                      Text="Browse your saved items and add to this quote"
                      Style="{StaticResource BodySmall}" />
         </StackPanel>

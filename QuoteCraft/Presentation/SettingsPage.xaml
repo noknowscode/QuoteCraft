@@ -85,17 +85,17 @@
             <StackPanel Spacing="{StaticResource Space4}">
               <TextBlock Text="Unlock QuoteCraft Pro"
                          Style="{StaticResource TitleMedium}"
-                         Foreground="{StaticResource AppBarForegroundBrush}" FontWeight="Bold" />
+                         Foreground="{StaticResource AppBarForegroundFixedBrush}" FontWeight="Bold" />
               <TextBlock Text="Unlimited quotes, custom branding, and priority support"
                          Style="{StaticResource BodySmall}"
-                         Foreground="{StaticResource UpgradeBannerSubtitleBrush}"
+                         Foreground="{StaticResource UpgradeBannerSubtitleFixedBrush}"
                          TextWrapping="Wrap" />
             </StackPanel>
             <Button Style="{StaticResource AccentButtonStyle}"
                     Command="{Binding UpgradeToPro}"
                     HorizontalAlignment="Left"
                     AutomationProperties.Name="Upgrade to Pro">
-              <TextBlock Text="Upgrade — $15/mo" Foreground="{StaticResource OnAccentBrush}"
+              <TextBlock Text="Upgrade — $15/mo" Foreground="{StaticResource OnAccentFixedBrush}"
                          Style="{StaticResource LabelLargeSemiBold}" />
             </Button>
           </StackPanel>

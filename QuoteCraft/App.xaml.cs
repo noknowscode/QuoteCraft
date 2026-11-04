@@ -32,6 +32,7 @@ public partial class App : Application
     /// An exception on the UI thread that no handler caught: logged, and marked handled so one failed action does not
     /// close the app with the user's work in it. Page actions report their own failures (ErrorReporter).
     /// </summary>
+    // xaml-lint: allow codebehind - the app-wide exception hook; Application has no XAML or command surface for it
     private void OnUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
     {
         ErrorReporter.Log(e.Exception, "Unhandled exception on the UI thread");
@@ -315,6 +316,7 @@ public partial class App : Application
             {
                 // Select the tab, as a tap does: navigating the region from here left the window unpainted after a
                 // resize under Xvfb (the tab route repaints normally).
+                // xaml-lint: allow responsive - not a breakpoint: picks the tab bar that is laid out (Debug-only hook)
                 var tab = Descendants<Uno.Toolkit.UI.TabBarItem>(main)
                     .FirstOrDefault(t => Uno.Extensions.Navigation.UI.Region.GetName(t) == route && t.ActualWidth > 0);
                 if (tab is not null)
@@ -416,7 +418,7 @@ public partial class App : Application
         for (var i = 0; i < Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
         {
             var child = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(parent, i);
-            if (child is T match && (child is not UIElement element || element.Visibility == Visibility.Visible))
+            if (child is T match && (child is not UIElement element || element.Visibility is Visibility.Visible))
             {
                 return match;
             }

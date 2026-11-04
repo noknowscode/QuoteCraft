@@ -230,16 +230,16 @@
       </Grid.RowDefinitions>
 
       <!-- Brand Header -->
-      <Border Background="{StaticResource AppBarBackgroundBrush}"
+      <Border Background="{StaticResource AppBarBackgroundFixedBrush}"
               Height="{StaticResource RailBrandHeight}" HorizontalAlignment="Stretch">
         <StackPanel x:Name="BrandFull" Orientation="Horizontal" Spacing="{StaticResource Space8}"
                     HorizontalAlignment="Center" VerticalAlignment="Center"
                     AutomationProperties.Name="QuoteCraft">
           <TextBlock Text="QC"
-                     Foreground="{StaticResource AppBarForegroundBrush}"
+                     Foreground="{StaticResource AppBarForegroundFixedBrush}"
                      Style="{StaticResource TitleMediumBold}" />
           <TextBlock x:Name="BrandLabel" Text="QuoteCraft"
-                     Foreground="{StaticResource AppBarForegroundBrush}"
+                     Foreground="{StaticResource AppBarForegroundFixedBrush}"
                      Style="{StaticResource LabelLarge}"
                      VerticalAlignment="Center" />
         </StackPanel>
@@ -247,7 +247,7 @@
 
       <!-- Amber accent bar -->
       <Border Grid.Row="1" Height="{StaticResource AccentBarHeight}"
-              Background="{StaticResource AppBarAccentBrush}" />
+              Background="{StaticResource AppBarAccentInvariantBrush}" />
 
       <!-- Tab items - horizontal icon + label, stacked vertically -->
       <utu:TabBar x:Name="SideTabs"

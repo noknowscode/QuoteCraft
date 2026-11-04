@@ -15,9 +15,9 @@
 
       <!-- Brand -->
       <StackPanel Spacing="{StaticResource Space8}" HorizontalAlignment="Center">
-        <Border Background="{StaticResource AppBarBackgroundBrush}"
+        <Border Background="{StaticResource AppBarBackgroundFixedBrush}"
                 Width="{StaticResource LogoSizeLarge}" Height="{StaticResource LogoSizeLarge}" CornerRadius="{StaticResource RadiusXl}">
-          <TextBlock Text="QC" Foreground="{StaticResource AppBarForegroundBrush}"
+          <TextBlock Text="QC" Foreground="{StaticResource AppBarForegroundFixedBrush}"
                      Style="{StaticResource HeadlineSmallBold}"
                      HorizontalAlignment="Center" VerticalAlignment="Center" />
         </Border>
