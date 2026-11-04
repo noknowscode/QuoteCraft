@@ -105,8 +105,9 @@ QuoteCraft helps service professionals create, manage, and send quotes to client
    ```bash
    dotnet test QuoteCraft.Tests/QuoteCraft.Tests.csproj -p:QuoteCraftTargetFrameworks=net10.0-desktop
    ```
-   `QuoteCraftTargetFrameworks` limits the app to one head, so a restore needs no mobile workload. CI
-   (`.github/workflows/ci.yml`) uses it for every job.
+   301 tests: the page and dialog models (137, in `QuoteCraft.Tests/Presentation`), money, numbering, migrations,
+   status and expiry rules, quote creation, the PDF and the stored secrets. `QuoteCraftTargetFrameworks` limits the app
+   to one head, so a restore needs no mobile workload. CI (`.github/workflows/ci.yml`) uses it for every job.
 
 ### Target Frameworks
 
