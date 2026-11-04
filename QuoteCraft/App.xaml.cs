@@ -355,7 +355,7 @@ public partial class App : Application
                         {
                             var all = await Host.Services.GetRequiredService<IQuoteRepository>().GetAllAsync();
                             var first = all.OrderByDescending(q => q.LineItems.Count).First();
-                            await m.OpenQuote(first, CancellationToken.None);
+                            await m.OpenQuote(new QuoteListItem(first, IsSelected: true), CancellationToken.None);
                             return first.Title;
                         }),
                     "Clients" => await SelectFirstAsync<ClientsPage, ClientsModel>(root, async m =>
@@ -448,6 +448,12 @@ public partial class App : Application
             new ViewMap<CatalogPage, CatalogModel>(),
             new ViewMap<SettingsPage, SettingsModel>(),
             new ViewMap<NotificationsPage, NotificationsModel>(),
+            // Dialogs, opened from models with the "!" qualifier (Helpers/DialogNavigation)
+            new DataViewMap<ConfirmDialog, ConfirmModel, ConfirmRequest>(),
+            new ResultDataViewMap<NewQuoteDialog, NewQuoteModel, QuoteEntity>(),
+            new ResultDataViewMap<SendQuoteDialog, SendQuoteModel, SendQuoteChoice>(Data: new DataMap<QuoteSendDetails>()),
+            new ResultDataViewMap<LineItemEditorDialog, LineItemEditorModel, LineItemEditResult>(Data: new DataMap<LineItemEditRequest>()),
+            new DataViewMap<CatalogBrowserDialog, CatalogBrowserModel, CatalogBrowserRequest>(),
             new DataViewMap<QuoteEditorPage, QuoteEditorModel, QuoteEntity>()
         );
 
@@ -458,6 +464,11 @@ public partial class App : Application
                     new ("Onboarding", View: views.FindByViewModel<OnboardingModel>()),
                     new ("Auth", View: views.FindByViewModel<AuthModel>()),
                     new ("Notifications", View: views.FindByViewModel<NotificationsModel>()),
+                    new ("Confirm", View: views.FindByViewModel<ConfirmModel>()),
+                    new ("NewQuote", View: views.FindByViewModel<NewQuoteModel>()),
+                    new ("SendQuote", View: views.FindByViewModel<SendQuoteModel>()),
+                    new ("LineItemEditor", View: views.FindByViewModel<LineItemEditorModel>()),
+                    new ("CatalogBrowser", View: views.FindByViewModel<CatalogBrowserModel>()),
                     new ("Main", View: views.FindByViewModel<MainModel>(), IsDefault: true,
                         Nested:
                         [

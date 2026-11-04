@@ -37,7 +37,7 @@
         </mvux:FeedView>
       </utu:NavigationBar.Content>
       <utu:NavigationBar.MainCommand>
-        <AppBarButton Click="BackButton_Click"
+        <AppBarButton Command="{Binding Back}"
                       Label="Back"
                       AutomationProperties.Name="Go back"
                       ToolTipService.ToolTip="Go back">
@@ -75,14 +75,13 @@
                  PlaceholderText="e.g. Kitchen Renovation" />
 
         <!-- Client Name (Material text field, like the fields around it) -->
-        <AutoSuggestBox x:Name="ClientAutoSuggestBox"
+        <AutoSuggestBox
                         Header="Client Name"
                         Text="{Binding ClientName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         PlaceholderText="Search clients or type a name"
                         TextBoxStyle="{StaticResource MaterialOutlinedTextBoxStyle}"
                         BorderThickness="1" BorderBrush="{ThemeResource OutlineBrush}" Background="Transparent"
-                        TextChanged="ClientAutoSuggest_TextChanged"
-                        SuggestionChosen="ClientAutoSuggest_SuggestionChosen"
+                        ItemsSource="{Binding ClientSuggestions}"
                         AutomationProperties.Name="Client name" />
 
         <!-- Tax Rate -->
@@ -110,7 +109,7 @@
           <StackPanel Grid.Row="{utu:Responsive Narrow=1, Normal=0}"
                       Grid.Column="{utu:Responsive Narrow=0, Normal=1}"
                       Orientation="Horizontal" Spacing="{StaticResource Space4}">
-            <Button Click="OpenCatalogBrowser_Click"
+            <Button Command="{Binding OpenCatalog}"
                     Style="{StaticResource MaterialTextButtonStyle}"
                     MinHeight="{StaticResource TouchTarget}">
               <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space4}">
@@ -118,7 +117,7 @@
                 <TextBlock Text="From Catalog" />
               </StackPanel>
             </Button>
-            <Button Click="OpenAddLineItem_Click"
+            <Button Command="{Binding AddLineItem}"
                     Style="{StaticResource MaterialTextButtonStyle}"
                     MinHeight="{StaticResource TouchTarget}">
               <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space4}">
@@ -135,46 +134,50 @@
             <ItemsControl ItemsSource="{Binding Data}" IsTabStop="False" HorizontalAlignment="Stretch">
               <ItemsControl.ItemTemplate>
                 <DataTemplate>
+                  <!-- The item is a button (tap, Enter or Space opens it); Move up and down sit beside it in the card -->
                   <utu:CardContentControl Margin="{StaticResource InsetY4}"
-                                          HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
-                                          Style="{StaticResource MaterialOutlinedCardContentControlStyle}"
-                                          IsTabStop="True"
-                                          UseSystemFocusVisuals="True"
-                                          AutomationProperties.Name="{Binding Description}"
-                                          Tapped="LineItemCard_Tapped"
-                                          KeyDown="LineItemCard_KeyDown">
+                                          Style="{StaticResource StaticCardStyle}"
+                                          CornerRadius="{StaticResource RadiusMd}">
                     <Grid>
                       <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                       </Grid.ColumnDefinitions>
-                      <utu:AutoLayout Padding="{StaticResource Inset16}"
-                                      Spacing="{StaticResource Space8}"
-                                      Orientation="Vertical"
-                                      HorizontalAlignment="Stretch">
-                        <TextBlock Text="{Binding Description}"
-                                   Style="{StaticResource BodyLarge}"
-                                   TextWrapping="Wrap" />
-                        <Grid ColumnSpacing="{StaticResource Space8}" utu:AutoLayout.CounterAlignment="Stretch">
-                          <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                          </Grid.ColumnDefinitions>
+                      <Button Command="{Binding DataContext.EditLineItem, ElementName=EditorRoot}"
+                              CommandParameter="{Binding}"
+                              AutomationProperties.Name="{Binding Description}"
+                              Style="{StaticResource MaterialTextButtonStyle}"
+                              Foreground="{ThemeResource OnSurfaceBrush}"
+                              CornerRadius="{StaticResource RadiusMd}"
+                              Padding="{StaticResource Inset16}"
+                              HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                        <utu:AutoLayout Spacing="{StaticResource Space8}"
+                                        Orientation="Vertical"
+                                        HorizontalAlignment="Stretch">
+                          <TextBlock Text="{Binding Description}"
+                                     Style="{StaticResource BodyLarge}"
+                                     TextWrapping="Wrap" />
+                          <Grid ColumnSpacing="{StaticResource Space8}" utu:AutoLayout.CounterAlignment="Stretch">
+                            <Grid.ColumnDefinitions>
+                              <ColumnDefinition Width="*" />
+                              <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
 
-                          <TextBlock Style="{StaticResource BodySmall}"
-                                     Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                                     VerticalAlignment="Center">
-                            <Run Text="Qty " /><Run Text="{Binding Quantity}" /><Run Text=" × " /><Run Text="{Binding UnitPrice, Converter={StaticResource CurrencyFormatConverter}}" />
-                          </TextBlock>
+                            <TextBlock Style="{StaticResource BodySmall}"
+                                       Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                                       VerticalAlignment="Center">
+                              <Run Text="Qty " /><Run Text="{Binding Quantity}" /><Run Text=" × " /><Run Text="{Binding UnitPrice, Converter={StaticResource CurrencyFormatConverter}}" />
+                            </TextBlock>
 
-                          <TextBlock Grid.Column="1"
-                                     Text="{Binding LineTotal, Converter={StaticResource CurrencyFormatConverter}}"
-                                     Style="{StaticResource LabelLarge}"
-                                     FontFamily="{StaticResource MonospaceFontFamily}"
-                                     Foreground="{ThemeResource PrimaryBrush}"
-                                     VerticalAlignment="Center" />
-                        </Grid>
-                      </utu:AutoLayout>
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding LineTotal, Converter={StaticResource CurrencyFormatConverter}}"
+                                       Style="{StaticResource LabelLarge}"
+                                       FontFamily="{StaticResource MonospaceFontFamily}"
+                                       Foreground="{ThemeResource PrimaryBrush}"
+                                       VerticalAlignment="Center" />
+                          </Grid>
+                        </utu:AutoLayout>
+                      </Button>
                       <StackPanel Grid.Column="1" VerticalAlignment="Center"
                                   Spacing="{StaticResource Space2}" Margin="{StaticResource GapEnd8}">
                         <Button Command="{Binding DataContext.MoveLineItemUp, ElementName=EditorRoot}"
@@ -249,8 +252,8 @@
         <mvux:FeedView Source="{Binding Totals}"
                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
           <DataTemplate>
-            <Border Background="{ThemeResource SurfaceVariantBrush}"
-                    CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Inset16}">
+            <utu:CardContentControl Style="{StaticResource TonalCardStyle}"
+                                    CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Inset16}">
               <Grid RowSpacing="{StaticResource Space8}" ColumnSpacing="{StaticResource Space16}">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="*" />
@@ -281,7 +284,7 @@
                            HorizontalAlignment="Right"
                            AutomationProperties.Name="Total" />
               </Grid>
-            </Border>
+            </utu:CardContentControl>
           </DataTemplate>
         </mvux:FeedView>
 
@@ -297,7 +300,7 @@
                      AutomationProperties.HeadingLevel="Level2"
                      VerticalAlignment="Center" />
           <Button Grid.Column="1"
-                  Click="AddPhoto_Click"
+                  Command="{Binding AddPhoto}"
                   Style="{StaticResource MaterialFilledTonalButtonStyle}"
                   MinHeight="{StaticResource TouchTarget}"
                   VerticalAlignment="Center">
@@ -319,6 +322,7 @@
               <muxc:ItemsRepeater.ItemTemplate>
                 <DataTemplate>
                   <Grid Width="{StaticResource ThumbnailSize}" Height="{StaticResource ThumbnailSize}">
+                    <!-- xaml-lint: allow card - clips the photo to rounded corners with a hairline stroke -->
                     <Border CornerRadius="{StaticResource RadiusMd}" BorderBrush="{ThemeResource OutlineVariantBrush}"
                             BorderThickness="1">
                       <Image Stretch="UniformToFill" AutomationProperties.Name="Job photo">

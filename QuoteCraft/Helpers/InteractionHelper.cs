@@ -6,9 +6,8 @@ using Windows.System;
 namespace QuoteCraft.Helpers;
 
 /// <summary>
-/// Unified interaction system for all interactive card elements.
-/// Provides declarative state management via the IsInteractive attached property
-/// with hover, press, focus, and rest states.
+/// Hover, press, focus, selection and keyboard activation for list cards (a Toolkit CardContentControl, or a Border
+/// on the pages not converted yet), set from XAML with the IsInteractive, IsSelected and Command attached properties.
 ///
 /// Interaction Tokens (change here to update globally):
 ///   Elevation:  Rest(0,0,0)  Hover(0,-2,4)  Pressed(0,0,2)
@@ -26,7 +25,7 @@ public static class InteractionHelper
     private const double OpacityPressed = 0.92;
 
     // ── Per-element state tracking ───────────────────────────────────
-    private static readonly ConditionalWeakTable<Border, PointerState> _states = new();
+    private static readonly ConditionalWeakTable<FrameworkElement, PointerState> _states = new();
 
     private sealed class PointerState
     {
@@ -37,7 +36,6 @@ public static class InteractionHelper
 
     // ── Attached Property: Command ───────────────────────────────────
     // Optional ICommand invoked on keyboard Enter/Space activation.
-    // Usage: <Border helpers:InteractionHelper.Command="{Binding SomeCommand}" ... />
 
     public static readonly DependencyProperty CommandProperty =
         DependencyProperty.RegisterAttached(
@@ -62,7 +60,7 @@ public static class InteractionHelper
             typeof(InteractionHelper),
             new PropertyMetadata(false, (d, _) =>
             {
-                if (d is Border border) ApplyVisualState(border, GetState(border));
+                if (d is FrameworkElement card) ApplyVisualState(card, GetState(card));
             }));
 
     public static bool GetIsSelected(DependencyObject obj) => (bool)obj.GetValue(IsSelectedProperty);
@@ -84,7 +82,6 @@ public static class InteractionHelper
     public static void SetRestBackground(DependencyObject obj, string value) => obj.SetValue(RestBackgroundProperty, value);
 
     // ── Attached Property: IsInteractive ─────────────────────────────
-    // Usage: <Border helpers:InteractionHelper.IsInteractive="True" ... />
 
     public static readonly DependencyProperty IsInteractiveProperty =
         DependencyProperty.RegisterAttached(
@@ -101,7 +98,7 @@ public static class InteractionHelper
 
     private static void OnIsInteractiveChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        if (d is not Border border) return;
+        if (d is not FrameworkElement border) return;
 
         if ((bool)e.NewValue)
         {
@@ -135,12 +132,12 @@ public static class InteractionHelper
     // Brushes set from code keep their colour: set them again for the new theme.
     private static void Border_ActualThemeChanged(FrameworkElement sender, object args)
     {
-        if (sender is Border border) ApplyVisualState(border, GetState(border));
+        if (sender is FrameworkElement border) ApplyVisualState(border, GetState(border));
     }
 
     private static void Border_PointerEntered(object sender, PointerRoutedEventArgs e)
     {
-        if (sender is not Border border) return;
+        if (sender is not FrameworkElement border) return;
         var state = GetState(border);
         state.IsHovered = true;
         ApplyVisualState(border, state);
@@ -148,7 +145,7 @@ public static class InteractionHelper
 
     private static void Border_PointerExited(object sender, PointerRoutedEventArgs e)
     {
-        if (sender is not Border border) return;
+        if (sender is not FrameworkElement border) return;
         var state = GetState(border);
         state.IsHovered = false;
         state.IsPressed = false;
@@ -157,7 +154,7 @@ public static class InteractionHelper
 
     private static void Border_PointerPressed(object sender, PointerRoutedEventArgs e)
     {
-        if (sender is not Border border) return;
+        if (sender is not FrameworkElement border) return;
         var state = GetState(border);
         state.IsPressed = true;
         ApplyVisualState(border, state);
@@ -165,7 +162,7 @@ public static class InteractionHelper
 
     private static void Border_PointerReleased(object sender, PointerRoutedEventArgs e)
     {
-        if (sender is not Border border) return;
+        if (sender is not FrameworkElement border) return;
         var state = GetState(border);
         state.IsPressed = false;
         ApplyVisualState(border, state);
@@ -173,7 +170,7 @@ public static class InteractionHelper
 
     private static void Border_PointerCanceled(object sender, PointerRoutedEventArgs e)
     {
-        if (sender is not Border border) return;
+        if (sender is not FrameworkElement border) return;
         var state = GetState(border);
         state.IsHovered = false;
         state.IsPressed = false;
@@ -182,7 +179,7 @@ public static class InteractionHelper
 
     private static void Border_KeyDown(object sender, KeyRoutedEventArgs e)
     {
-        if (sender is not Border border) return;
+        if (sender is not FrameworkElement border) return;
         if (e.Key is not (VirtualKey.Enter or VirtualKey.Space)) return;
 
         e.Handled = true;
@@ -194,7 +191,7 @@ public static class InteractionHelper
 
         // Invoke the attached Command if set, passing DataContext as parameter
         var command = GetCommand(border);
-        var parameter = (border as FrameworkElement)?.DataContext;
+        var parameter = border.DataContext;
         if (command is not null && command.CanExecute(parameter))
             command.Execute(parameter);
 
@@ -205,7 +202,7 @@ public static class InteractionHelper
 
     private static void Border_GotFocus(object sender, RoutedEventArgs e)
     {
-        if (sender is not Border border) return;
+        if (sender is not FrameworkElement border) return;
         var state = GetState(border);
         state.IsFocused = true;
         ApplyVisualState(border, state);
@@ -213,7 +210,7 @@ public static class InteractionHelper
 
     private static void Border_LostFocus(object sender, RoutedEventArgs e)
     {
-        if (sender is not Border border) return;
+        if (sender is not FrameworkElement border) return;
         var state = GetState(border);
         state.IsFocused = false;
         ApplyVisualState(border, state);
@@ -221,53 +218,48 @@ public static class InteractionHelper
 
     // ── State Machine ────────────────────────────────────────────────
 
-    private static void ApplyVisualState(Border border, PointerState state)
+    private static void ApplyVisualState(FrameworkElement border, PointerState state)
     {
         var selected = GetIsSelected(border);
-        border.Background = GetBrush(border, selected ? "PrimaryContainerBrush" : GetRestBackground(border));
+        SetBackground(border, GetBrush(border, selected ? "PrimaryContainerBrush" : GetRestBackground(border)));
 
         if (state.IsPressed)
         {
             border.Translation = ElevationPressed;
             border.Opacity = OpacityPressed;
-            border.BorderBrush = GetBrush(border, "PrimaryBrush");
+            SetBorderBrush(border, GetBrush(border, "PrimaryBrush"));
         }
         else if (state.IsHovered || state.IsFocused || selected)
         {
             border.Translation = state.IsHovered || state.IsFocused ? ElevationHover : ElevationRest;
             border.Opacity = 1.0;
-            border.BorderBrush = GetBrush(border, "PrimaryBrush");
+            SetBorderBrush(border, GetBrush(border, "PrimaryBrush"));
         }
         else
         {
             border.Translation = ElevationRest;
             border.Opacity = 1.0;
-            border.BorderBrush = GetBrush(border, "OutlineVariantBrush");
+            SetBorderBrush(border, GetBrush(border, "OutlineVariantBrush"));
         }
+    }
+
+    private static void SetBackground(FrameworkElement element, Microsoft.UI.Xaml.Media.Brush brush)
+    {
+        if (element is Control control) control.Background = brush;
+        else if (element is Border border) border.Background = brush;
+    }
+
+    private static void SetBorderBrush(FrameworkElement element, Microsoft.UI.Xaml.Media.Brush brush)
+    {
+        if (element is Control control) control.BorderBrush = brush;
+        else if (element is Border border) border.BorderBrush = brush;
     }
 
     // ── Helpers ──────────────────────────────────────────────────────
 
-    private static PointerState GetState(Border border) =>
+    private static PointerState GetState(FrameworkElement border) =>
         _states.GetOrCreateValue(border);
 
-    private static Microsoft.UI.Xaml.Media.Brush? GetBrush(FrameworkElement element, string key) =>
+    private static Microsoft.UI.Xaml.Media.Brush GetBrush(FrameworkElement element, string key) =>
         ThemeResources.GetBrush(element, key);
-
-    // ── Legacy API (backwards-compatible with HoverHelper) ───────────
-
-    public static void ApplyHover(Border border)
-    {
-        var state = GetState(border);
-        state.IsHovered = true;
-        ApplyVisualState(border, state);
-    }
-
-    public static void RemoveHover(Border border)
-    {
-        var state = GetState(border);
-        state.IsHovered = false;
-        state.IsPressed = false;
-        ApplyVisualState(border, state);
-    }
 }

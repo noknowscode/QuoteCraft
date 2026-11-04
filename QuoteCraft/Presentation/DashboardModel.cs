@@ -10,13 +10,18 @@ public record QuoteSendDetails(
     string BusinessName,
     DateTimeOffset? ValidUntil);
 
+/// <summary>A quote in the list, and whether it is the one open in the detail.</summary>
+public partial record QuoteListItem(QuoteEntity Quote, bool IsSelected)
+{
+    public string Key => Quote.Id;
+}
+
 public partial record DashboardModel
 {
     private readonly INavigator _navigator;
     private readonly IQuoteRepository _quoteRepo;
     private readonly IClientRepository _clientRepo;
     private readonly IBusinessProfileRepository _profileRepo;
-    private readonly ICatalogItemRepository _catalogRepo;
     private readonly QuoteNumberGenerator _quoteNumberGen;
     private readonly Services.IShareService _shareService;
     private readonly Services.IFeatureGateService _featureGate;
@@ -29,7 +34,6 @@ public partial record DashboardModel
         IQuoteRepository quoteRepo,
         IClientRepository clientRepo,
         IBusinessProfileRepository profileRepo,
-        ICatalogItemRepository catalogRepo,
         QuoteNumberGenerator quoteNumberGen,
         Services.IShareService shareService,
         Services.IFeatureGateService featureGate,
@@ -44,15 +48,25 @@ public partial record DashboardModel
         _quoteRepo = quoteRepo;
         _clientRepo = clientRepo;
         _profileRepo = profileRepo;
-        _catalogRepo = catalogRepo;
         _quoteNumberGen = quoteNumberGen;
         _shareService = shareService;
         _featureGate = featureGate;
     }
 
+    public IListFeed<string> FilterNames => ListFeed.Async(async ct => (IImmutableList<string>)ImmutableList.Create(
+        "All", "Draft", "Sent", "Viewed", "Accepted", "Declined", "Expired"));
+
     public IState<string> SelectedFilter => State<string>.Value(this, () => "All");
     public IState<string> SearchText => State<string>.Value(this, () => string.Empty);
     public IState<QuoteEntity> SelectedQuote => State<QuoteEntity>.Empty(this);
+
+    /// <summary>The open quote's id, for the list's selected card (empty when none; a None state would hold the list back).</summary>
+    public IState<string> SelectedQuoteId => State<string>.Value(this, () => string.Empty);
+
+    /// <summary>Edit (line items and notes in place) is on; Done saves the notes.</summary>
+    public IState<bool> IsEditMode => State<bool>.Value(this, () => false);
+
+    public IState<string> EditingNotes => State<string>.Value(this, () => string.Empty);
     public IState<bool> IsPreviewMode => State<bool>.Value(this, () => false);
     public IState<int> DetailVersion => State<int>.Value(this, () => 0);
 
@@ -90,18 +104,23 @@ public partial record DashboardModel
     {
         if (_cachedQuotes is not null && _cachedVersion == version)
             return _cachedQuotes;
+        if (_cachedQuotes is null)
+        {
+            // Overdue quotes expire as the list first opens (the expiry service also checks every few minutes).
+            await ErrorReporter.RunQuietlyAsync("Expiring overdue quotes", () => _status.ExpireOverdueAsync(DateTimeOffset.UtcNow));
+        }
         _cachedQuotes = await _quoteRepo.GetAllAsync();
         _cachedVersion = version;
         return _cachedQuotes;
     }
 
-    private IListFeed<QuoteEntity>? _quotesFeed;
+    private IListFeed<QuoteListItem>? _quotesFeed;
 
-    public IListFeed<QuoteEntity> Quotes => _quotesFeed ??=
-        Feed.Combine(SelectedFilter, SearchText, DetailVersion)
+    public IListFeed<QuoteListItem> Quotes => _quotesFeed ??=
+        Feed.Combine(SelectedFilter, SearchText, DetailVersion, SelectedQuoteId)
             .SelectAsync(async (inputs, ct) =>
             {
-                var (filter, search, version) = inputs;
+                var (filter, search, version, selectedId) = inputs;
                 var all = await GetCachedQuotesAsync(version);
 
                 IEnumerable<QuoteEntity> filtered = all;
@@ -115,7 +134,7 @@ public partial record DashboardModel
                         (q.ClientName ?? "").Contains(search, StringComparison.OrdinalIgnoreCase) ||
                         q.QuoteNumber.Contains(search, StringComparison.OrdinalIgnoreCase));
 
-                return (IImmutableList<QuoteEntity>)filtered.ToImmutableList();
+                return (IImmutableList<QuoteListItem>)filtered.Select(q => new QuoteListItem(q, q.Id == selectedId)).ToImmutableList();
             })
             .AsListFeed();
 
@@ -210,13 +229,6 @@ public partial record DashboardModel
         await DetailVersion.UpdateAsync(v => v + 1, ct);
     }
 
-    public async ValueTask ExpireOverdueQuotes(CancellationToken ct)
-    {
-        var expired = await _status.ExpireOverdueAsync(DateTimeOffset.UtcNow);
-        if (expired.Count > 0)
-            await DetailVersion.UpdateAsync(v => v + 1, ct);
-    }
-
     /// <summary>The expired banner's Reopen: back to Draft, valid again, ready to edit and send (PRD F17.3).</summary>
     public ValueTask ReopenQuote(CancellationToken ct) => ReportFailureAsync("The quote could not be reopened.", async () =>
     {
@@ -227,10 +239,13 @@ public partial record DashboardModel
         }
     }, ct);
 
-    public async ValueTask OpenQuote(QuoteEntity quote, CancellationToken ct)
+    /// <summary>A tap (or Enter) on a list card.</summary>
+    public async ValueTask OpenQuote(QuoteListItem item, CancellationToken ct)
     {
+        await IsEditMode.UpdateAsync(_ => false, ct);
         await IsPreviewMode.UpdateAsync(_ => false, ct);
-        await SelectedQuote.UpdateAsync(_ => quote, ct);
+        await SelectedQuote.UpdateAsync(_ => item.Quote, ct);
+        await SelectedQuoteId.UpdateAsync(_ => item.Quote.Id, ct);
     }
 
     public async ValueTask EditQuote(CancellationToken ct)
@@ -240,16 +255,19 @@ public partial record DashboardModel
             await _navigator.NavigateRouteAsync(this, "QuoteEditor", data: quote!);
     }
 
-    public async ValueTask DeleteQuote(CancellationToken ct)
+    public ValueTask DeleteQuote(CancellationToken ct) => ReportFailureAsync("The quote could not be deleted.", async () =>
     {
-        var quote = await SelectedQuote;
-        if (quote is not null)
+        if (await SelectedQuote is not { } quote
+            || !await _navigator.ConfirmAsync(this, new ConfirmRequest("\uE74D", "Delete Quote?",
+                "This quote and all its line items will be permanently removed.", "Delete", "Cancel"), ct))
         {
-            await _quoteRepo.DeleteAsync(quote.Id);
-            await SelectedQuote.UpdateAsync(_ => null!, ct);
-            await DetailVersion.UpdateAsync(v => v + 1, ct);
+            return;
         }
-    }
+
+        await _quoteRepo.DeleteAsync(quote.Id);
+        await CloseDetailAsync(ct);
+        await DetailVersion.UpdateAsync(v => v + 1, ct);
+    }, ct);
 
     public async ValueTask PreviewQuote(CancellationToken ct)
     {
@@ -265,7 +283,14 @@ public partial record DashboardModel
     public async ValueTask BackToList(CancellationToken ct)
     {
         await IsPreviewMode.UpdateAsync(_ => false, ct);
+        await CloseDetailAsync(ct);
+    }
+
+    private async ValueTask CloseDetailAsync(CancellationToken ct)
+    {
+        await IsEditMode.UpdateAsync(_ => false, ct);
         await SelectedQuote.UpdateAsync(_ => null!, ct);
+        await SelectedQuoteId.UpdateAsync(_ => string.Empty, ct);
     }
 
     /// <summary>Plans and the upgrade live in Settings.</summary>
@@ -283,7 +308,7 @@ public partial record DashboardModel
     }, ct);
 
     /// <summary>Saves the quote's PDF (<see cref="Services.IShareService"/>); the quote's status does not change.</summary>
-    public async Task ExportPdfAsync(string quoteId)
+    private async Task ExportPdfAsync(string quoteId)
     {
         if (await _quoteRepo.GetByIdAsync(quoteId) is { } quote)
         {
@@ -291,34 +316,53 @@ public partial record DashboardModel
         }
     }
 
-    /// <summary>Null when a quote can be created; otherwise the plan-limit message (only where plans exist).</summary>
-    public async Task<string?> GetQuoteLimitMessageAsync() =>
-        await _featureGate.CanCreateQuoteAsync() ? null : _featureGate.GetUpgradeMessage("quotes");
-
-    public async Task<IReadOnlyList<string>> GetClientNamesAsync() =>
-        (await _clientRepo.GetAllAsync()).Select(c => c.Name).ToArray();
-
-    /// <summary>The New Quote dialog's Create: a Draft linked to the named client (if there is one), opened in the editor.</summary>
-    public async Task CreateQuoteAsync(string title, string? clientName)
+    /// <summary>New Quote: the plan limit first (only where plans exist), then the dialog, then the editor.</summary>
+    public ValueTask CreateQuote(CancellationToken ct) => ReportFailureAsync("The quote could not be created.", async () =>
     {
-        var profile = await _profileRepo.GetAsync();
-        var name = clientName?.Trim();
-        var quote = new QuoteEntity
+        if (!await _featureGate.CanCreateQuoteAsync())
         {
-            Title = title.Trim(),
-            QuoteNumber = await _quoteNumberGen.GenerateAsync(),
-            Status = QuoteStatus.Draft,
-            TaxRate = profile.DefaultTaxRate,
-            ValidUntil = DateTimeOffset.UtcNow.AddDays(profile.QuoteValidDays),
-            ClientName = string.IsNullOrEmpty(name) ? null : name,
-            ClientId = ClientLink.Resolve(name, null, null, await _clientRepo.GetAllAsync()),
-        };
-        await _quoteRepo.SaveAsync(quote);
-        await _navigator.NavigateRouteAsync(this, "QuoteEditor", data: quote);
-    }
+            if (await _navigator.ConfirmAsync(this, new ConfirmRequest("\uE1D0", "Quote Limit Reached",
+                    _featureGate.GetUpgradeMessage("quotes"), "Upgrade", "OK"), ct))
+            {
+                await OpenSettings(ct);
+            }
+            return;
+        }
+
+        if (await _navigator.ShowDialogAsync<QuoteEntity>(this, "NewQuote", null, ct) is { } quote)
+        {
+            await _navigator.NavigateRouteAsync(this, "QuoteEditor", data: quote, cancellation: ct);
+        }
+    }, ct);
+
+    /// <summary>
+    /// Send: the dialog, then either the PDF alone, or the PDF, the email and the quote marked Sent (with a fresh
+    /// validity period) unless the client has already answered. Without an email app the quote stays as it was.
+    /// </summary>
+    public ValueTask SendQuote(CancellationToken ct) => ReportFailureAsync("The quote could not be sent.", async () =>
+    {
+        if (await GetSendDetailsAsync() is not { } details
+            || await _navigator.ShowDialogAsync<SendQuoteChoice>(this, "SendQuote", details, ct) is not { } choice)
+        {
+            return;
+        }
+
+        await ExportPdfAsync(details.QuoteId);
+        if (choice.PdfOnly)
+        {
+            return;
+        }
+
+        if (!await _email.ComposeEmailAsync(choice.Recipient, choice.Subject, choice.Body))
+        {
+            throw new InvalidOperationException("No email app opened, so the quote is not marked as sent.");
+        }
+        await _status.MarkSentAsync(details.QuoteId);
+        await DetailVersion.UpdateAsync(v => v + 1, ct);
+    }, ct);
 
     /// <summary>The selected quote as the Send dialog fills it in, or null when none is selected.</summary>
-    public async Task<QuoteSendDetails?> GetSendDetailsAsync()
+    private async Task<QuoteSendDetails?> GetSendDetailsAsync()
     {
         if (await SelectedQuote is not { } selected || await _quoteRepo.GetByIdAsync(selected.Id) is not { } quote)
         {
@@ -329,22 +373,6 @@ public partial record DashboardModel
         var profile = await _profileRepo.GetAsync();
         return new QuoteSendDetails(quote.Id, quote.QuoteNumber, quote.Title, quote.ClientName, client?.Email ?? string.Empty,
             profile.BusinessName ?? "Our Company", quote.ValidUntil);
-    }
-
-    /// <summary>
-    /// The Send dialog's Send via Email: saves the PDF to attach, opens the email, and marks the quote Sent (with a
-    /// fresh validity period) unless the client has already answered.
-    /// </summary>
-    public async Task SendByEmailAsync(string quoteId, string recipient, string subject, string body)
-    {
-        await ExportPdfAsync(quoteId);
-
-        if (!await _email.ComposeEmailAsync(recipient, subject, body))
-        {
-            throw new InvalidOperationException("No email app opened, so the quote is not marked as sent.");
-        }
-        await _status.MarkSentAsync(quoteId);
-        await DetailVersion.UpdateAsync(v => v + 1, CancellationToken.None);
     }
 
     public ValueTask DuplicateQuote(CancellationToken ct) => ReportFailureAsync("The quote could not be duplicated.", async () =>
@@ -377,7 +405,6 @@ public partial record DashboardModel
         };
         await _quoteRepo.SaveAsync(newQuote);
 
-        // Clone line items
         foreach (var item in freshQuote.LineItems)
         {
             var newItem = new LineItemEntity
@@ -390,7 +417,6 @@ public partial record DashboardModel
             await _quoteRepo.SaveLineItemAsync(newItem);
         }
 
-        // Open the duplicated quote in the editor
         await _navigator.NavigateRouteAsync(this, "QuoteEditor", data: newQuote);
     }, ct);
 
@@ -399,68 +425,74 @@ public partial record DashboardModel
         await UpgradeMessage.UpdateAsync(_ => string.Empty, ct);
     }
 
-    // ── Inline Edit Support ──────────────────────────────────────────────
+    // Inline edit: line items and notes, in the detail
 
-    public async ValueTask SaveInlineNotes(string notes, CancellationToken ct)
+    /// <summary>Edit: the notes go into the editor box, and taps on line items open them.</summary>
+    public ValueTask StartEdit(CancellationToken ct) => ReportFailureAsync("The quote could not be opened for editing.", async () =>
     {
-        var quote = await SelectedQuote;
-        if (quote is null) return;
-
-        var fresh = await _quoteRepo.GetByIdAsync(quote.Id);
-        if (fresh is not null && fresh.Notes != notes)
-        {
-            fresh.Notes = notes;
-            await _quoteRepo.SaveAsync(fresh);
-            await DetailVersion.UpdateAsync(v => v + 1, ct);
-        }
-    }
-
-    public async ValueTask SaveInlineLineItem(LineItemEntity item, CancellationToken ct)
-    {
-        // A new item goes last; an edited one keeps its place (the dialog has validated it).
-        var quote = await SelectedQuote;
-        if (quote is null) return;
-
-        item.QuoteId = quote.Id;
-        await _quoteRepo.SaveLineItemAsync(item);
-        await DetailVersion.UpdateAsync(v => v + 1, ct);
-    }
-
-    public async ValueTask DeleteInlineLineItem(string lineItemId, CancellationToken ct)
-    {
-        if (string.IsNullOrEmpty(lineItemId)) return;
-        await _quoteRepo.DeleteLineItemAsync(lineItemId);
-        await DetailVersion.UpdateAsync(v => v + 1, ct);
-    }
-
-    public async ValueTask AddInlineFromCatalog(CatalogItemEntity catalogItem, CancellationToken ct)
-    {
-        var quote = await SelectedQuote;
-        if (quote is null) return;
-
-        var profile = await _profileRepo.GetAsync();
-
-        var item = new LineItemEntity
-        {
-            QuoteId = quote.Id,
-            Description = catalogItem.Description,
-            UnitPrice = Money.WithMarkup(catalogItem.UnitPrice, profile.DefaultMarkup),
-            Quantity = 1,
-        };
-        await _quoteRepo.SaveLineItemAsync(item);
-        await DetailVersion.UpdateAsync(v => v + 1, ct);
-    }
-
-    public Task<List<CatalogItemEntity>> GetCatalogItemsAsync() => _catalogRepo.GetAllAsync();
-
-    public async Task<string> GetSelectedQuoteNotesAsync()
-    {
-        var quote = await SelectedQuote;
-        if (quote is not null)
+        if (await SelectedQuote is { } quote)
         {
             var fresh = await _quoteRepo.GetByIdAsync(quote.Id);
-            return fresh?.Notes ?? string.Empty;
+            await EditingNotes.UpdateAsync(_ => fresh?.Notes ?? string.Empty, ct);
+            await IsEditMode.UpdateAsync(_ => true, ct);
         }
-        return string.Empty;
+    }, ct);
+
+    /// <summary>Done: saves the notes if they changed.</summary>
+    public ValueTask FinishEdit(CancellationToken ct) => ReportFailureAsync("Your notes could not be saved.", async () =>
+    {
+        if (await SelectedQuote is { } quote && await _quoteRepo.GetByIdAsync(quote.Id) is { } fresh)
+        {
+            var notes = await EditingNotes ?? string.Empty;
+            if (fresh.Notes != notes)
+            {
+                fresh.Notes = notes;
+                await _quoteRepo.SaveAsync(fresh);
+                await DetailVersion.UpdateAsync(v => v + 1, ct);
+            }
+        }
+        await IsEditMode.UpdateAsync(_ => false, ct);
+    }, ct);
+
+    public ValueTask AddLineItem(CancellationToken ct) => EditLineItemAsync(null, ct);
+
+    /// <summary>A tap on a line item: opens it while editing, does nothing otherwise.</summary>
+    public async ValueTask EditLineItem(LineItemRow row, CancellationToken ct)
+    {
+        if (await IsEditMode)
+        {
+            await EditLineItemAsync(row.Item, ct);
+        }
     }
+
+    /// <summary>The line-item dialog: a new item goes last; an edited one keeps its place.</summary>
+    private ValueTask EditLineItemAsync(LineItemEntity? item, CancellationToken ct) => ReportFailureAsync("The line item could not be saved.", async () =>
+    {
+        if (await SelectedQuote is not { } quote
+            || await _navigator.ShowDialogAsync<LineItemEditResult>(this, "LineItemEditor", new LineItemEditRequest(item), ct) is not { } result)
+        {
+            return;
+        }
+
+        if (result.Saved is { } saved)
+        {
+            saved.QuoteId = quote.Id;
+            await _quoteRepo.SaveLineItemAsync(saved);
+        }
+        else if (result.DeletedId is { Length: > 0 } deletedId)
+        {
+            await _quoteRepo.DeleteLineItemAsync(deletedId);
+        }
+        await DetailVersion.UpdateAsync(v => v + 1, ct);
+    }, ct);
+
+    /// <summary>From Catalog: the browser adds items as they are tapped; the detail reloads when it closes.</summary>
+    public ValueTask OpenCatalog(CancellationToken ct) => ReportFailureAsync("The catalog could not be opened.", async () =>
+    {
+        if (await SelectedQuote is { } quote)
+        {
+            await _navigator.ShowDialogAsync<object>(this, "CatalogBrowser", new CatalogBrowserRequest(quote.Id), ct);
+            await DetailVersion.UpdateAsync(v => v + 1, ct);
+        }
+    }, ct);
 }

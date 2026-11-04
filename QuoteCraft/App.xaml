@@ -31,6 +31,7 @@
         <ResourceDictionary Source="ms-appx:///Styles/BrandColors.xaml" />
         <ResourceDictionary Source="ms-appx:///Styles/StatusColors.xaml" />
         <ResourceDictionary Source="ms-appx:///Styles/Layout.xaml" />
+        <ResourceDictionary Source="ms-appx:///Styles/Cards.xaml" />
       </ResourceDictionary.MergedDictionaries>
 
       <!-- The rail's Theme button shows the window's theme: a sun in Light, a moon in Dark. -->

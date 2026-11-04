@@ -7,13 +7,12 @@ public partial record QuoteEditorModel
     private readonly INavigator _navigator;
     private readonly IQuoteRepository _quoteRepo;
     private readonly IClientRepository _clientRepo;
-    private readonly ICatalogItemRepository _catalogRepo;
-    private readonly IBusinessProfileRepository _profileRepo;
     private readonly IShareService _shareService;
     private readonly string _quoteId;
     private readonly IPhotoService _photoService;
     private readonly IStatusHistoryRepository _statusHistoryRepo;
     private readonly QuoteStatusService _status;
+    private readonly IDispatcher _dispatcher;
 
     // Track initial values for unsaved changes detection
     private readonly string _initialTitle;
@@ -26,19 +25,17 @@ public partial record QuoteEditorModel
         INavigator navigator,
         IQuoteRepository quoteRepo,
         IClientRepository clientRepo,
-        ICatalogItemRepository catalogRepo,
-        IBusinessProfileRepository profileRepo,
         IShareService shareService,
         IPhotoService photoService,
         IStatusHistoryRepository statusHistoryRepo,
-        QuoteStatusService status)
+        QuoteStatusService status,
+        IDispatcher dispatcher)
     {
         _status = status;
+        _dispatcher = dispatcher;
         _navigator = navigator;
         _quoteRepo = quoteRepo;
         _clientRepo = clientRepo;
-        _catalogRepo = catalogRepo;
-        _profileRepo = profileRepo;
         _shareService = shareService;
         _photoService = photoService;
         _statusHistoryRepo = statusHistoryRepo;
@@ -72,17 +69,27 @@ public partial record QuoteEditorModel
 
     public string QuoteId => _quoteId;
 
-    public int MaxPhotos => _photoService.MaxPhotos;
-
-    public bool PhotoLimitReached => _photoService.GetPhotos(_quoteId).Count >= _photoService.MaxPhotos;
 
     public IListFeed<string> Photos => PhotosVersion
         .SelectAsync(async (_, ct) =>
             (IImmutableList<string>)_photoService.GetPhotos(_quoteId).ToImmutableList())
         .AsListFeed();
 
-    public async ValueTask AddPhotoFromFile(Windows.Storage.StorageFile file, CancellationToken ct)
+    /// <summary>Add Photo: the limit first, then the picker; a failure shows next to the buttons.</summary>
+    public ValueTask AddPhoto(CancellationToken ct) => ReportFailureAsync("The photo could not be added.", async () =>
     {
+        if (_photoService.GetPhotos(_quoteId).Count >= _photoService.MaxPhotos)
+        {
+            await _navigator.ConfirmAsync(this, new ConfirmRequest("\uE722", "Photo Limit Reached",
+                $"You can attach up to {_photoService.MaxPhotos} photos per quote."), ct);
+            return;
+        }
+
+        if (await ImagePicker.PickAsync(_dispatcher, ct) is not { } file)
+        {
+            return;
+        }
+
         string? result;
         using (var source = await file.OpenStreamForReadAsync())
         {
@@ -90,7 +97,7 @@ public partial record QuoteEditorModel
         }
         if (result is not null)
             await PhotosVersion.UpdateAsync(v => v + 1, ct);
-    }
+    }, ct);
 
     public async ValueTask DeletePhoto(string photoPath, CancellationToken ct)
     {
@@ -121,33 +128,50 @@ public partial record QuoteEditorModel
             return new QuoteTotals(quote.Subtotal, label, quote.TaxAmount, quote.Total);
         });
 
-    /// <summary>A new item goes last; an edited one keeps its place (the dialog has validated it).</summary>
-    public async ValueTask SaveLineItem(LineItemEntity item, CancellationToken ct)
-    {
-        item.QuoteId = _quoteId;
-        await _quoteRepo.SaveLineItemAsync(item);
-        await LineItemsVersion.UpdateAsync(v => v + 1, ct);
-    }
+    public ValueTask AddLineItem(CancellationToken ct) => EditLineItemAsync(null, ct);
 
-    public async ValueTask AddFromCatalog(CatalogItemEntity catalogItem, CancellationToken ct)
-    {
-        var profile = await _profileRepo.GetAsync();
+    public ValueTask EditLineItem(LineItemEntity item, CancellationToken ct) => EditLineItemAsync(item, ct);
 
-        var item = new LineItemEntity
+    /// <summary>The line-item dialog: a new item goes last; an edited one keeps its place; Delete removes it.</summary>
+    private ValueTask EditLineItemAsync(LineItemEntity? item, CancellationToken ct) => ReportFailureAsync("The line item could not be saved.", async () =>
+    {
+        if (await _navigator.ShowDialogAsync<LineItemEditResult>(this, "LineItemEditor", new LineItemEditRequest(item), ct) is not { } result)
         {
-            QuoteId = _quoteId,
-            Description = catalogItem.Description,
-            UnitPrice = Money.WithMarkup(catalogItem.UnitPrice, profile.DefaultMarkup),
-            Quantity = 1,
-        };
-        await _quoteRepo.SaveLineItemAsync(item);
-        await LineItemsVersion.UpdateAsync(v => v + 1, ct);
-    }
+            return;
+        }
 
-    public async ValueTask DeleteLineItem(LineItemEntity item, CancellationToken ct)
-    {
-        await _quoteRepo.DeleteLineItemAsync(item.Id);
+        if (result.Saved is { } saved)
+        {
+            saved.QuoteId = _quoteId;
+            await _quoteRepo.SaveLineItemAsync(saved);
+        }
+        else if (result.DeletedId is { Length: > 0 } deletedId)
+        {
+            await _quoteRepo.DeleteLineItemAsync(deletedId);
+        }
         await LineItemsVersion.UpdateAsync(v => v + 1, ct);
+    }, ct);
+
+    /// <summary>From Catalog: the browser adds items as they are tapped; the list reloads when it closes.</summary>
+    public ValueTask OpenCatalog(CancellationToken ct) => ReportFailureAsync("The catalog could not be opened.", async () =>
+    {
+        await _navigator.ShowDialogAsync<object>(this, "CatalogBrowser", new CatalogBrowserRequest(_quoteId), ct);
+        await LineItemsVersion.UpdateAsync(v => v + 1, ct);
+    }, ct);
+
+    /// <summary>Runs an action's work; a failure is logged and shown in the editor's message line.</summary>
+    private async ValueTask ReportFailureAsync(string failure, Func<Task> action, CancellationToken ct)
+    {
+        await ValidationError.UpdateAsync(_ => string.Empty, ct);
+        try
+        {
+            await action();
+        }
+        catch (Exception ex)
+        {
+            ErrorReporter.Log(ex, failure);
+            await ValidationError.UpdateAsync(_ => ErrorReporter.Describe(failure, ex), ct);
+        }
     }
 
     public ValueTask MoveLineItemUp(LineItemEntity item, CancellationToken ct) => MoveLineItemAsync(item, -1, ct);
@@ -232,13 +256,25 @@ public partial record QuoteEditorModel
         }
     }
 
-    public async Task<bool> HasUnsavedChangesAsync()
+    private async Task<bool> HasUnsavedChangesAsync()
     {
         return await Title != _initialTitle ||
                await Notes != _initialNotes ||
                await TaxRate != _initialTaxRate ||
                await ClientName != _initialClientName;
     }
+
+    /// <summary>The back arrow: asks before dropping unsaved edits.</summary>
+    public ValueTask Back(CancellationToken ct) => ReportFailureAsync("The editor could not close.", async () =>
+    {
+        if (await HasUnsavedChangesAsync()
+            && !await _navigator.ConfirmAsync(this, new ConfirmRequest("\uE7BA", "Unsaved Changes",
+                "You have unsaved changes. Are you sure you want to leave?", "Discard", "Stay"), ct))
+        {
+            return;
+        }
+        await GoBack(ct);
+    }, ct);
 
     /// <summary>
     /// Back to where the editor was opened from; to the quotes list when there is nothing to go back to (the editor
@@ -253,17 +289,22 @@ public partial record QuoteEditorModel
         }
     }
 
-    public Task<List<CatalogItemEntity>> GetCatalogItemsAsync() => _catalogRepo.GetAllAsync();
-
-    public async Task<List<string>> SearchClientNamesAsync(string query)
-    {
-        var clients = await _clientRepo.GetAllAsync();
-        return clients
-            .Where(c => c.Name.Contains(query, StringComparison.OrdinalIgnoreCase))
-            .Select(c => c.Name)
-            .Take(8)
-            .ToList();
-    }
+    /// <summary>Up to eight client names containing what is typed in the Client field.</summary>
+    public IListFeed<string> ClientSuggestions => ClientName
+        .SelectAsync(async (typed, ct) =>
+        {
+            var query = typed?.Trim() ?? string.Empty;
+            if (query.Length == 0)
+            {
+                return ImmutableList<string>.Empty;
+            }
+            var clients = await _clientRepo.GetAllAsync();
+            return (IImmutableList<string>)clients.Select(c => c.Name)
+                .Where(n => n.Contains(query, StringComparison.OrdinalIgnoreCase) && n != query)
+                .Take(8)
+                .ToImmutableList();
+        })
+        .AsListFeed();
 
     private async Task PersistEditsAsync()
     {
