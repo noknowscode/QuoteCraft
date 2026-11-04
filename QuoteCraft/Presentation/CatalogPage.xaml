@@ -47,16 +47,13 @@
                    AutomationProperties.HeadingLevel="Level1"
                    VerticalAlignment="Center" />
 
-        <mvux:FeedView Grid.Column="1" Source="{Binding CatalogItemCount}" VerticalAlignment="Center">
-          <DataTemplate>
-            <TextBlock Style="{StaticResource BodyMedium}"
-                       Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                       VerticalAlignment="Center" Margin="{StaticResource GapStart8}">
-              <Run Text="{Binding Data}" />
-              <Run Text=" items" />
-            </TextBlock>
-          </DataTemplate>
-        </mvux:FeedView>
+        <!-- A primitive feed binds directly: a FeedView over IFeed<int> never leaves its progress template -->
+        <TextBlock Grid.Column="1"
+                   Style="{StaticResource BodyMedium}"
+                   Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                   VerticalAlignment="Center" Margin="{StaticResource GapStart8}">
+          <Run Text="{Binding CatalogItemCount}" /><Run Text=" items" />
+        </TextBlock>
 
         <!-- Search (under the title row on Narrow) -->
         <utu:CardContentControl Style="{StaticResource TonalCardStyle}" Grid.Row="{utu:Responsive Narrow=1, Normal=0}"

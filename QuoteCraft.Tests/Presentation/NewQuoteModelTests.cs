@@ -80,4 +80,17 @@ public class NewQuoteModelTests
 
         Assert.Equal(["Dana Reyes"], await Settled(async () => await ListOf(model.ClientSuggestions), l => l.Count == 1));
     }
+
+    [Fact]
+    public async Task The_title_message_goes_as_soon_as_a_title_is_typed()
+    {
+        using var h = new ModelHarness();
+        var model = await Create(h);
+        await model.Create(None);
+        Assert.Equal("Enter a title for the quote.", await model.ValidationError);
+
+        await model.QuoteTitle.UpdateAsync(_ => "G", None);
+
+        Assert.Equal(string.Empty, await Settled(async () => await model.ValidationError ?? string.Empty, e => e.Length == 0));
+    }
 }

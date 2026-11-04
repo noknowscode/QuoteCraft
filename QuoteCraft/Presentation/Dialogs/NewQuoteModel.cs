@@ -14,7 +14,18 @@ public partial record NewQuoteModel
         _creation = creation;
     }
 
-    public IState<string> QuoteTitle => State<string>.Value(this, () => string.Empty);
+    private const string TitleRequired = "Enter a title for the quote.";
+
+    /// <summary>The title; "Enter a title" goes as soon as one is typed.</summary>
+    public IState<string> QuoteTitle => State<string>.Value(this, () => string.Empty).ForEach(ClearTitleMessageAsync);
+
+    private async ValueTask ClearTitleMessageAsync(string? title, CancellationToken ct)
+    {
+        if (!string.IsNullOrWhiteSpace(title))
+        {
+            await ValidationError.UpdateAsync(error => error == TitleRequired ? string.Empty : error, ct);
+        }
+    }
 
     public IState<string> ClientName => State<string>.Value(this, () => string.Empty);
 
@@ -43,7 +54,7 @@ public partial record NewQuoteModel
         var title = (await QuoteTitle)?.Trim() ?? string.Empty;
         if (title.Length == 0)
         {
-            await ValidationError.UpdateAsync(_ => "Enter a title for the quote.", ct);
+            await ValidationError.UpdateAsync(_ => TitleRequired, ct);
             return;
         }
 

@@ -22,19 +22,17 @@
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
       <RowDefinition />
     </Grid.RowDefinitions>
 
     <!-- The back arrow is an explicit action: it shows (and works) however the editor was opened. -->
     <utu:NavigationBar MainCommandMode="Action">
       <utu:NavigationBar.Content>
-        <mvux:FeedView Source="{Binding QuoteNumber}">
-          <DataTemplate>
-            <TextBlock Text="{Binding Data}"
-                       Style="{StaticResource TitleMedium}"
-                       TextTrimming="CharacterEllipsis" />
-          </DataTemplate>
-        </mvux:FeedView>
+        <!-- A string state binds directly: a FeedView over IState<string> gets a plain string and never renders -->
+        <TextBlock Text="{Binding QuoteNumber}"
+                   Style="{StaticResource TitleMedium}"
+                   TextTrimming="CharacterEllipsis" />
       </utu:NavigationBar.Content>
       <utu:NavigationBar.MainCommand>
         <AppBarButton Command="{Binding Back}"
@@ -58,11 +56,37 @@
     </utu:NavigationBar>
 
     <!-- Saving -->
-    <ProgressBar Grid.Row="1" IsIndeterminate="True"
+    <!-- IsIndeterminate follows IsSaving too: a collapsed indeterminate bar keeps animating (a full CPU core on Skia) -->
+    <ProgressBar Grid.Row="1" IsIndeterminate="{Binding IsSaving}"
                  AutomationProperties.Name="Saving"
                  Visibility="{Binding IsSaving, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}" />
 
-    <ScrollViewer Grid.Row="2">
+    <!--
+      What Save, Export PDF or a status button could not do: under the bar, so it is in view whatever the scroll (the
+      top bar's Save is far from the fields below the fold).
+    -->
+    <Border Grid.Row="2"
+            Background="{ThemeResource ErrorContainerBrush}"
+            Padding="{StaticResource Inset16x12}"
+            Visibility="{Binding ValidationError, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert, FallbackValue=Collapsed}">
+      <Grid ColumnSpacing="{StaticResource Space8}" MaxWidth="{StaticResource ReadingMaxWidth}">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <FontIcon Glyph="&#xE783;" FontSize="{StaticResource IconSizeMd}" Foreground="{ThemeResource OnErrorContainerBrush}"
+                  VerticalAlignment="Center" />
+        <TextBlock Grid.Column="1"
+                   Text="{Binding ValidationError}"
+                   Foreground="{ThemeResource OnErrorContainerBrush}"
+                   Style="{StaticResource BodyMedium}"
+                   TextWrapping="Wrap"
+                   VerticalAlignment="Center"
+                   AutomationProperties.LiveSetting="Assertive" />
+      </Grid>
+    </Border>
+
+    <ScrollViewer Grid.Row="3">
       <utu:AutoLayout Padding="{utu:Responsive Narrow={StaticResource PaneInsetNarrow}, Normal={StaticResource PaneInsetNormal}}"
                       Spacing="{StaticResource Space16}"
                       Orientation="Vertical"
@@ -387,21 +411,6 @@
                  AcceptsReturn="True"
                  TextWrapping="Wrap"
                  MinHeight="{StaticResource NotesMinHeight}" />
-
-        <!-- Validation Error -->
-        <mvux:FeedView Source="{Binding ValidationError}">
-          <DataTemplate>
-            <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}"
-                        AutomationProperties.LiveSetting="Assertive"
-                        Visibility="{Binding Data, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert}">
-              <FontIcon Glyph="&#xE783;" FontSize="{StaticResource IconSizeMd}" Foreground="{ThemeResource ErrorBrush}" />
-              <TextBlock Text="{Binding Data}"
-                         Foreground="{ThemeResource ErrorBrush}"
-                         Style="{StaticResource BodyMedium}"
-                         TextWrapping="Wrap" />
-            </StackPanel>
-          </DataTemplate>
-        </mvux:FeedView>
 
         <!-- Export PDF -->
         <Button Content="Export PDF"

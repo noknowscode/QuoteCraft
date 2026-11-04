@@ -4,7 +4,6 @@
       xmlns:local="using:QuoteCraft.Presentation"
       xmlns:utu="using:Uno.Toolkit.UI"
       xmlns:um="using:Uno.Material"
-      xmlns:mvux="using:Uno.Extensions.Reactive.UI"
       Background="{ThemeResource BackgroundBrush}">
 
   <Grid utu:SafeArea.Insets="All"
@@ -32,35 +31,29 @@
                    HorizontalAlignment="Center" />
       </StackPanel>
 
-      <!-- Error message -->
-      <mvux:FeedView Source="{Binding ErrorMessage}">
-        <DataTemplate>
-          <TextBlock Text="{Binding Data}"
-                     Style="{StaticResource BodySmall}"
-                     Foreground="{ThemeResource ErrorBrush}"
-                     TextWrapping="Wrap"
-                     HorizontalAlignment="Center"
-                     Visibility="{Binding Data, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert}" />
-        </DataTemplate>
-      </mvux:FeedView>
+      <!-- What stopped sign-in (string and bool states bind directly; a FeedView over them never renders) -->
+      <TextBlock Text="{Binding ErrorMessage}"
+                 Style="{StaticResource BodyMedium}"
+                 Foreground="{ThemeResource ErrorBrush}"
+                 TextWrapping="Wrap"
+                 HorizontalAlignment="Center"
+                 AutomationProperties.LiveSetting="Assertive"
+                 Visibility="{Binding ErrorMessage, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert, FallbackValue=Collapsed}" />
 
       <!-- Magic link sent confirmation -->
-      <mvux:FeedView Source="{Binding MagicLinkSent}">
-        <DataTemplate>
-          <utu:CardContentControl Style="{StaticResource StaticCardStyle}" BorderThickness="0" Background="{ThemeResource TertiaryContainerBrush}"
-                  CornerRadius="{StaticResource RadiusMd}" Padding="{StaticResource Inset16}"
-                  Visibility="{Binding Data, Converter={StaticResource BoolToVisibilityConverter}}">
-            <TextBlock Text="Check your email for a sign-in link."
-                       Style="{StaticResource BodyMedium}"
-                       Foreground="{ThemeResource OnTertiaryContainerBrush}"
-                       TextWrapping="Wrap" HorizontalAlignment="Center" />
-          </utu:CardContentControl>
-        </DataTemplate>
-      </mvux:FeedView>
+      <utu:CardContentControl Style="{StaticResource StaticCardStyle}" BorderThickness="0" Background="{ThemeResource TertiaryContainerBrush}"
+                              CornerRadius="{StaticResource RadiusMd}" Padding="{StaticResource Inset16}"
+                              Visibility="{Binding MagicLinkSent, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
+        <TextBlock Text="Check your email for a sign-in link."
+                   Style="{StaticResource BodyMedium}"
+                   Foreground="{ThemeResource OnTertiaryContainerBrush}"
+                   TextWrapping="Wrap" HorizontalAlignment="Center"
+                   AutomationProperties.LiveSetting="Polite" />
+      </utu:CardContentControl>
 
       <!-- Email field -->
       <TextBox x:Uid="AuthPage.Input.Email"
-               Text="{Binding Email, Mode=TwoWay}"
+               Text="{Binding Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                PlaceholderText="Email address"
                InputScope="EmailSmtpAddress"
                AutomationProperties.Name="Email"
@@ -73,24 +66,22 @@
                    AutomationProperties.Name="Password"
                    Style="{StaticResource MaterialOutlinedPasswordBoxStyle}" />
 
-      <!-- Sign In / Sign Up button -->
-      <mvux:FeedView Source="{Binding IsSignUp}">
-        <DataTemplate>
-          <Button Command="{Binding Data, Source={StaticResource FalseValue}, Converter={StaticResource InverseBoolConverter}, ConverterParameter=SignIn}"
-                  HorizontalAlignment="Stretch"
-                  Style="{StaticResource MaterialFilledButtonStyle}">
-            <TextBlock Text="Sign In" />
-          </Button>
-        </DataTemplate>
-      </mvux:FeedView>
-
       <!-- Primary action buttons -->
       <StackPanel Spacing="{StaticResource Space12}">
+        <!-- Sign In, or Create Account in sign-up mode -->
         <Button Command="{Binding SignIn}"
                 HorizontalAlignment="Stretch"
                 Style="{StaticResource MaterialFilledButtonStyle}"
-                AutomationProperties.Name="Sign in">
+                AutomationProperties.Name="Sign in"
+                Visibility="{Binding IsSignUp, Converter={StaticResource InverseBoolConverter}, FallbackValue=Visible}">
           <TextBlock Text="Sign In" />
+        </Button>
+        <Button Command="{Binding SignUp}"
+                HorizontalAlignment="Stretch"
+                Style="{StaticResource MaterialFilledButtonStyle}"
+                AutomationProperties.Name="Create account"
+                Visibility="{Binding IsSignUp, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
+          <TextBlock Text="Create Account" />
         </Button>
 
         <Button Command="{Binding SendMagicLink}"
@@ -105,8 +96,8 @@
       <Button Command="{Binding ToggleMode}"
               HorizontalAlignment="Center"
               Style="{StaticResource MaterialTextButtonStyle}"
-              AutomationProperties.Name="Toggle sign up mode">
-        <TextBlock Text="Don't have an account? Sign Up"
+              AutomationProperties.Name="{Binding ModeToggleText}">
+        <TextBlock Text="{Binding ModeToggleText}"
                    Style="{StaticResource BodySmall}"
                    Foreground="{ThemeResource PrimaryBrush}" />
       </Button>

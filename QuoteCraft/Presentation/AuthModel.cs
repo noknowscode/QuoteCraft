@@ -20,6 +20,9 @@ public partial record AuthModel
     public IState<bool> IsBusy => State<bool>.Value(this, () => false);
     public IState<bool> MagicLinkSent => State<bool>.Value(this, () => false);
 
+    /// <summary>The mode switch under the actions names the other mode.</summary>
+    public IFeed<string> ModeToggleText => IsSignUp.Select(signUp => signUp ? "Have an account? Sign in" : "Don't have an account? Sign up");
+
     public async ValueTask SignIn(CancellationToken ct)
     {
         await ErrorMessage.UpdateAsync(_ => string.Empty, ct);

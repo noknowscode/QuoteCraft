@@ -23,9 +23,23 @@ public partial record LineItemEditorModel
         var item = request.Item;
         _itemId = item?.Id;
         IsEditing = item is not null;
-        Description = State<string>.Value(this, () => item?.Description ?? string.Empty);
-        UnitPrice = State<string>.Value(this, () => item is null ? string.Empty : Money.FormatAmountInput(item.UnitPrice));
-        Quantity = State<string>.Value(this, () => (item?.Quantity ?? 1).ToString(CultureInfo.CurrentCulture));
+        Description = State<string>.Value(this, () => item?.Description ?? string.Empty).ForEach(RevalidateAsync);
+        UnitPrice = State<string>.Value(this, () => item is null ? string.Empty : Money.FormatAmountInput(item.UnitPrice)).ForEach(RevalidateAsync);
+        Quantity = State<string>.Value(this, () => (item?.Quantity ?? 1).ToString(CultureInfo.CurrentCulture)).ForEach(RevalidateAsync);
+    }
+
+    /// <summary>
+    /// While a message shows, each edit reads the form again: the message goes when the field is fixed, or names what is
+    /// still wrong. Before the first Save, typing shows nothing.
+    /// </summary>
+    private async ValueTask RevalidateAsync(string? changed, CancellationToken ct)
+    {
+        if (string.IsNullOrEmpty(await ValidationError))
+        {
+            return;
+        }
+        var error = LineItemInput.TryRead(await Description, await UnitPrice, await Quantity, out _, out _, out _);
+        await ValidationError.UpdateAsync(_ => error ?? string.Empty, ct);
     }
 
     /// <summary>Editing shows Delete; adding does not.</summary>
