@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using QuoteCraft.Data;
 using QuoteCraft.Helpers;

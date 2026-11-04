@@ -4,7 +4,6 @@ using QuoteCraft.Data;
 using QuoteCraft.Models;
 using QuoteCraft.Presentation;
 using QuoteCraft.Services;
-using Uno.Extensions.Reactive;
 using Xunit;
 
 namespace QuoteCraft.Tests.Presentation;

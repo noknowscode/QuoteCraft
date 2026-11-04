@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
-using Uno.Extensions.Navigation;
 
 namespace QuoteCraft.Tests.Presentation;
 

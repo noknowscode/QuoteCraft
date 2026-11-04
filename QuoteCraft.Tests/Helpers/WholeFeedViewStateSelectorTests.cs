@@ -1,5 +1,4 @@
 using QuoteCraft.Helpers;
-using Uno.Extensions.Reactive.UI;
 using Xunit;
 
 namespace QuoteCraft.Tests.Helpers;

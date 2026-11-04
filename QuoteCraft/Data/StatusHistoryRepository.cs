@@ -1,5 +1,3 @@
-using QuoteCraft.Models;
-
 namespace QuoteCraft.Data;
 
 public interface IStatusHistoryRepository

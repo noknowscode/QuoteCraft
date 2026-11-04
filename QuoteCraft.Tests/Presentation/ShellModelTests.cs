@@ -6,8 +6,6 @@ using QuoteCraft.Helpers;
 using QuoteCraft.Models;
 using QuoteCraft.Presentation;
 using QuoteCraft.Services;
-using Uno.Extensions.Reactive;
-using Uno.Extensions.Toolkit;
 using Xunit;
 using static QuoteCraft.Tests.Presentation.ModelHarness;
 

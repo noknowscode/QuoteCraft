@@ -1,7 +1,5 @@
 using NSubstitute;
 using QuoteCraft.Presentation;
-using Uno.Extensions.Reactive;
-using Uno.Extensions.Toolkit;
 using Xunit;
 using static QuoteCraft.Tests.Presentation.ModelHarness;
 
