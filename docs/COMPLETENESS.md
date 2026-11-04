@@ -5,13 +5,17 @@ Runtime: Debug `net10.0-desktop` on Linux under Xvfb (software rendering), drive
 Post-state was read from the encrypted database (SQLCipher through `libe_sqlcipher`, the key from `.dbkey`), from
 `exports/`, and by relaunching on the same data folder. `dotnet test`: 137 passed, 0 skipped.
 
-Verdict: **Incomplete**
+Verdict: **Incomplete** (2 Blockers at `928e155`; 1 open after the fix below)
+
+**Fixed after the audit (2026-11-04):** the detail's overlapping layout below 1400 px (Blocker 2). The two grids have
+their `RowDefinitions` back. Proven at runtime (R): the detail at 390, 1100, 1280 and 1500 px; the title, actions,
+line items and side column no longer overlap. Blocker 1 (Save and the focused field) stays open.
 
 Safe to show (desktop, window 1400 px or wider): onboarding to the first quote; adding items by hand and from the
 catalog; totals; Export PDF; Mark Sent, Accepted and Reopen; clients add, search, edit and delete; catalog price edit;
 saving Settings. In the editor, press Tab before the top-bar Save.
 
-Keep off screen: the quote detail below 1400 px; the Send email body; notifications and reminders; any validation
+Keep off screen: the Send email body; notifications and reminders; any validation
 or failure message; logo removal; cloud mode.
 
 ## Inventory

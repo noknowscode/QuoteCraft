@@ -600,6 +600,11 @@
                 <!-- Title + Actions (actions under the title until the detail is wide) -->
                 <Grid ColumnSpacing="{StaticResource Space16}"
                       RowSpacing="{utu:Responsive Narrowest={StaticResource Space12}, Widest=0, Layout={StaticResource SplitLayout}}">
+                  <!-- Two rows below 1400 (title, then actions); the actions move beside the title from 1400 -->
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                  </Grid.RowDefinitions>
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
@@ -732,6 +737,11 @@
 
                 <!-- Content: Line Items + side column (client, details, totals) -->
                 <Grid>
+                  <!-- Two rows below 1400 (line items, then the side column); side by side from 1400 -->
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                  </Grid.RowDefinitions>
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <!-- Auto, not 340: a fixed column would still take its width when the side column is stacked below -->
