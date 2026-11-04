@@ -32,7 +32,7 @@ public class ClientsModelTests
         var model = await Create(h);
 
         var row = (await model.Clients).Single(c => c.Name == "Bob Johnson");
-        Assert.Equal(("BJ", 2, "Riverton", 400m), (row.Initials, row.QuoteCount, row.City, row.TotalValue));
+        Assert.Equal(("BJ", 2, "Riverton", 400m, "2 quotes · Riverton"), (row.Initials, row.QuoteCount, row.City, row.TotalValue, row.Summary));
 
         await model.SearchText.UpdateAsync(_ => "lakeside", None);
         Assert.Equal(["Sarah Williams"], (await Settled(async () => await model.Clients, l => l.Count == 1)).Select(c => c.Name));
@@ -146,5 +146,16 @@ public class ClientsModelTests
 
         Assert.Equal(["QuoteEditor"], h.Navigator.Routes);
         Assert.Same(quote, h.Navigator.DataFor("QuoteEditor"));
+    }
+
+    [Fact]
+    public async Task A_client_with_no_address_reads_its_quote_count_alone()
+    {
+        using var h = new ModelHarness();
+        var dana = await h.AddClientAsync("Dana Reyes");
+        await h.AddQuoteAsync("Sink", client: dana);
+        var model = await Create(h);
+
+        Assert.Equal("1 quote", (await model.Clients).Single().Summary);
     }
 }

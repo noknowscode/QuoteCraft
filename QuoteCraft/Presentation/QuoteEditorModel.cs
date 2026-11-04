@@ -15,11 +15,11 @@ public partial record QuoteEditorModel
     private readonly IDispatcher _dispatcher;
     private readonly QuoteBoard _board;
 
-    // Track initial values for unsaved changes detection
-    private readonly string _initialTitle;
-    private readonly string _initialNotes;
-    private readonly string _initialTaxRate;
-    private readonly string _initialClientName;
+    // The fields as last saved, for Back's unsaved-changes question (Export PDF and the status buttons save too)
+    private string _savedTitle;
+    private string _savedNotes;
+    private string _savedTaxRate;
+    private string _savedClientName;
 
     public QuoteEditorModel(
         QuoteEntity quote,
@@ -44,10 +44,10 @@ public partial record QuoteEditorModel
         _statusHistoryRepo = statusHistoryRepo;
         _quoteId = quote.Id;
 
-        _initialTitle = quote.Title;
-        _initialNotes = quote.Notes ?? string.Empty;
-        _initialTaxRate = Money.FormatRate(quote.TaxRate);
-        _initialClientName = quote.ClientName ?? string.Empty;
+        _savedTitle = quote.Title;
+        _savedNotes = quote.Notes ?? string.Empty;
+        _savedTaxRate = Money.FormatRate(quote.TaxRate);
+        _savedClientName = quote.ClientName ?? string.Empty;
 
         Title = State<string>.Value(this, () => quote.Title);
         Notes = State<string>.Value(this, () => quote.Notes ?? string.Empty);
@@ -268,10 +268,10 @@ public partial record QuoteEditorModel
 
     private async Task<bool> HasUnsavedChangesAsync()
     {
-        return await Title != _initialTitle ||
-               await Notes != _initialNotes ||
-               await TaxRate != _initialTaxRate ||
-               await ClientName != _initialClientName;
+        return await Title != _savedTitle ||
+               await Notes != _savedNotes ||
+               await TaxRate != _savedTaxRate ||
+               await ClientName != _savedClientName;
     }
 
     /// <summary>The back arrow: asks before dropping unsaved edits.</summary>
@@ -321,21 +321,27 @@ public partial record QuoteEditorModel
         var existing = await _quoteRepo.GetByIdAsync(_quoteId);
         if (existing is null) return;
 
-        existing.Title = await Title ?? "Untitled";
-        existing.Notes = await Notes;
+        var title = await Title ?? string.Empty;
+        var notes = await Notes ?? string.Empty;
+        var rateText = await TaxRate ?? string.Empty;
+        var typedClient = await ClientName ?? string.Empty;
+
+        existing.Title = string.IsNullOrWhiteSpace(title) ? "Untitled" : title;
+        existing.Notes = notes;
 
         // A changed name links the quote to the client with that name (or to none), so the client's counts and the
         // Send address follow the name on the quote.
-        var clientName = (await ClientName)?.Trim();
+        var clientName = typedClient.Trim();
         existing.ClientId = ClientLink.Resolve(clientName, existing.ClientName, existing.ClientId, await _clientRepo.GetAllAsync());
         existing.ClientName = string.IsNullOrEmpty(clientName) ? null : clientName;
         existing.UpdatedAt = DateTimeOffset.UtcNow;
 
-        if (Money.TryParseRate(await TaxRate, out var tax))
+        if (Money.TryParseRate(rateText, out var tax))
             existing.TaxRate = tax;
 
         await _quoteRepo.SaveAsync(existing);
         _board.QuotesChanged();
+        (_savedTitle, _savedNotes, _savedTaxRate, _savedClientName) = (title, notes, rateText, typedClient);
     }
 
     /// <summary>When the quote was sent, accepted, declined, expired or reopened (PRD F3.4), oldest first.</summary>

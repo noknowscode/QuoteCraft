@@ -192,4 +192,19 @@ public class QuoteEditorModelTests
 
         Assert.Equal(["Sink Installation"], (await Settled(async () => await model.LineItems, l => l.Count == 1)).Select(i => i.Description));
     }
+
+    [Fact]
+    public async Task Back_after_export_pdf_saved_the_edits_does_not_ask()
+    {
+        using var h = new ModelHarness();
+        var quote = await h.AddQuoteAsync("Service call");
+        var model = await Create(h, quote);
+        await model.Notes.UpdateAsync(_ => "Bring the ladder.", None);
+
+        await model.ExportPdf(None);
+        await model.Back(None);
+
+        Assert.Equal(["-"], h.Navigator.Routes);
+        Assert.Equal("Bring the ladder.", (await h.Db.Quotes.GetByIdAsync(quote.Id))!.Notes);
+    }
 }

@@ -91,7 +91,6 @@
       <helpers:ShortDateConverter x:Key="ShortDateConverter" />
       <helpers:InverseBoolConverter x:Key="InverseBoolConverter" />
       <helpers:StepVisibilityConverter x:Key="StepVisibilityConverter" />
-      <helpers:PluralConverter x:Key="PluralConverter" />
       <!-- WinUI's {Binding} does not turn a bool into a Visibility (only x:Bind does): every bool-bound Visibility uses this. -->
       <helpers:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
       <helpers:ZeroToVisibleConverter x:Key="ZeroToVisibleConverter" />

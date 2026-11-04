@@ -49,16 +49,13 @@
                    AutomationProperties.HeadingLevel="Level1"
                    VerticalAlignment="Center" />
 
-        <mvux:FeedView Grid.Column="1" Source="{Binding ClientCount}" VerticalAlignment="Center">
-          <DataTemplate>
-            <TextBlock Style="{StaticResource BodyMedium}"
-                       Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                       VerticalAlignment="Center" Margin="{StaticResource GapStart8}">
-              <Run Text="{Binding Data}" />
-              <Run Text=" contacts" />
-            </TextBlock>
-          </DataTemplate>
-        </mvux:FeedView>
+        <!-- A primitive feed binds directly: a FeedView over IFeed<int> never leaves its progress template -->
+        <TextBlock Grid.Column="1"
+                   Style="{StaticResource BodyMedium}"
+                   Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                   VerticalAlignment="Center" Margin="{StaticResource GapStart8}">
+          <Run Text="{Binding ClientCount}" /><Run Text=" contacts" />
+        </TextBlock>
 
         <!-- Search (under the title row on Narrow) -->
         <utu:CardContentControl Style="{StaticResource TonalCardStyle}" Grid.Row="{utu:Responsive Narrow=1, Normal=0}"
@@ -259,14 +256,10 @@
                               <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="{StaticResource Space2}">
                                 <TextBlock Text="{Binding Name}" Style="{StaticResource BodyMediumSemiBold}"
                                            TextTrimming="CharacterEllipsis" />
-                                <TextBlock Style="{StaticResource BodySmall}"
+                                <TextBlock Text="{Binding Summary}"
+                                           Style="{StaticResource BodySmall}"
                                            Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                                           TextTrimming="CharacterEllipsis">
-                                  <Run Text="{Binding QuoteCount}" />
-                                  <Run Text="{Binding QuoteCount, Converter={StaticResource PluralConverter}, ConverterParameter=quote}" />
-                                  <Run Text=" · " />
-                                  <Run Text="{Binding City}" />
-                                </TextBlock>
+                                           TextTrimming="CharacterEllipsis" />
                               </StackPanel>
 
                               <!-- Value -->
