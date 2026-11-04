@@ -167,17 +167,12 @@ target .NET 10.
 
 ## Remaining (with size estimates)
 
-- `DashboardModel` is 498 lines (list, analytics, detail, preview, send, inline edit). Split into a list model and a
-  detail model with their own regions: about a day, with re-verification of the four layouts.
-- `InteractionHelper` paints list-card states from code; a Material selectable card (or a `ListView` with lightweight
-  item keys) would replace it: half a day.
-- Settings' theme row does not hear changes made from the rail (pre-existing; `ThemeChoiceNotifier` could feed it, with
-  care not to loop through its `ForEach`): an hour.
-- Literal table column widths (60, 90, 120, 140) in Dashboard and Settings; the `x:Double` tokens for them exist but
-  `ColumnDefinition` needs `GridLength` resources: an hour, with a WinAppSDK check.
 - Three app `ControlTemplate`s (`AccentButtonStyle`, `InlineTextBoxStyle`, `SideNavTabBarItemStyle`) could become
-  `BasedOn` Material styles with lightweight keys: half a day.
-- New Quote keeps its "Enter a title" message until the next Create after the title is typed: a small model change.
+  `BasedOn` Material styles with lightweight keys: half a day. With the definition-only workaround style for
+  microsoft-ui-xaml#6388 the lint gate reports 4 as TEMPLATE info, not gating.
+- `ISyncService` is registered and never resolved: D8 keeps `SyncService` for the sync pass.
+- Found in A pass 2: in the Dark theme the `ContentDialog` routes are drawn with the Light surface (flyouts follow the
+  theme); see `docs/COMPLETENESS.md`, Minors.
 
 ### Done in the A pass (2026-11-04)
 
@@ -191,9 +186,29 @@ target .NET 10.
 - Every `FeedView` sets its data, error and progress states on each message (`WholeFeedViewStateSelector` in the
   implicit style): a list that failed to load no longer keeps its error template once a reopened tab's new view model
   has read the data.
-- Not done: the three app `ControlTemplate`s (`AccentButtonStyle`, `InlineTextBoxStyle`, `SideNavTabBarItemStyle`)
-  stay; with the definition-only workaround style for microsoft-ui-xaml#6388 the lint gate reports 4 as TEMPLATE info,
-  not gating.
+- Not done: the three app `ControlTemplate`s (see Remaining).
+
+### Done in A pass 2 (2026-11-04, the code review's closed list)
+
+| Item | Commit | Change |
+|---|---|---|
+| Debug hooks and the startup error | `70309d9` | The visual-tree hooks moved to `App.Verification.cs` (a partial of `App`, Debug only); the startup error is `Presentation/StartupErrorView.xaml`. `App.xaml.cs` 500 → 260 lines |
+| `SettingsModel` split | `66eef0c` | `SettingsModel` (the profile form, logo, catalog count, Save; 372 → 218 lines, 11 → 8 dependencies, two of them its parts), `AccountSettingsModel` (account and billing), `ThemeSettingsModel` (the Appearance row), bound through `SettingsViewModel.cs` |
+| Currency | `7242590` | `Services/CurrencyService` (DI singleton) replaces the static `CurrencyCode` on `CurrencyFormatConverter` |
+| Notifications entry | `6fb13a7` | The rail's bell and the Alerts tab both use `MainModel.OpenNotifications` |
+| Line-item dialogs | `4c557d7` | `QuoteLineItemDialogs` serves the editor and the open quote; `QuoteDelivery` holds the quote as it goes out (read, PDF, send). `QuoteDetailModel` 11 → 8 injected services, 301 → 236 lines |
+| Unguarded commands | `1bcb651` | Photo delete, item move, onboarding Complete and Skip report a failure in the page's message line |
+| Dead members | `2cbe327` | `CatalogModel.Categories`, `CatalogDisplayItem.IsHeader/IsExpanded/IconGlyph`, `ClientsAnalytics.NewThisMonth`, `MarkAsReadAsync`, three `NotificationType` values, public helpers that became commands; Sign In shows `IsBusy` |
+| `null!` | `dae9163` | Selections close with `Option.None` |
+| Shared helpers | `8f9f737`, `6330994` | One `ReportFailureAsync` (`Helpers/ErrorReporter`), one client-suggestion rule (`ClientLink.SuggestAsync`), one email check (`Helpers/EmailAddress`) |
+| Editor validation | `6fb0f13` | Export PDF and Mark Sent, Accepted, Declined check the edits as Save does |
+| Expiry | `32d61e1` | `QuoteStatusService.ExpireOverdueAsync` runs one at a time; `MarkExpiredAsync` changes a quote only from Sent or Viewed, so a quote expires once; the list's quote cache is behind a gate |
+| Model tests | `2a9f0c4` | `AuthModel`, `ClientEditorModel`, `CatalogItemEditorModel`, `CatalogBrowserModel`, `SendQuoteModel` |
+| Stale comments | `feb7a32` | The drawer's entry points; what the full editor edits |
+| F1.8, F14.8, Viewed, README | `4765ab5`, `d09249c`, `afb0e5f`, `2a40f51`, `63d7fde` | See `docs/COMPLETENESS.md`, Fixed in A pass 2 (D20 to D22) |
+
+Gates at `9502f00`: 301 tests pass; the lint gate 0 on every gating rule; 194 automation names over 6,277 XAML lines
+(30.9 per 1,000); warnings stay errors.
 
 ## Decisions (approved by the owner on 2026-11-04; recorded in DECISIONS-production-readiness.md)
 
