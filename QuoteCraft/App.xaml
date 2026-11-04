@@ -4,7 +4,8 @@
        xmlns:helpers="using:QuoteCraft.Helpers"
        xmlns:utu="using:Uno.Toolkit.UI"
        xmlns:utum="using:Uno.Toolkit.UI.Material"
-       xmlns:ut="using:Uno.Themes">
+       xmlns:ut="using:Uno.Themes"
+       xmlns:win="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
 
   <Application.Resources>
     <ResourceDictionary>
@@ -31,6 +32,16 @@
         <ResourceDictionary Source="ms-appx:///Styles/StatusColors.xaml" />
         <ResourceDictionary Source="ms-appx:///Styles/Layout.xaml" />
       </ResourceDictionary.MergedDictionaries>
+
+      <!-- The rail's Theme button shows the window's theme: a sun in Light, a moon in Dark. -->
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+          <x:String x:Key="ThemeIconGlyph">&#xE706;</x:String>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+          <x:String x:Key="ThemeIconGlyph">&#xE708;</x:String>
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
 
       <!-- Bold/SemiBold typography variants (derived from Material styles) -->
       <Style x:Key="HeadlineMediumBold" TargetType="TextBlock" BasedOn="{StaticResource HeadlineMedium}">
@@ -139,6 +150,29 @@
           </Setter.Value>
         </Setter>
       </Style>
+
+      <!-- Drawers opened by "!" Page routes (Presentation/DrawerFlyout): from the right, sized for a list. -->
+      <Style x:Key="SideDrawerFlyoutPresenterStyle" TargetType="FlyoutPresenter" BasedOn="{StaticResource RightDrawerFlyoutPresenterStyle}">
+        <Setter Property="utu:DrawerFlyoutPresenter.DrawerLength" Value="420" />
+      </Style>
+      <!--
+        microsoft/microsoft-ui-xaml#6388 (WinAppSDK only): an attached-property setter in a style BasedOn a style whose
+        template lives in another library throws when the template is created, unless the consuming assembly also
+        references those properties in a template. The Toolkit docs prescribe this definition-only style; it is never used.
+      -->
+      <win:Style x:Key="MUX6388_Workaround_ForDefinitionOnly" TargetType="FlyoutPresenter">
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="FlyoutPresenter">
+              <utu:DrawerFlyoutPresenter OpenDirection="{TemplateBinding utu:DrawerFlyoutPresenter.OpenDirection}"
+                                         DrawerLength="{TemplateBinding utu:DrawerFlyoutPresenter.DrawerLength}"
+                                         LightDismissOverlayBackground="{TemplateBinding utu:DrawerFlyoutPresenter.LightDismissOverlayBackground}"
+                                         IsGestureEnabled="{TemplateBinding utu:DrawerFlyoutPresenter.IsGestureEnabled}"
+                                         IsLightDismissEnabled="{TemplateBinding utu:DrawerFlyoutPresenter.IsLightDismissEnabled}" />
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </win:Style>
 
       <!-- Inline TextBox Style (compact, no Material chrome, with focus states): Settings' right-aligned value fields -->
       <Style x:Key="InlineTextBoxStyle" TargetType="TextBox">

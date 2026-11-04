@@ -138,8 +138,12 @@ public partial class App : Application
                     services.AddSingleton<Services.INotificationService, Services.NotificationService>();
                     services.AddSingleton<Helpers.ConnectivityHelper>();
                     services.AddSingleton<Services.QuoteExpiryService>();
+                    services.AddSingleton<Services.ThemeChoiceNotifier>();
                 })
                 .UseNavigation(ReactiveViewModelMappings.ViewModelMappings, RegisterRoutes)
+                // "!" routes to a Page open in this drawer instead of a full-window flyout. After UseNavigation, which
+                // registers its own Flyout: the last registration wins.
+                .ConfigureServices(services => services.AddTransient<Flyout, DrawerFlyout>())
                 // Light, Dark or the system's theme (the default); the choice is saved and restored at launch.
                 .UseThemeSwitching()
             );
@@ -268,6 +272,7 @@ public partial class App : Application
                 if (service is not null)
                 {
                     await service.SetThemeAsync(dark ? Uno.Extensions.Toolkit.AppTheme.Dark : Uno.Extensions.Toolkit.AppTheme.Light);
+                    Host.Services.GetRequiredService<Services.ThemeChoiceNotifier>().Raise();
                 }
                 VerificationArgs.Log($"theme={(dark ? "Dark" : "Light")} service={service is not null} actual={root.ActualTheme}");
             }
@@ -442,8 +447,7 @@ public partial class App : Application
             new ViewMap<ClientsPage, ClientsModel>(),
             new ViewMap<CatalogPage, CatalogModel>(),
             new ViewMap<SettingsPage, SettingsModel>(),
-            // NotificationsPage is now an overlay panel in MainPage (not a routed page). Clients and catalog items are
-            // added and edited in dialogs on their pages.
+            new ViewMap<NotificationsPage, NotificationsModel>(),
             new DataViewMap<QuoteEditorPage, QuoteEditorModel, QuoteEntity>()
         );
 
@@ -453,6 +457,7 @@ public partial class App : Application
                 [
                     new ("Onboarding", View: views.FindByViewModel<OnboardingModel>()),
                     new ("Auth", View: views.FindByViewModel<AuthModel>()),
+                    new ("Notifications", View: views.FindByViewModel<NotificationsModel>()),
                     new ("Main", View: views.FindByViewModel<MainModel>(), IsDefault: true,
                         Nested:
                         [

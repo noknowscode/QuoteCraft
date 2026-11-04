@@ -13,6 +13,7 @@ public partial record SettingsModel
     private readonly Data.Remote.SupabaseConfig _supabase;
     private readonly ILogger<SettingsModel> _logger;
     private readonly IThemeService _theme;
+    private readonly Services.ThemeChoiceNotifier _themeChoice;
 
     public SettingsModel(
         INavigator navigator,
@@ -23,9 +24,11 @@ public partial record SettingsModel
         Services.IAuthService authService,
         Data.Remote.SupabaseConfig supabase,
         IThemeService theme,
+        Services.ThemeChoiceNotifier themeChoice,
         ILogger<SettingsModel> logger)
     {
         _theme = theme;
+        _themeChoice = themeChoice;
         _navigator = navigator;
         _profileRepo = profileRepo;
         _catalogRepo = catalogRepo;
@@ -63,7 +66,11 @@ public partial record SettingsModel
 
     /// <summary>0 System (the default), 1 Light, 2 Dark: the window's theme service applies and saves it.</summary>
     public IState<int> ThemeIndex => State.Value(this, () => _theme.Theme switch { AppTheme.Light => 1, AppTheme.Dark => 2, _ => 0 })
-        .ForEach(async (index, ct) => await _theme.SetThemeAsync(index switch { 1 => AppTheme.Light, 2 => AppTheme.Dark, _ => AppTheme.System }));
+        .ForEach(async (index, ct) =>
+        {
+            await _theme.SetThemeAsync(index switch { 1 => AppTheme.Light, 2 => AppTheme.Dark, _ => AppTheme.System });
+            _themeChoice.Raise();
+        });
 
     public async ValueTask Reload(CancellationToken ct)
     {
