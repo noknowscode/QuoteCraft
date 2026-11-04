@@ -512,3 +512,16 @@ Android launcher icon Resizetizer generates shows the glyph whole.
 Reason: the owner approved a simple custom icon for the apps that still shipped the template's (info file brief).
 
 Tradeoff: flat and generic, and no wordmark; the in-app "QC" mark stays in the rail and onboarding.
+
+## D24. The `.studiolive` info file links to the planned Uno.Samples home (proposed, 2026-11-04)
+
+Decision: `.studiolive/sample.json` (sample id `quotecraft`) gives `iconUrl` and `screenshots` as
+`https://raw.githubusercontent.com/unoplatform/Uno.Samples/master/studio/quotecraft/.studiolive/...`, the folder the
+sample moves to after uno.labs, as the format guide's example does (Uno.Samples draft PR #967). They resolve only
+after that move.
+
+Reason: the guide asks for absolute URLs; the Studio team has been asked (uno-private#2444, question 1) whether
+relative paths can be used instead. If they can, the URLs become `icon.png` and `screenshots/<name>.png`.
+
+Also in the file: `showcase.requires` lists only an email app (Send opens a mailto link). Supabase sign-in and Stripe
+billing are left out: the app runs fully without them and hides them (D3).

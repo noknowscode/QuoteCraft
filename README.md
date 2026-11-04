@@ -47,6 +47,7 @@ Debug desktop build, sample data (`--qc-seed=sample`), Light theme, 1280 × 800 
 ```
 ├── QuoteCraft.sln
 ├── global.json
+├── .studiolive/                         # Showcase gallery info: sample.json, agent context, conversation, icon, screenshots
 ├── Directory.Build.props
 ├── Directory.Packages.props
 ├── docs/                                # PRD, architecture, design and revenue-model briefs; production-readiness decisions
