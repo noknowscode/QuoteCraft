@@ -13,6 +13,8 @@
   <!--
     Quote editor: one column at every size, capped at ReadingMaxWidth (720) and centred from Normal up. From the top:
     title, client, tax rate, line items, totals, photos, notes, export, status actions, history.
+    The text fields write to the model as they are typed (UpdateSourceTrigger=PropertyChanged): the top bar's Save
+    takes no focus, so a field that only committed when left would lose its last edit.
       Narrow   16 px sides; the line-item actions go under the "Line Items" heading; status actions stack full width.
       Normal / Wide / Widest   wider insets; actions beside their headings; status actions in a row.
   -->
@@ -69,13 +71,13 @@
 
         <!-- Quote Title -->
         <TextBox Header="Quote Title"
-                 Text="{Binding Title, Mode=TwoWay}"
+                 Text="{Binding Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                  PlaceholderText="e.g. Kitchen Renovation" />
 
         <!-- Client Name (Material text field, like the fields around it) -->
         <AutoSuggestBox x:Name="ClientAutoSuggestBox"
                         Header="Client Name"
-                        Text="{Binding ClientName, Mode=TwoWay}"
+                        Text="{Binding ClientName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         PlaceholderText="Search clients or type a name"
                         TextBoxStyle="{StaticResource MaterialOutlinedTextBoxStyle}"
                         BorderThickness="1" BorderBrush="{ThemeResource OutlineBrush}" Background="Transparent"
@@ -85,7 +87,7 @@
 
         <!-- Tax Rate -->
         <TextBox Header="Tax Rate (%)"
-                 Text="{Binding TaxRate, Mode=TwoWay}"
+                 Text="{Binding TaxRate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                  PlaceholderText="13"
                  InputScope="Number" />
 
@@ -243,7 +245,7 @@
           </mvux:FeedView.ErrorTemplate>
         </mvux:FeedView>
 
-        <!-- Totals (PRD F1.5): what the PDF will show; recomputed as items change and when the tax field is left -->
+        <!-- Totals (PRD F1.5): what the PDF will show; recomputed as items change and as the tax rate is typed -->
         <mvux:FeedView Source="{Binding Totals}"
                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
           <DataTemplate>
@@ -376,7 +378,7 @@
 
         <!-- Notes -->
         <TextBox Header="Notes"
-                 Text="{Binding Notes, Mode=TwoWay}"
+                 Text="{Binding Notes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                  PlaceholderText="Additional notes for the client"
                  AcceptsReturn="True"
                  TextWrapping="Wrap"

@@ -104,8 +104,8 @@ public partial record QuoteEditorModel
         .AsListFeed();
 
     /// <summary>
-    /// Subtotal, tax and total, recomputed when the items change and when the tax rate field is left. Until the rate
-    /// reads (0 to 100), the tax line asks for one and the total leaves tax out.
+    /// Subtotal, tax and total, recomputed when the items change and as the tax rate is typed. The typed text is never
+    /// rewritten; until it reads as a rate (0 to 100), the tax line asks for one and the total leaves tax out.
     /// </summary>
     public IFeed<QuoteTotals> Totals => Feed.Combine(LineItemsVersion, TaxRate)
         .SelectAsync(async (inputs, ct) =>
