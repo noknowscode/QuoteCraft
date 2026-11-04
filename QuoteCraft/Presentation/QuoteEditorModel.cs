@@ -179,22 +179,26 @@ public partial record QuoteEditorModel
         _board.QuotesChanged();
     }
 
+    /// <summary>
+    /// The checks Save, Export PDF and the status buttons run before they write the edits: a title, and a tax rate from
+    /// 0 to 100. A failed one says why in the message line, and nothing is written.
+    /// </summary>
+    private async ValueTask<bool> ValidateEditsAsync(CancellationToken ct)
+    {
+        var error = string.IsNullOrWhiteSpace(await Title) ? "Quote title is required."
+            : !Money.TryParseRate(await TaxRate, out var tax) || tax > 100 ? "Tax rate must be a number between 0 and 100."
+            : null;
+        await ValidationError.UpdateAsync(_ => error ?? string.Empty, ct);
+        return error is null;
+    }
+
     public async ValueTask Save(CancellationToken ct)
     {
-        var title = (await Title)?.Trim() ?? string.Empty;
-        if (string.IsNullOrWhiteSpace(title))
+        if (!await ValidateEditsAsync(ct))
         {
-            await ValidationError.UpdateAsync(_ => "Quote title is required.", ct);
             return;
         }
 
-        if (!Money.TryParseRate(await TaxRate, out var tax) || tax > 100)
-        {
-            await ValidationError.UpdateAsync(_ => "Tax rate must be a number between 0 and 100.", ct);
-            return;
-        }
-
-        await ValidationError.UpdateAsync(_ => string.Empty, ct);
         await IsSaving.UpdateAsync(_ => true, ct);
         try
         {
@@ -226,10 +230,16 @@ public partial record QuoteEditorModel
 
     public ValueTask MarkDeclined(CancellationToken ct) => UpdateStatus(QuoteStatus.Declined, ct);
 
-    /// <summary>Saves the edits, then saves the PDF; a failure shows on the page, next to the button.</summary>
+    /// <summary>
+    /// Checks and saves the edits as Save does, then saves the PDF; a failure shows on the page, next to the button.
+    /// </summary>
     public async ValueTask ExportPdf(CancellationToken ct)
     {
-        await ValidationError.UpdateAsync(_ => string.Empty, ct);
+        if (!await ValidateEditsAsync(ct))
+        {
+            return;
+        }
+
         try
         {
             await PersistEditsAsync();
@@ -284,6 +294,7 @@ public partial record QuoteEditorModel
         .SelectAsync(async (typed, ct) => await ClientLink.SuggestAsync(typed, _clientRepo))
         .AsListFeed();
 
+    /// <summary>Writes the fields (checked first: <see cref="ValidateEditsAsync"/>) and remembers them as saved.</summary>
     private async Task PersistEditsAsync()
     {
         var existing = await _quoteRepo.GetByIdAsync(_quoteId);
@@ -294,7 +305,7 @@ public partial record QuoteEditorModel
         var rateText = await TaxRate ?? string.Empty;
         var typedClient = await ClientName ?? string.Empty;
 
-        existing.Title = string.IsNullOrWhiteSpace(title) ? "Untitled" : title;
+        existing.Title = title;
         existing.Notes = notes;
 
         // A changed name links the quote to the client with that name (or to none), so the client's counts and the
@@ -318,9 +329,14 @@ public partial record QuoteEditorModel
             (IImmutableList<StatusHistoryEntry>)(await _status.GetHistoryAsync(_quoteId)).ToImmutableList())
         .AsListFeed();
 
+    /// <summary>Mark Sent, Accepted or Declined: the edits are checked and saved as Save does, then the status changes.</summary>
     private async ValueTask UpdateStatus(QuoteStatus status, CancellationToken ct)
     {
-        await ValidationError.UpdateAsync(_ => string.Empty, ct);
+        if (!await ValidateEditsAsync(ct))
+        {
+            return;
+        }
+
         try
         {
             // The edits first, so a status change does not drop them.

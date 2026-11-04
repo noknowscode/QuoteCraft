@@ -113,6 +113,35 @@ public class QuoteEditorModelTests
         Assert.Equal("Service call", (await h.Db.Quotes.GetByIdAsync(quote.Id))!.Title);
     }
 
+    [Theory]
+    [InlineData("Export PDF", "  ", "13", "Quote title is required.")]
+    [InlineData("Mark Sent", "  ", "13", "Quote title is required.")]
+    [InlineData("Mark Accepted", "Service call", "abc", "Tax rate must be a number between 0 and 100.")]
+    [InlineData("Mark Declined", "Service call", "101", "Tax rate must be a number between 0 and 100.")]
+    public async Task Export_and_the_status_buttons_check_the_edits_as_save_does(string action, string title, string rate, string message)
+    {
+        using var h = new ModelHarness();
+        var quote = await h.AddQuoteAsync("Service call", taxRate: 13m);
+        var model = await Create(h, quote);
+
+        await model.Title.UpdateAsync(_ => title, None);
+        await model.TaxRate.UpdateAsync(_ => rate, None);
+        await (action switch
+        {
+            "Export PDF" => model.ExportPdf(None),
+            "Mark Sent" => model.MarkSent(None),
+            "Mark Accepted" => model.MarkAccepted(None),
+            _ => model.MarkDeclined(None),
+        });
+
+        Assert.Equal(message, await model.ValidationError);
+        Assert.Empty(h.Navigator.Requests);
+        await h.Share.DidNotReceive().GenerateAndDownloadPdfAsync(Arg.Any<QuoteEntity>());
+        var stored = (await h.Db.Quotes.GetByIdAsync(quote.Id))!;
+        Assert.Equal(("Service call", 13m, QuoteStatus.Draft), (stored.Title, stored.TaxRate, stored.Status));
+        Assert.Empty(await h.Db.History.GetByQuoteIdAsync(quote.Id));
+    }
+
     [Fact]
     public async Task Mark_sent_keeps_the_edits_and_records_the_change()
     {
