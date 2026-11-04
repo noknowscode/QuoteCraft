@@ -329,6 +329,12 @@
                     </StackPanel>
                   </ScrollViewer>
                 </DataTemplate>
+                <!-- The list below says when the quotes could not be read; the counts just stay out of the way -->
+                <mvux:FeedView.ErrorTemplate>
+                  <DataTemplate>
+                    <Border Height="0" />
+                  </DataTemplate>
+                </mvux:FeedView.ErrorTemplate>
               </mvux:FeedView>
 
               <!-- One row that scrolls sideways (a ChipGroup does not wrap): the Material phone pattern -->
