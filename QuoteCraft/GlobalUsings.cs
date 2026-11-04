@@ -9,5 +9,4 @@ global using QuoteCraft.Models;
 global using QuoteCraft.Presentation;
 global using QuoteCraft.Services;
 global using QuoteCraft.Services.Endpoints;
-global using ApplicationExecutionState = Windows.ApplicationModel.Activation.ApplicationExecutionState;
 [assembly: Uno.Extensions.Reactive.Config.BindableGenerationTool(3)]

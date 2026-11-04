@@ -1,5 +1,3 @@
-using QuoteCraft.Services;
-
 namespace QuoteCraft.Presentation;
 
 /// <summary>

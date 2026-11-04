@@ -2,7 +2,6 @@ using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using QuoteCraft.Presentation;
 using QuoteCraft.Services;
-using Uno.Extensions.Navigation;
 using Uno.Extensions.Reactive;
 using Xunit;
 using static QuoteCraft.Tests.Presentation.ModelHarness;
@@ -143,7 +142,7 @@ public class AuthModelTests
         using var h = new ModelHarness();
         var model = await Create(h, Substitute.For<IAuthService>());
 
-        await model.SkipAuth(None);
+        await model.SkipAuth();
 
         Assert.Equal([Qualifiers.ClearBackStack + "Main"], h.Navigator.Routes);
     }

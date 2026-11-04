@@ -3,7 +3,6 @@ using NSubstitute.ExceptionExtensions;
 using QuoteCraft.Data;
 using QuoteCraft.Models;
 using QuoteCraft.Presentation;
-using Uno.Extensions.Reactive;
 using Xunit;
 using static QuoteCraft.Tests.Presentation.ModelHarness;
 

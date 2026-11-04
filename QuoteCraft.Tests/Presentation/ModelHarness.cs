@@ -29,7 +29,7 @@ public sealed class ModelHarness : IDisposable
         Creation = new QuoteCreationService(Db.Quotes, Db.Clients, Db.Profiles, Numbers);
         Subscription = Substitute.For<ISubscriptionService>();
         FeatureGate = new FeatureGateService(Db.Quotes, Db.Clients, Subscription);
-        Notifications = new NotificationService(Db.Database, NullLogger<NotificationService>.Instance);
+        Notifications = new NotificationService(Db.Database);
         Delivery = new QuoteDelivery(Db.Quotes, Db.Clients, Db.Profiles, Share, Email, Status);
         LineItemDialogs = new QuoteLineItemDialogs(Db.Quotes);
     }

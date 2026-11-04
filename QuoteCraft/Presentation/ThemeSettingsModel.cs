@@ -1,5 +1,3 @@
-using Uno.Extensions.Toolkit;
-
 namespace QuoteCraft.Presentation;
 
 /// <summary>

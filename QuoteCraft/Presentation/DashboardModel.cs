@@ -141,7 +141,7 @@ public partial record DashboardModel
         .SelectAsync(async (version, ct) => DashboardAnalytics.From(await GetCachedQuotesAsync(version), DateTimeOffset.UtcNow));
 
     /// <summary>Retry after a failed read: every view of the quotes reads them again.</summary>
-    public ValueTask Refresh(CancellationToken ct)
+    public ValueTask Refresh()
     {
         _board.QuotesChanged();
         return ValueTask.CompletedTask;

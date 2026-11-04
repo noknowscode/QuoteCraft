@@ -6,7 +6,6 @@ using QuoteCraft.Helpers;
 using QuoteCraft.Models;
 using QuoteCraft.Presentation;
 using QuoteCraft.Services;
-using Uno.Extensions.Navigation;
 using Uno.Extensions.Reactive;
 using Uno.Extensions.Toolkit;
 using Xunit;
@@ -20,7 +19,7 @@ public class ShellModelTests
     private static readonly CancellationToken None = CancellationToken.None;
 
     private static MainModel CreateMain(ModelHarness h, IThemeService? theme = null) => new(h.Navigator, theme ?? Substitute.For<IThemeService>(),
-        h.ThemeChoice, h.Notifications, new ConnectivityHelper(new HttpClient(), new SupabaseConfig(null, null), NullLogger<ConnectivityHelper>.Instance));
+        h.ThemeChoice, h.Notifications, new ConnectivityHelper(new HttpClient(), new SupabaseConfig(null, null)));
 
     private static QuoteExpiryService Expiry(ModelHarness h) => new(h.Db.Quotes, h.Status, h.Notifications, NullLogger<QuoteExpiryService>.Instance);
 
@@ -55,7 +54,7 @@ public class ShellModelTests
         Assert.False(await Settled(async () => await main.HasUnreadNotifications, unread => !unread));
 
         // The next launch: a new service over the same database, and the check runs again.
-        var relaunched = new NotificationService(new QuoteCraft.Data.AppDatabase(h.Db.Folder), NullLogger<NotificationService>.Instance);
+        var relaunched = new NotificationService(new QuoteCraft.Data.AppDatabase(h.Db.Folder));
         await new QuoteExpiryService(h.Db.Quotes, h.Status, relaunched, NullLogger<QuoteExpiryService>.Instance).CheckExpirationsAsync();
         Assert.Equal(0, await relaunched.GetUnreadCountAsync());
         Assert.True(Assert.Single(await relaunched.GetAllAsync()).IsRead);
@@ -117,7 +116,7 @@ public class ShellModelTests
         var raised = 0;
         h.ThemeChoice.Changed += () => raised++;
 
-        await CreateMain(h, theme).SetTheme("Dark", None);
+        await CreateMain(h, theme).SetTheme("Dark");
 
         await theme.Received(1).SetThemeAsync(AppTheme.Dark);
         Assert.Equal(1, raised);

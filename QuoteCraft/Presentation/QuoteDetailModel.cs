@@ -75,14 +75,14 @@ public partial record QuoteDetailModel
     public async ValueTask DismissUpgrade(CancellationToken ct) => await UpgradeMessage.UpdateAsync(_ => string.Empty, ct);
 
     /// <summary>Retry after a failed read: every view of the quotes reads them again.</summary>
-    public ValueTask Refresh(CancellationToken ct)
+    public ValueTask Refresh()
     {
         _board.QuotesChanged();
         return ValueTask.CompletedTask;
     }
 
     /// <summary>One-pane layouts (below 1080): close the quote and show the list again.</summary>
-    public ValueTask BackToList(CancellationToken ct)
+    public ValueTask BackToList()
     {
         _board.Close();
         return ValueTask.CompletedTask;

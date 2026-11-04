@@ -1,4 +1,3 @@
-using Microsoft.Data.Sqlite;
 using QuoteCraft.Models;
 
 namespace QuoteCraft.Data;

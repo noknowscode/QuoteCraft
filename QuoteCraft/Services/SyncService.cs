@@ -17,7 +17,6 @@ public class SyncService : ISyncService, IDisposable
     private readonly SupabaseClient _supabase;
     private readonly IQuoteRepository _quoteRepo;
     private readonly IClientRepository _clientRepo;
-    private readonly IBusinessProfileRepository _profileRepo;
     private readonly Helpers.ConnectivityHelper _connectivity;
     private readonly ILogger<SyncService> _logger;
     private Timer? _syncTimer;
@@ -33,7 +32,6 @@ public class SyncService : ISyncService, IDisposable
         SupabaseClient supabase,
         IQuoteRepository quoteRepo,
         IClientRepository clientRepo,
-        IBusinessProfileRepository profileRepo,
         Helpers.ConnectivityHelper connectivity,
         ILogger<SyncService> logger)
     {
@@ -42,7 +40,6 @@ public class SyncService : ISyncService, IDisposable
         _supabase = supabase;
         _quoteRepo = quoteRepo;
         _clientRepo = clientRepo;
-        _profileRepo = profileRepo;
         _connectivity = connectivity;
         _logger = logger;
     }

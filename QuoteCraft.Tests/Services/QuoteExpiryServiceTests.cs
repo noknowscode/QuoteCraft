@@ -22,7 +22,7 @@ public class QuoteExpiryServiceTests
             await test.Quotes.SaveAsync(quote);
         }
 
-        var notifications = new NotificationService(test.Database, NullLogger<NotificationService>.Instance);
+        var notifications = new NotificationService(test.Database);
         var service = new QuoteExpiryService(test.Quotes, new QuoteStatusService(test.Quotes, test.History, test.Profiles),
             notifications, NullLogger<QuoteExpiryService>.Instance);
 
@@ -51,7 +51,7 @@ public class QuoteExpiryServiceTests
             ValidUntil = ValidUntilDate.FromPicker(day),
         };
         await test.Quotes.SaveAsync(quote);
-        var notifications = new NotificationService(test.Database, NullLogger<NotificationService>.Instance);
+        var notifications = new NotificationService(test.Database);
         var service = new QuoteExpiryService(test.Quotes, new QuoteStatusService(test.Quotes, test.History, test.Profiles),
             notifications, NullLogger<QuoteExpiryService>.Instance);
 

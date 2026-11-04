@@ -1,5 +1,4 @@
 using System.Runtime.CompilerServices;
-using QuoteCraft.Services;
 using Uno.Extensions.Toolkit;
 
 namespace QuoteCraft.Presentation;
@@ -74,7 +73,7 @@ public partial record MainModel
     public async ValueTask ToggleRail(CancellationToken ct) => await IsRailCollapsed.UpdateAsync(c => !c, ct);
 
     /// <summary>The rail's theme menu: System (the default), Light or Dark, saved by the theme service (D6).</summary>
-    public async ValueTask SetTheme(string theme, CancellationToken ct)
+    public async ValueTask SetTheme(string theme)
     {
         if (Enum.TryParse<AppTheme>(theme, out var choice))
         {

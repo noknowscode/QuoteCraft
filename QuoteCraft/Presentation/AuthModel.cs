@@ -1,5 +1,3 @@
-using QuoteCraft.Services;
-
 namespace QuoteCraft.Presentation;
 
 /// <summary>
@@ -135,7 +133,7 @@ public partial record AuthModel
         await MagicLinkSent.UpdateAsync(_ => false, ct);
     }
 
-    public async ValueTask SkipAuth(CancellationToken ct)
+    public async ValueTask SkipAuth()
     {
         // Allow Free tier users to use the app without authentication
         await _navigator.NavigateRouteAsync(this, "Main", qualifier: Qualifiers.ClearBackStack);

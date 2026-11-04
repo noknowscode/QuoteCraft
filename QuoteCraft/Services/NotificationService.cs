@@ -5,16 +5,14 @@ namespace QuoteCraft.Services;
 public class NotificationService : INotificationService
 {
     private readonly AppDatabase _db;
-    private readonly ILogger<NotificationService> _logger;
     private int _unreadCount;
 
     public int UnreadCount => _unreadCount;
     public event Action<int>? UnreadCountChanged;
 
-    public NotificationService(AppDatabase db, ILogger<NotificationService> logger)
+    public NotificationService(AppDatabase db)
     {
         _db = db;
-        _logger = logger;
     }
 
     public async Task<List<NotificationEntity>> GetAllAsync()

@@ -5,7 +5,6 @@ namespace QuoteCraft.Helpers;
 /// </summary>
 public class ConnectivityHelper : IDisposable
 {
-    private readonly ILogger<ConnectivityHelper> _logger;
     private readonly HttpClient _http;
     private readonly Data.Remote.SupabaseConfig _supabase;
     private Timer? _pollTimer;
@@ -26,11 +25,10 @@ public class ConnectivityHelper : IDisposable
         }
     }
 
-    public ConnectivityHelper(HttpClient httpClient, Data.Remote.SupabaseConfig supabase, ILogger<ConnectivityHelper> logger)
+    public ConnectivityHelper(HttpClient httpClient, Data.Remote.SupabaseConfig supabase)
     {
         _http = httpClient;
         _supabase = supabase;
-        _logger = logger;
     }
 
     /// <summary>

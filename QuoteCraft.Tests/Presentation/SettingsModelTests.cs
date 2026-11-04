@@ -1,8 +1,5 @@
-using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
-using QuoteCraft.Data.Remote;
 using QuoteCraft.Presentation;
-using QuoteCraft.Services;
 using Uno.Extensions.Reactive;
 using Uno.Extensions.Toolkit;
 using Xunit;

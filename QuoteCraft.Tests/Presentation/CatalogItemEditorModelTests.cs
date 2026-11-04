@@ -1,7 +1,6 @@
 using QuoteCraft.Helpers;
 using QuoteCraft.Models;
 using QuoteCraft.Presentation;
-using Uno.Extensions.Reactive;
 using Xunit;
 
 namespace QuoteCraft.Tests.Presentation;

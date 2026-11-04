@@ -3,7 +3,6 @@ using QuoteCraft.Models;
 using QuoteCraft.Presentation;
 using QuoteCraft.Services;
 using QuoteCraft.Tests.Data;
-using Uno.Extensions.Reactive;
 using Xunit;
 using static QuoteCraft.Tests.Presentation.ModelHarness;
 
@@ -110,7 +109,7 @@ public class DashboardModelTests
         await model.OpenQuote(new QuoteListItem(quote, IsSelected: false), None);
         var detail = await QuoteDetailModelTests.Create(h, quote);
 
-        await detail.BackToList(None);
+        await detail.BackToList();
 
         Assert.False(await Settled(async () => await model.IsQuoteOpen, open => !open));
         Assert.DoesNotContain(await Settled(async () => await model.Quotes, l => !l.Any(i => i.IsSelected)), i => i.IsSelected);

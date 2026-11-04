@@ -1,4 +1,3 @@
-using Windows.Storage;
 using Windows.Storage.Pickers;
 
 namespace QuoteCraft.Helpers;
