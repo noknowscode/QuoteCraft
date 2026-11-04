@@ -35,8 +35,12 @@ public partial record DashboardModel
         _board.Close();
     }
 
+    // No Viewed: nothing sets it since share links went (D11). A Viewed quote from an older install counts, and
+    // filters, as Sent (IsSent).
     public IListFeed<string> FilterNames => ListFeed.Async(async ct => (IImmutableList<string>)ImmutableList.Create(
-        "All", "Draft", "Sent", "Viewed", "Accepted", "Declined", "Expired"));
+        "All", "Draft", "Sent", "Accepted", "Declined", "Expired"));
+
+    private static bool IsSent(QuoteEntity quote) => quote.Status is QuoteStatus.Sent or QuoteStatus.Viewed;
 
     public IState<string> SelectedFilter => State<string>.Value(this, () => "All");
     public IState<string> SearchText => State<string>.Value(this, () => string.Empty);
@@ -96,7 +100,9 @@ public partial record DashboardModel
 
                 if (!string.IsNullOrEmpty(filter) && filter != "All")
                 {
-                    filtered = filtered.Where(q => Enum.TryParse<QuoteStatus>(filter, out var s) && q.Status == s);
+                    filtered = filter == nameof(QuoteStatus.Sent)
+                        ? filtered.Where(IsSent)
+                        : filtered.Where(q => Enum.TryParse<QuoteStatus>(filter, out var s) && q.Status == s);
                 }
 
                 if (!string.IsNullOrWhiteSpace(search))
@@ -124,8 +130,7 @@ public partial record DashboardModel
             return new QuoteStatusCounts(
                 all.Count,
                 all.Count(q => q.Status == QuoteStatus.Draft),
-                all.Count(q => q.Status == QuoteStatus.Sent),
-                all.Count(q => q.Status == QuoteStatus.Viewed),
+                all.Count(IsSent),
                 all.Count(q => q.Status == QuoteStatus.Accepted),
                 all.Count(q => q.Status == QuoteStatus.Declined),
                 all.Count(q => q.Status == QuoteStatus.Expired));

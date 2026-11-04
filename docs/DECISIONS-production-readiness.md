@@ -471,3 +471,12 @@ editor field and the send rule are the small part that was missing (build small)
 Tradeoff: a Draft created some days before it is sent keeps the date it was given at creation (the PRD's "14 days from
 creation"), where it used to get a full period from the day it was sent. The editor shows the date, so it can be moved
 before sending.
+
+## D21. The Viewed filter and count go; stored Viewed quotes read as Sent (A pass 2 list, 2026-11-04)
+
+Decision: the Quotes page has no Viewed filter chip and no Viewed count, and the README no longer lists the status.
+Nothing in the app sets Viewed since D11 removed share links. `QuoteStatus.Viewed` stays so a quote an older install
+stored with it still loads: it keeps its pill, it is counted and filtered with Sent, and it expires like a Sent quote.
+The sample data seeds that quote as Sent.
+
+Reason: the cut in D11 left the controls for a status nothing can reach (the audit's open question).

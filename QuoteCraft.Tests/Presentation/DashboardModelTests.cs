@@ -67,6 +67,23 @@ public class DashboardModelTests
     }
 
     [Fact]
+    public async Task A_viewed_quote_from_an_older_install_counts_and_filters_as_sent()
+    {
+        using var h = new ModelHarness();
+        await h.AddQuoteAsync("Boiler service", QuoteStatus.Sent);
+        await h.AddQuoteAsync("Office fit-out", QuoteStatus.Viewed);
+        await h.AddQuoteAsync("Draft", QuoteStatus.Draft);
+        var model = await Create(h);
+
+        Assert.DoesNotContain("Viewed", await ListOf(model.FilterNames));
+        Assert.Equal((3, 2), ((await model.StatusCounts)!.All, (await model.StatusCounts)!.Sent));
+
+        await model.SelectedFilter.UpdateAsync(_ => "Sent", None);
+        var sent = await Settled(async () => await model.Quotes, l => l.Count == 2);
+        Assert.Equal(["Boiler service", "Office fit-out"], sent.Select(q => q.Quote.Title).Order());
+    }
+
+    [Fact]
     public async Task Opening_a_quote_shows_it_in_the_detail_region_and_selects_its_card()
     {
         using var h = new ModelHarness();

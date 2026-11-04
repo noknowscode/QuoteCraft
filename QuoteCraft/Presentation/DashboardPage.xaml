@@ -322,7 +322,6 @@
                     <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
                       <ctrl:StatusPill Status="Draft" Count="{Binding Data.Draft}" />
                       <ctrl:StatusPill Status="Sent" Count="{Binding Data.Sent}" />
-                      <ctrl:StatusPill Status="Viewed" Count="{Binding Data.Viewed}" />
                       <ctrl:StatusPill Status="Accepted" Count="{Binding Data.Accepted}" />
                       <ctrl:StatusPill Status="Declined" Count="{Binding Data.Declined}" />
                       <ctrl:StatusPill Status="Expired" Count="{Binding Data.Expired}" />

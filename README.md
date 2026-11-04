@@ -8,7 +8,7 @@ QuoteCraft helps service professionals create, manage, and send quotes to client
 
 ## Features
 
-- **Quote Management** — Create, edit, duplicate, and track quotes with status indicators (Draft, Sent, Viewed, Accepted, Declined, Expired); sent quotes expire after their validity period, with a reminder 3 days before (the rail's bell, or Alerts in the bottom tab bar on a phone), and an expired quote can be reopened and sent again
+- **Quote Management** — Create, edit, duplicate, and track quotes with status indicators (Draft, Sent, Accepted, Declined, Expired); sent quotes expire after their validity period, with a reminder 3 days before (the rail's bell, or Alerts in the bottom tab bar on a phone), and an expired quote can be reopened and sent again
 - **Client Directory** — Maintain a searchable client database with contact details and quote history
 - **Service Catalog** — Organize services and materials into categories (Electrical, Plumbing, HVAC, etc.) with preset pricing
 - **PDF Generation** — Generate professional PDF quotes ready to send to clients, on every platform (saved, downloaded or offered to the system's save dialog; see [Platform notes](#platform-notes))

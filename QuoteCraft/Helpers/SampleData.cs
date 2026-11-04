@@ -49,7 +49,7 @@ public static class SampleData
         [
             ("Kitchen Renovation", 0, QuoteStatus.Accepted, 40, 30, [("Sink Installation", 350m, 1), ("Faucet Replacement", 150m, 2), ("Copper Pipe (per ft)", 12.5m, 40), ("Standard Labor (per hr)", 95m, 8)]),
             ("Drain Cleaning Service", 1, QuoteStatus.Sent, 3, 27, [("Drain Snake Service", 185m, 1), ("Camera Inspection", 225m, 1)]),
-            ("Office Plumbing Fit-out", 0, QuoteStatus.Viewed, 6, 24, [("Toilet Installation", 420m, 3), ("Standard Labor (per hr)", 95m, 12)]),
+            ("Office Plumbing Fit-out", 0, QuoteStatus.Sent, 6, 24, [("Toilet Installation", 420m, 3), ("Standard Labor (per hr)", 95m, 12)]),
             ("Emergency Pipe Repair", 2, QuoteStatus.Draft, 0, 30, [("Emergency Call-out", 250m, 1), ("PEX Pipe (per ft)", 4.75m, 25)]),
             ("Water Heater Install", 3, QuoteStatus.Declined, 20, 10, [("50 Gal Water Heater", 1150m, 1), ("Haul-away & Disposal", 75m, 1)]),
             ("Annual Boiler Service and Full Heating System Safety Inspection for All Units", 4, QuoteStatus.Expired, 75, 30, [("Boiler Service", 320m, 4), ("Safety Inspection", 140m, 4)]),
