@@ -5,36 +5,49 @@ using QuoteCraft.Data.Remote;
 
 namespace QuoteCraft.Services;
 
+// Trimmed heads (WebAssembly): the JSON payload types are this assembly's own (DTOs and anonymous types), and
+// Platforms/WebAssembly/LinkerConfig.xml preserves the assembly whole, so reflection serialization finds their members.
+[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026",
+    Justification = "Serialized types are in this assembly, which LinkerConfig.xml preserves.")]
 public class AuthService : IAuthService
 {
     private readonly HttpClient _http;
     private readonly ILogger<AuthService> _logger;
+    private readonly SupabaseConfig _config;
     private readonly string _supabaseUrl;
     private readonly string _supabaseAnonKey;
     private AuthState _currentState;
-    private static readonly string _tokenFilePath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "QuoteCraft", ".auth_token");
+
+    // The refresh token: in the platform's vault on Android, iOS and WinAppSDK, a file elsewhere (DECISIONS D13).
+    private readonly StoredSecret _storedSession =
+        new("auth-session", AppStorage.Combine(".auth_token"), StoredSecret.PlatformVault);
 
     public event Action<AuthState>? AuthStateChanged;
 
-    public AuthService(HttpClient httpClient, ILogger<AuthService> logger)
+    public AuthService(HttpClient httpClient, SupabaseConfig config, ILogger<AuthService> logger)
     {
         _http = httpClient;
         _logger = logger;
-
-        // These should come from configuration; placeholder values for setup
-        _supabaseUrl = SupabaseConfig.Url;
-        _supabaseAnonKey = SupabaseConfig.AnonKey;
+        _config = config;
+        _supabaseUrl = config.Url;
+        _supabaseAnonKey = config.AnonKey;
 
         _currentState = new AuthState(false, null, null, null, null);
-        _ = RestoreSessionAsync();
+
+        // Local-first: with no Supabase project there is no account to restore.
+        if (config.IsConfigured)
+        {
+            _ = RestoreSessionAsync();
+        }
     }
+
+    public bool IsAvailable => _config.IsConfigured;
 
     public AuthState CurrentState => _currentState;
 
     public async Task<AuthState> SignUpAsync(string email, string password)
     {
+        _config.EnsureConfigured();
         var url = $"{_supabaseUrl}/auth/v1/signup";
         var body = new { email, password };
 
@@ -48,6 +61,7 @@ public class AuthService : IAuthService
 
     public async Task<AuthState> SignInAsync(string email, string password)
     {
+        _config.EnsureConfigured();
         var url = $"{_supabaseUrl}/auth/v1/token?grant_type=password";
         var body = new { email, password };
 
@@ -61,6 +75,7 @@ public class AuthService : IAuthService
 
     public async Task<AuthState> SignInWithMagicLinkAsync(string email)
     {
+        _config.EnsureConfigured();
         var url = $"{_supabaseUrl}/auth/v1/magiclink";
         var body = new { email };
 
@@ -119,36 +134,6 @@ public class AuthService : IAuthService
         }
     }
 
-    public async Task<bool> IsSessionValidAsync()
-    {
-        if (!_currentState.IsAuthenticated || string.IsNullOrEmpty(_currentState.AccessToken))
-            return false;
-
-        try
-        {
-            var url = $"{_supabaseUrl}/auth/v1/user";
-            var request = new HttpRequestMessage(HttpMethod.Get, url);
-            request.Headers.Add("apikey", _supabaseAnonKey);
-            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _currentState.AccessToken);
-
-            var response = await _http.SendAsync(request);
-            if (response.IsSuccessStatusCode) return true;
-
-            // Try refresh if access token expired
-            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-            {
-                var refreshed = await RefreshSessionAsync();
-                return refreshed.IsAuthenticated;
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Session validation failed");
-        }
-
-        return false;
-    }
-
     private HttpRequestMessage CreateAuthRequest(HttpMethod method, string url, object? body = null)
     {
         var request = new HttpRequestMessage(method, url);
@@ -186,9 +171,8 @@ public class AuthService : IAuthService
     {
         try
         {
-            if (!File.Exists(_tokenFilePath)) return;
+            if (_storedSession.Read() is not { } json) return;
 
-            var json = await File.ReadAllTextAsync(_tokenFilePath);
             var stored = JsonSerializer.Deserialize<StoredSession>(json);
             if (stored?.RefreshToken is null) return;
 
@@ -201,22 +185,29 @@ public class AuthService : IAuthService
         }
     }
 
-    private static void PersistToken(AuthState state)
+    private void PersistToken(AuthState state)
     {
         try
         {
-            var dir = Path.GetDirectoryName(_tokenFilePath)!;
-            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-
             var stored = new StoredSession(state.UserId, state.Email, state.RefreshToken);
-            File.WriteAllText(_tokenFilePath, JsonSerializer.Serialize(stored));
+            _storedSession.Write(JsonSerializer.Serialize(stored));
         }
-        catch { }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to store the auth session");
+        }
     }
 
-    private static void DeleteStoredToken()
+    private void DeleteStoredToken()
     {
-        try { if (File.Exists(_tokenFilePath)) File.Delete(_tokenFilePath); } catch { }
+        try
+        {
+            _storedSession.Delete();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to delete the stored auth session");
+        }
     }
 
     private record StoredSession(string? UserId, string? Email, string? RefreshToken);

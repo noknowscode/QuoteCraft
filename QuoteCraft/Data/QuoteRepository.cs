@@ -1,5 +1,4 @@
 using Microsoft.Data.Sqlite;
-using QuoteCraft.Models;
 
 namespace QuoteCraft.Data;
 
@@ -9,13 +8,16 @@ public interface IQuoteRepository
     Task<QuoteEntity?> GetByIdAsync(string id);
     Task SaveAsync(QuoteEntity quote);
     Task DeleteAsync(string id);
-    Task<int> GetQuoteCountAsync();
+    Task<string> NextQuoteNumberAsync(string prefix, int year);
     Task SaveLineItemAsync(LineItemEntity item);
-    Task SaveLineItemsBatchAsync(params LineItemEntity[] items);
+    Task ReorderLineItemsAsync(string quoteId, IReadOnlyList<string> orderedIds);
     Task DeleteLineItemAsync(string id);
     Task<List<LineItemEntity>> GetLineItemsAsync(string quoteId);
     Task<int> CountCreatedSinceAsync(DateTimeOffset since);
     Task<List<QuoteEntity>> GetExpirableAsync(DateTimeOffset now);
+
+    /// <summary>Marks a Sent or Viewed quote Expired; false when it is no longer Sent or Viewed (or is gone).</summary>
+    Task<bool> MarkExpiredAsync(string id);
 }
 
 public class QuoteRepository : IQuoteRepository
@@ -31,7 +33,7 @@ public class QuoteRepository : IQuoteRepository
 
     public async Task<List<QuoteEntity>> GetAllAsync()
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT * FROM quotes WHERE is_deleted = 0 ORDER BY created_at DESC";
@@ -45,7 +47,7 @@ public class QuoteRepository : IQuoteRepository
 
         // Load all line items in one query instead of N+1
         var lineCmd = conn.CreateCommand();
-        lineCmd.CommandText = "SELECT * FROM line_items ORDER BY sort_order";
+        lineCmd.CommandText = "SELECT * FROM line_items ORDER BY sort_order, rowid";
         var itemsByQuote = new Dictionary<string, List<LineItemEntity>>();
         using (var reader = await lineCmd.ExecuteReaderAsync())
         {
@@ -71,7 +73,7 @@ public class QuoteRepository : IQuoteRepository
 
     public async Task<QuoteEntity?> GetByIdAsync(string id)
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT * FROM quotes WHERE id = @id AND is_deleted = 0";
@@ -89,7 +91,7 @@ public class QuoteRepository : IQuoteRepository
 
     public async Task SaveAsync(QuoteEntity quote)
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         quote.UpdatedAt = DateTimeOffset.UtcNow;
 
@@ -127,10 +129,12 @@ public class QuoteRepository : IQuoteRepository
 
     public async Task DeleteAsync(string id)
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
+        using var tx = conn.BeginTransaction();
 
-        // Soft-delete the quote
+        // Soft-delete the quote (it keeps its number: numbers are never reused)
         var cmd = conn.CreateCommand();
+        cmd.Transaction = tx;
         cmd.CommandText = "UPDATE quotes SET is_deleted = 1, updated_at = @updated_at WHERE id = @id";
         cmd.Parameters.AddWithValue("@id", id);
         cmd.Parameters.AddWithValue("@updated_at", DateTimeOffset.UtcNow.ToString("O"));
@@ -139,27 +143,56 @@ public class QuoteRepository : IQuoteRepository
 
         // Hard-delete orphaned line items
         var lineCmd = conn.CreateCommand();
+        lineCmd.Transaction = tx;
         lineCmd.CommandText = "DELETE FROM line_items WHERE quote_id = @id";
         lineCmd.Parameters.AddWithValue("@id", id);
         await lineCmd.ExecuteNonQueryAsync();
+        tx.Commit();
 
-        // Clean up photo files from disk
         _photoService.DeletePhotosForQuote(id);
     }
 
-    public async Task<int> GetQuoteCountAsync()
+    /// <summary>
+    /// The next number of <paramref name="year"/>'s counter (it only goes up), skipping any number a quote already has
+    /// (sample data, or a prefix changed and changed back). The quotes table also refuses a duplicate.
+    /// </summary>
+    public async Task<string> NextQuoteNumberAsync(string prefix, int year)
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
-        var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT COUNT(*) FROM quotes WHERE is_deleted = 0";
-        var result = await cmd.ExecuteScalarAsync();
-        return Convert.ToInt32(result);
+        using var tx = conn.BeginTransaction();
+        while (true)
+        {
+            var next = conn.CreateCommand();
+            next.Transaction = tx;
+            next.CommandText = """
+                INSERT INTO quote_counters (year, last_number) VALUES (@year, 1)
+                ON CONFLICT(year) DO UPDATE SET last_number = last_number + 1
+                RETURNING last_number
+                """;
+            next.Parameters.AddWithValue("@year", year);
+            var number = QuoteNumberGenerator.Format(prefix, year, Convert.ToInt32(await next.ExecuteScalarAsync()));
+
+            var taken = conn.CreateCommand();
+            taken.Transaction = tx;
+            taken.CommandText = "SELECT EXISTS (SELECT 1 FROM quotes WHERE quote_number = @number)";
+            taken.Parameters.AddWithValue("@number", number);
+            if (Convert.ToInt32(await taken.ExecuteScalarAsync()) == 0)
+            {
+                tx.Commit();
+                return number;
+            }
+        }
     }
 
+    /// <summary>
+    /// A new item goes after the quote's last item; an edited item keeps its place (its description, price and
+    /// quantity change). <see cref="LineItemEntity.SortOrder"/> is not read: the order changes only through
+    /// <see cref="ReorderLineItemsAsync"/>.
+    /// </summary>
     public async Task SaveLineItemAsync(LineItemEntity item)
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         item.UpdatedAt = DateTimeOffset.UtcNow;
 
@@ -168,61 +201,51 @@ public class QuoteRepository : IQuoteRepository
             INSERT INTO line_items
             (id, quote_id, description, unit_price, quantity, sort_order, updated_at)
             VALUES
-            (@id, @quote_id, @description, @unit_price, @quantity, @sort_order, @updated_at)
+            (@id, @quote_id, @description, @unit_price, @quantity,
+             (SELECT COALESCE(MAX(sort_order), -1) + 1 FROM line_items WHERE quote_id = @quote_id), @updated_at)
             ON CONFLICT(id) DO UPDATE SET
-                quote_id=excluded.quote_id, description=excluded.description,
-                unit_price=excluded.unit_price, quantity=excluded.quantity,
-                sort_order=excluded.sort_order, updated_at=excluded.updated_at
+                description=excluded.description, unit_price=excluded.unit_price,
+                quantity=excluded.quantity, updated_at=excluded.updated_at
             """;
         cmd.Parameters.AddWithValue("@id", item.Id);
         cmd.Parameters.AddWithValue("@quote_id", item.QuoteId);
         cmd.Parameters.AddWithValue("@description", item.Description);
         cmd.Parameters.AddWithValue("@unit_price", (double)item.UnitPrice);
         cmd.Parameters.AddWithValue("@quantity", item.Quantity);
-        cmd.Parameters.AddWithValue("@sort_order", item.SortOrder);
         cmd.Parameters.AddWithValue("@updated_at", item.UpdatedAt.ToString("O"));
         await cmd.ExecuteNonQueryAsync();
     }
 
-    public async Task SaveLineItemsBatchAsync(params LineItemEntity[] items)
+    /// <summary>
+    /// Numbers the quote's items 0, 1, 2… in the given order, in one transaction. Rewriting every position (rather
+    /// than swapping two) also repairs items that share a position.
+    /// </summary>
+    public async Task ReorderLineItemsAsync(string quoteId, IReadOnlyList<string> orderedIds)
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         using var transaction = conn.BeginTransaction();
-        try
+        var now = DateTimeOffset.UtcNow.ToString("O");
+        for (var position = 0; position < orderedIds.Count; position++)
         {
-            foreach (var item in items)
-            {
-                item.UpdatedAt = DateTimeOffset.UtcNow;
-                var cmd = conn.CreateCommand();
-                cmd.Transaction = transaction;
-                cmd.CommandText = """
-                    INSERT OR REPLACE INTO line_items
-                    (id, quote_id, description, unit_price, quantity, sort_order, updated_at)
-                    VALUES
-                    (@id, @quote_id, @description, @unit_price, @quantity, @sort_order, @updated_at)
-                    """;
-                cmd.Parameters.AddWithValue("@id", item.Id);
-                cmd.Parameters.AddWithValue("@quote_id", item.QuoteId);
-                cmd.Parameters.AddWithValue("@description", item.Description);
-                cmd.Parameters.AddWithValue("@unit_price", (double)item.UnitPrice);
-                cmd.Parameters.AddWithValue("@quantity", item.Quantity);
-                cmd.Parameters.AddWithValue("@sort_order", item.SortOrder);
-                cmd.Parameters.AddWithValue("@updated_at", item.UpdatedAt.ToString("O"));
-                await cmd.ExecuteNonQueryAsync();
-            }
-            transaction.Commit();
+            var cmd = conn.CreateCommand();
+            cmd.Transaction = transaction;
+            cmd.CommandText = """
+                UPDATE line_items SET sort_order = @sort_order, updated_at = @updated_at
+                WHERE id = @id AND quote_id = @quote_id
+                """;
+            cmd.Parameters.AddWithValue("@sort_order", position);
+            cmd.Parameters.AddWithValue("@updated_at", now);
+            cmd.Parameters.AddWithValue("@id", orderedIds[position]);
+            cmd.Parameters.AddWithValue("@quote_id", quoteId);
+            await cmd.ExecuteNonQueryAsync();
         }
-        catch
-        {
-            transaction.Rollback();
-            throw;
-        }
+        transaction.Commit();
     }
 
     public async Task DeleteLineItemAsync(string id)
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "DELETE FROM line_items WHERE id = @id";
@@ -232,10 +255,10 @@ public class QuoteRepository : IQuoteRepository
 
     public async Task<List<LineItemEntity>> GetLineItemsAsync(string quoteId)
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT * FROM line_items WHERE quote_id = @quote_id ORDER BY sort_order";
+        cmd.CommandText = "SELECT * FROM line_items WHERE quote_id = @quote_id ORDER BY sort_order, rowid";
         cmd.Parameters.AddWithValue("@quote_id", quoteId);
 
         var items = new List<LineItemEntity>();
@@ -249,7 +272,7 @@ public class QuoteRepository : IQuoteRepository
 
     public async Task<int> CountCreatedSinceAsync(DateTimeOffset since)
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT COUNT(*) FROM quotes WHERE is_deleted = 0 AND created_at >= @since";
@@ -257,15 +280,31 @@ public class QuoteRepository : IQuoteRepository
         return Convert.ToInt32(await cmd.ExecuteScalarAsync());
     }
 
+    public async Task<bool> MarkExpiredAsync(string id)
+    {
+        await using var conn = await _db.OpenConnectionAsync();
+
+        // Only from Sent or Viewed, in one statement: a second expiry of the same quote changes nothing.
+        var cmd = conn.CreateCommand();
+        cmd.CommandText = """
+            UPDATE quotes SET status = 'Expired', updated_at = @updated_at
+            WHERE id = @id AND is_deleted = 0 AND status IN ('Sent', 'Viewed')
+            """;
+        cmd.Parameters.AddWithValue("@id", id);
+        cmd.Parameters.AddWithValue("@updated_at", DateTimeOffset.UtcNow.ToString("O"));
+        return await cmd.ExecuteNonQueryAsync() == 1;
+    }
+
+    /// <summary>Sent and Viewed quotes valid until before <paramref name="now"/>; a Draft never expires.</summary>
     public async Task<List<QuoteEntity>> GetExpirableAsync(DateTimeOffset now)
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = """
             SELECT * FROM quotes
             WHERE is_deleted = 0
-              AND status IN ('Draft', 'Sent', 'Viewed')
+              AND status IN ('Sent', 'Viewed')
               AND valid_until IS NOT NULL
               AND valid_until < @now
             """;

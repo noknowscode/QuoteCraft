@@ -13,11 +13,8 @@ public class OnboardingService : IOnboardingService
 
     public OnboardingService()
     {
-        var dir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "QuoteCraft");
-        Directory.CreateDirectory(dir);
-        _flagFilePath = Path.Combine(dir, ".onboarding_complete");
+        Directory.CreateDirectory(AppStorage.Root);
+        _flagFilePath = AppStorage.Combine(".onboarding_complete");
     }
 
     public Task<bool> IsOnboardingCompleteAsync()

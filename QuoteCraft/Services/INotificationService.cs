@@ -8,6 +8,8 @@ public interface INotificationService
     Task<List<NotificationEntity>> GetAllAsync();
     Task<int> GetUnreadCountAsync();
     Task CreateAsync(NotificationType type, string title, string message, string? quoteId = null);
-    Task MarkAsReadAsync(string notificationId);
+
+    /// <summary>True when a notification of this type for this quote was created at or after <paramref name="since"/>.</summary>
+    Task<bool> ExistsAsync(NotificationType type, string quoteId, DateTimeOffset since);
     Task MarkAllAsReadAsync();
 }

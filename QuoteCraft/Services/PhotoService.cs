@@ -4,7 +4,7 @@ public interface IPhotoService
 {
     string GetPhotoDirectory(string quoteId);
     List<string> GetPhotos(string quoteId);
-    Task<string?> AddPhotoAsync(string quoteId, string sourceFilePath);
+    Task<string?> AddPhotoAsync(string quoteId, Stream source, string extension);
     void DeletePhoto(string photoPath);
     void DeletePhotosForQuote(string quoteId);
     int MaxPhotos => 5;
@@ -12,9 +12,7 @@ public interface IPhotoService
 
 public class PhotoService : IPhotoService
 {
-    private static readonly string BaseDir = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "QuoteCraft", "photos");
+    private static readonly string BaseDir = AppStorage.Combine("photos");
 
     public int MaxPhotos => 5;
 
@@ -39,22 +37,28 @@ public class PhotoService : IPhotoService
 
     private const long MaxFileSizeBytes = 1_048_576; // 1 MB
 
-    public async Task<string?> AddPhotoAsync(string quoteId, string sourceFilePath)
+    /// <summary>
+    /// Copies a picked image into the quote's photo folder. Takes a stream because a picked file's path is not a
+    /// readable file system path on every head (WebAssembly, Android, iOS).
+    /// </summary>
+    public async Task<string?> AddPhotoAsync(string quoteId, Stream source, string extension)
     {
         var existing = GetPhotos(quoteId);
         if (existing.Count >= MaxPhotos)
             return null;
 
         var dir = GetPhotoDirectory(quoteId);
-        var ext = Path.GetExtension(sourceFilePath).ToLowerInvariant();
+        var ext = extension.ToLowerInvariant();
         if (string.IsNullOrEmpty(ext)) ext = ".jpg";
 
         var fileName = $"{Guid.NewGuid():N}{ext}";
         var destPath = Path.Combine(dir, fileName);
 
-        await Task.Run(() => File.Copy(sourceFilePath, destPath, overwrite: true));
+        await using (var destination = File.Create(destPath))
+        {
+            await source.CopyToAsync(destination);
+        }
 
-        // Compress if file exceeds 1 MB
         await CompressIfNeededAsync(destPath);
 
         return destPath;
@@ -84,7 +88,9 @@ public class PhotoService : IPhotoService
                 var newWidth = Math.Max(1, (int)(original.Width * scale));
                 var newHeight = Math.Max(1, (int)(original.Height * scale));
 
-                using var resized = original.Resize(new SkiaSharp.SKImageInfo(newWidth, newHeight), SkiaSharp.SKFilterQuality.Medium);
+                using var resized = original.Resize(
+                    new SkiaSharp.SKImageInfo(newWidth, newHeight),
+                    new SkiaSharp.SKSamplingOptions(SkiaSharp.SKFilterMode.Linear, SkiaSharp.SKMipmapMode.Linear));
                 if (resized is null) return;
 
                 using var image = SkiaSharp.SKImage.FromBitmap(resized);
@@ -93,9 +99,10 @@ public class PhotoService : IPhotoService
                 output.SetLength(0);
                 data.SaveTo(output);
             }
-            catch
+            catch (Exception ex)
             {
-                // If compression fails, keep the original file
+                // The photo stays as it was added, only larger than the 1 MB aim.
+                ErrorReporter.Log(ex, "Compressing a photo failed; the original is kept");
             }
         });
     }

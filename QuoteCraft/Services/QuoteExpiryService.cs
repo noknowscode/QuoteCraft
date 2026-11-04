@@ -1,26 +1,27 @@
 namespace QuoteCraft.Services;
 
 /// <summary>
-/// Background service that periodically checks for quotes past their valid_until date
-/// and auto-expires them. Also sends reminder notifications 3 days before expiry.
+/// Expires Sent and Viewed quotes past their valid-until date (PRD F17.1) and adds one reminder notification per quote
+/// in the 3 days before (F17.2). App.OnLaunched starts it; it checks at once and then every 5 minutes. The rules are
+/// <see cref="QuoteStatusService"/>'s.
 /// </summary>
 public class QuoteExpiryService : IDisposable
 {
     private readonly IQuoteRepository _quoteRepo;
+    private readonly QuoteStatusService _status;
     private readonly INotificationService _notificationService;
-    private readonly IStatusHistoryRepository _statusHistoryRepo;
     private readonly ILogger<QuoteExpiryService> _logger;
     private Timer? _timer;
 
     public QuoteExpiryService(
         IQuoteRepository quoteRepo,
+        QuoteStatusService status,
         INotificationService notificationService,
-        IStatusHistoryRepository statusHistoryRepo,
         ILogger<QuoteExpiryService> logger)
     {
         _quoteRepo = quoteRepo;
+        _status = status;
         _notificationService = notificationService;
-        _statusHistoryRepo = statusHistoryRepo;
         _logger = logger;
     }
 
@@ -45,32 +46,29 @@ public class QuoteExpiryService : IDisposable
         {
             var now = DateTimeOffset.UtcNow;
 
-            // Targeted query: only quotes past valid_until (no full table scan)
-            var expirable = await _quoteRepo.GetExpirableAsync(now);
-
-            foreach (var q in expirable)
+            foreach (var q in await _status.ExpireOverdueAsync(now))
             {
-                q.Status = QuoteStatus.Expired;
-                q.UpdatedAt = DateTimeOffset.UtcNow;
-                await _quoteRepo.SaveAsync(q);
-                await _statusHistoryRepo.RecordAsync(q.Id, "Expired", "system");
-
                 _logger.LogInformation("Auto-expired quote {QuoteNumber}", q.QuoteNumber);
             }
 
-            // Send reminder notifications for quotes expiring within 3 days
-            // Reuse targeted query: quotes that will expire between now and now+3days
-            var expiringIn3Days = await _quoteRepo.GetExpirableAsync(now.AddDays(3));
-            expiringIn3Days = expiringIn3Days.Where(q =>
-                q.ValidUntil.HasValue && q.ValidUntil.Value > now).ToList();
-
-            foreach (var q in expiringIn3Days)
+            // One reminder per quote and valid-until date: the check runs every 5 minutes, and a quote reopened or given
+            // a new date in the editor has a new one, so "a reminder since 3 days before this date" is the test.
+            foreach (var q in await _quoteRepo.GetExpirableAsync(now.AddDays(3)))
             {
-                var daysLeft = (int)Math.Ceiling((q.ValidUntil!.Value - now).TotalDays);
+                if (q.ValidUntil is not { } validUntil || validUntil <= now
+                    || await _notificationService.ExistsAsync(NotificationType.QuoteExpiring, q.Id, validUntil.AddDays(-3)))
+                {
+                    continue;
+                }
+
+                // Calendar days in UTC, as the date is stored and shown: a quote valid through Friday expires "in 2
+                // days" on Wednesday, whatever the time.
+                var daysLeft = (validUntil.UtcDateTime.Date - now.UtcDateTime.Date).Days;
+                var when = daysLeft <= 0 ? "today" : $"in {daysLeft} day{(daysLeft != 1 ? "s" : "")}";
                 await _notificationService.CreateAsync(
                     NotificationType.QuoteExpiring,
                     "Quote Expiring Soon",
-                    $"Quote #{q.QuoteNumber} expires in {daysLeft} day{(daysLeft != 1 ? "s" : "")}.",
+                    $"Quote #{q.QuoteNumber} expires {when}.",
                     q.Id);
             }
         }

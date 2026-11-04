@@ -1,7 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using QuoteCraft.Services;
 
 namespace QuoteCraft.Data.Remote;
 
@@ -9,11 +8,16 @@ namespace QuoteCraft.Data.Remote;
 /// HTTP client wrapper for Supabase REST API.
 /// Handles auth headers, token refresh, and typed API methods.
 /// </summary>
+// Trimmed heads (WebAssembly): the JSON payload types are this assembly's own (DTOs and anonymous types), and
+// Platforms/WebAssembly/LinkerConfig.xml preserves the assembly whole, so reflection serialization finds their members.
+[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026",
+    Justification = "Serialized types are in this assembly, which LinkerConfig.xml preserves.")]
 public class SupabaseClient
 {
     private readonly HttpClient _http;
     private readonly IAuthService _authService;
     private readonly ILogger<SupabaseClient> _logger;
+    private readonly SupabaseConfig _config;
     private readonly string _baseUrl;
     private readonly string _anonKey;
 
@@ -23,13 +27,14 @@ public class SupabaseClient
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     };
 
-    public SupabaseClient(HttpClient httpClient, IAuthService authService, ILogger<SupabaseClient> logger)
+    public SupabaseClient(HttpClient httpClient, IAuthService authService, SupabaseConfig config, ILogger<SupabaseClient> logger)
     {
         _http = httpClient;
         _authService = authService;
         _logger = logger;
-        _baseUrl = SupabaseConfig.Url;
-        _anonKey = SupabaseConfig.AnonKey;
+        _config = config;
+        _baseUrl = config.Url;
+        _anonKey = config.AnonKey;
     }
 
     /// <summary>
@@ -49,20 +54,6 @@ public class SupabaseClient
     }
 
     /// <summary>
-    /// UPSERT (insert or update on conflict) rows into a Supabase table.
-    /// </summary>
-    public async Task UpsertAsync<T>(string table, T data)
-    {
-        var url = $"{_baseUrl}/rest/v1/{table}";
-        var request = CreateRequest(HttpMethod.Post, url);
-        request.Headers.Add("Prefer", "resolution=merge-duplicates");
-        request.Content = JsonContent.Create(data, options: _jsonOptions);
-
-        var response = await SendWithRetryAsync(request);
-        response.EnsureSuccessStatusCode();
-    }
-
-    /// <summary>
     /// UPSERT multiple rows in batch.
     /// </summary>
     public async Task UpsertBatchAsync<T>(string table, List<T> data)
@@ -73,18 +64,6 @@ public class SupabaseClient
         var request = CreateRequest(HttpMethod.Post, url);
         request.Headers.Add("Prefer", "resolution=merge-duplicates");
         request.Content = JsonContent.Create(data, options: _jsonOptions);
-
-        var response = await SendWithRetryAsync(request);
-        response.EnsureSuccessStatusCode();
-    }
-
-    /// <summary>
-    /// DELETE rows matching a filter.
-    /// </summary>
-    public async Task DeleteAsync(string table, string filterParam)
-    {
-        var url = $"{_baseUrl}/rest/v1/{table}?{filterParam}";
-        var request = CreateRequest(HttpMethod.Delete, url);
 
         var response = await SendWithRetryAsync(request);
         response.EnsureSuccessStatusCode();
@@ -106,24 +85,10 @@ public class SupabaseClient
         return await response.Content.ReadFromJsonAsync<T>(_jsonOptions);
     }
 
-    /// <summary>
-    /// Invoke a Supabase Edge Function, returning raw string response.
-    /// </summary>
-    public async Task<string> InvokeFunctionRawAsync(string functionName, object? body = null)
-    {
-        var url = $"{_baseUrl}/functions/v1/{functionName}";
-        var request = CreateRequest(HttpMethod.Post, url);
-        if (body is not null)
-            request.Content = JsonContent.Create(body, options: _jsonOptions);
-
-        var response = await SendWithRetryAsync(request);
-        response.EnsureSuccessStatusCode();
-
-        return await response.Content.ReadAsStringAsync();
-    }
-
     private HttpRequestMessage CreateRequest(HttpMethod method, string url)
     {
+        _config.EnsureConfigured();
+
         var request = new HttpRequestMessage(method, url);
         request.Headers.Add("apikey", _anonKey);
 
@@ -145,12 +110,11 @@ public class SupabaseClient
         {
             _logger.LogInformation("Access token expired, attempting refresh");
             var refreshed = await _authService.RefreshSessionAsync();
-            if (refreshed.IsAuthenticated)
+            if (refreshed is { IsAuthenticated: true, AccessToken: { } token })
             {
-                // Clone the request with new token
                 var retry = new HttpRequestMessage(request.Method, request.RequestUri);
                 retry.Headers.Add("apikey", _anonKey);
-                retry.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", refreshed.AccessToken!);
+                retry.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
                 if (request.Content is not null)
                 {
                     var contentBytes = await request.Content.ReadAsByteArrayAsync();

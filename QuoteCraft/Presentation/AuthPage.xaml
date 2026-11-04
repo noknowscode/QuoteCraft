@@ -4,93 +4,85 @@
       xmlns:local="using:QuoteCraft.Presentation"
       xmlns:utu="using:Uno.Toolkit.UI"
       xmlns:um="using:Uno.Material"
-      xmlns:mvux="using:Uno.Extensions.Reactive.UI"
       Background="{ThemeResource BackgroundBrush}">
 
   <Grid utu:SafeArea.Insets="All"
         HorizontalAlignment="Center" VerticalAlignment="Center"
-        MaxWidth="400" Padding="32">
+        MaxWidth="{StaticResource DialogMinWidth}" Padding="{utu:Responsive Narrow={StaticResource Inset16}, Normal={StaticResource Inset32}}">
 
-    <StackPanel Spacing="24">
+    <StackPanel Spacing="{StaticResource Space24}">
 
       <!-- Brand -->
-      <StackPanel Spacing="8" HorizontalAlignment="Center">
-        <Border Background="{StaticResource AppBarBackgroundBrush}"
-                Width="64" Height="64" CornerRadius="16">
-          <TextBlock Text="QC" Foreground="{StaticResource AppBarForegroundBrush}"
-                     FontWeight="Bold" FontSize="24"
+      <StackPanel Spacing="{StaticResource Space8}" HorizontalAlignment="Center">
+        <utu:CardContentControl Style="{StaticResource StaticCardStyle}" BorderThickness="0" Background="{StaticResource AppBarBackgroundFixedBrush}"
+                Width="{StaticResource LogoSizeLarge}" Height="{StaticResource LogoSizeLarge}" CornerRadius="{StaticResource RadiusXl}">
+          <TextBlock Text="QC" Foreground="{StaticResource AppBarForegroundFixedBrush}"
+                     Style="{StaticResource HeadlineSmallBold}"
                      HorizontalAlignment="Center" VerticalAlignment="Center" />
-        </Border>
+        </utu:CardContentControl>
         <TextBlock Text="QuoteCraft"
                    Style="{StaticResource HeadlineSmall}"
                    FontWeight="Bold"
                    HorizontalAlignment="Center" />
-        <TextBlock x:Uid="AuthPage.Label.Subtitle"
-                   Text="Professional quotes for contractors"
+        <TextBlock Text="Professional quotes for contractors"
                    Style="{StaticResource BodyMedium}"
                    Foreground="{ThemeResource OnSurfaceVariantBrush}"
                    HorizontalAlignment="Center" />
       </StackPanel>
 
-      <!-- Error message -->
-      <mvux:FeedView Source="{Binding ErrorMessage}">
-        <DataTemplate>
-          <TextBlock Text="{Binding Data}"
-                     Style="{StaticResource BodySmall}"
-                     Foreground="{ThemeResource ErrorBrush}"
-                     TextWrapping="Wrap"
-                     HorizontalAlignment="Center"
-                     Visibility="{Binding Data, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert}" />
-        </DataTemplate>
-      </mvux:FeedView>
+      <!-- What stopped sign-in (string and bool states bind directly; a FeedView over them never renders) -->
+      <TextBlock Text="{Binding ErrorMessage}"
+                 Style="{StaticResource BodyMedium}"
+                 Foreground="{ThemeResource ErrorBrush}"
+                 TextWrapping="Wrap"
+                 HorizontalAlignment="Center"
+                 AutomationProperties.LiveSetting="Assertive"
+                 Visibility="{Binding ErrorMessage, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert, FallbackValue=Collapsed}" />
 
       <!-- Magic link sent confirmation -->
-      <mvux:FeedView Source="{Binding MagicLinkSent}">
-        <DataTemplate>
-          <Border Background="{ThemeResource TertiaryContainerBrush}"
-                  CornerRadius="8" Padding="16"
-                  Visibility="{Binding Data}">
-            <TextBlock Text="Check your email for a sign-in link."
-                       Style="{StaticResource BodyMedium}"
-                       Foreground="{ThemeResource OnTertiaryContainerBrush}"
-                       TextWrapping="Wrap" HorizontalAlignment="Center" />
-          </Border>
-        </DataTemplate>
-      </mvux:FeedView>
+      <utu:CardContentControl Style="{StaticResource StaticCardStyle}" BorderThickness="0" Background="{ThemeResource TertiaryContainerBrush}"
+                              CornerRadius="{StaticResource RadiusMd}" Padding="{StaticResource Inset16}"
+                              Visibility="{Binding MagicLinkSent, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
+        <TextBlock Text="Check your email for a sign-in link."
+                   Style="{StaticResource BodyMedium}"
+                   Foreground="{ThemeResource OnTertiaryContainerBrush}"
+                   TextWrapping="Wrap" HorizontalAlignment="Center"
+                   AutomationProperties.LiveSetting="Polite" />
+      </utu:CardContentControl>
 
-      <!-- Email field -->
-      <TextBox x:Uid="AuthPage.Input.Email"
-               Text="{Binding Email, Mode=TwoWay}"
+      <!-- While signing in, creating the account or sending the link. IsIndeterminate follows IsBusy too: a collapsed
+           indeterminate bar keeps animating (a full CPU core on Skia). -->
+      <ProgressBar IsIndeterminate="{Binding IsBusy}"
+                   AutomationProperties.Name="Signing in"
+                   Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}" />
+
+      <TextBox Text="{Binding Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                PlaceholderText="Email address"
                InputScope="EmailSmtpAddress"
                AutomationProperties.Name="Email"
                Style="{StaticResource MaterialOutlinedTextBoxStyle}" />
 
-      <!-- Password field -->
-      <PasswordBox x:Uid="AuthPage.Input.Password"
-                   Password="{Binding Password, Mode=TwoWay}"
+      <PasswordBox Password="{Binding Password, Mode=TwoWay}"
                    PlaceholderText="Password"
                    AutomationProperties.Name="Password"
                    Style="{StaticResource MaterialOutlinedPasswordBoxStyle}" />
 
-      <!-- Sign In / Sign Up button -->
-      <mvux:FeedView Source="{Binding IsSignUp}">
-        <DataTemplate>
-          <Button Command="{Binding Data, Source={StaticResource FalseValue}, Converter={StaticResource InverseBoolConverter}, ConverterParameter=SignIn}"
-                  HorizontalAlignment="Stretch"
-                  Style="{StaticResource MaterialFilledButtonStyle}">
-            <TextBlock Text="Sign In" />
-          </Button>
-        </DataTemplate>
-      </mvux:FeedView>
-
       <!-- Primary action buttons -->
-      <StackPanel Spacing="12">
+      <StackPanel Spacing="{StaticResource Space12}">
+        <!-- Sign In, or Create Account in sign-up mode -->
         <Button Command="{Binding SignIn}"
                 HorizontalAlignment="Stretch"
                 Style="{StaticResource MaterialFilledButtonStyle}"
-                AutomationProperties.Name="Sign in">
+                AutomationProperties.Name="Sign in"
+                Visibility="{Binding IsSignUp, Converter={StaticResource InverseBoolConverter}, FallbackValue=Visible}">
           <TextBlock Text="Sign In" />
+        </Button>
+        <Button Command="{Binding SignUp}"
+                HorizontalAlignment="Stretch"
+                Style="{StaticResource MaterialFilledButtonStyle}"
+                AutomationProperties.Name="Create account"
+                Visibility="{Binding IsSignUp, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
+          <TextBlock Text="Create Account" />
         </Button>
 
         <Button Command="{Binding SendMagicLink}"
@@ -105,8 +97,8 @@
       <Button Command="{Binding ToggleMode}"
               HorizontalAlignment="Center"
               Style="{StaticResource MaterialTextButtonStyle}"
-              AutomationProperties.Name="Toggle sign up mode">
-        <TextBlock Text="Don't have an account? Sign Up"
+              AutomationProperties.Name="{Binding ModeToggleText}">
+        <TextBlock Text="{Binding ModeToggleText}"
                    Style="{StaticResource BodySmall}"
                    Foreground="{ThemeResource PrimaryBrush}" />
       </Button>

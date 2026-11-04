@@ -10,27 +10,44 @@
       xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
       Background="{ThemeResource BackgroundBrush}">
 
+  <!--
+    Quote editor: one column at every size, capped at ReadingMaxWidth (720) and centred from Normal up. From the top:
+    title, client, tax rate, valid until, line items, totals, photos (a tap opens one enlarged), notes, export, status
+    actions, history.
+    The text fields write to the model as they are typed (UpdateSourceTrigger=PropertyChanged): the top bar's Save
+    takes no focus, so a field that only committed when left would lose its last edit.
+      Narrow   16 px sides; the line-item actions go under the "Line Items" heading; status actions stack full width.
+      Normal / Wide / Widest   wider insets; actions beside their headings; status actions in a row.
+  -->
   <Grid utu:SafeArea.Insets="Top">
     <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
       <RowDefinition />
     </Grid.RowDefinitions>
 
-    <utu:NavigationBar>
+    <!-- The back arrow is an explicit action: it shows (and works) however the editor was opened. -->
+    <utu:NavigationBar IsTabStop="False" MainCommandMode="Action">
       <utu:NavigationBar.Content>
-        <mvux:FeedView Source="{Binding QuoteNumber}">
-          <DataTemplate>
-            <TextBlock Text="{Binding Data}"
-                       Style="{StaticResource TitleMedium}" />
-          </DataTemplate>
-        </mvux:FeedView>
+        <!-- A string state binds directly: a FeedView over IState<string> gets a plain string and never renders -->
+        <TextBlock Text="{Binding QuoteNumber}"
+                   Style="{StaticResource TitleMedium}"
+                   TextTrimming="CharacterEllipsis" />
       </utu:NavigationBar.Content>
       <utu:NavigationBar.MainCommand>
-        <AppBarButton Click="BackButton_Click"
-                      AutomationProperties.Name="Go back" />
+        <AppBarButton Command="{Binding Back}"
+                      Label="Back"
+                      AutomationProperties.Name="Go back"
+                      ToolTipService.ToolTip="Go back">
+          <AppBarButton.Icon>
+            <FontIcon Glyph="&#xE72B;" />
+          </AppBarButton.Icon>
+        </AppBarButton>
       </utu:NavigationBar.MainCommand>
       <utu:NavigationBar.PrimaryCommands>
         <AppBarButton Label="Save"
+                      AutomationProperties.Name="Save quote"
                       Command="{Binding Save}">
           <AppBarButton.Icon>
             <FontIcon Glyph="&#xE74E;" />
@@ -39,127 +56,181 @@
       </utu:NavigationBar.PrimaryCommands>
     </utu:NavigationBar>
 
-    <ScrollViewer Grid.Row="1">
-      <utu:AutoLayout Padding="24"
-                      Spacing="16"
+    <!-- IsIndeterminate follows IsSaving too: a collapsed indeterminate bar keeps animating (a full CPU core on Skia) -->
+    <ProgressBar Grid.Row="1" IsIndeterminate="{Binding IsSaving}"
+                 AutomationProperties.Name="Saving"
+                 Visibility="{Binding IsSaving, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}" />
+
+    <!--
+      What Save, Export PDF or a status button could not do: under the bar, so it is in view whatever the scroll (the
+      top bar's Save is far from the fields below the fold).
+    -->
+    <Border Grid.Row="2"
+            Background="{ThemeResource ErrorContainerBrush}"
+            Padding="{StaticResource Inset16x12}"
+            Visibility="{Binding ValidationError, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert, FallbackValue=Collapsed}">
+      <Grid ColumnSpacing="{StaticResource Space8}" MaxWidth="{StaticResource ReadingMaxWidth}">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <FontIcon Glyph="&#xE783;" FontSize="{StaticResource IconSizeMd}" Foreground="{ThemeResource OnErrorContainerBrush}"
+                  VerticalAlignment="Center" />
+        <TextBlock Grid.Column="1"
+                   Text="{Binding ValidationError}"
+                   Foreground="{ThemeResource OnErrorContainerBrush}"
+                   Style="{StaticResource BodyMedium}"
+                   TextWrapping="Wrap"
+                   VerticalAlignment="Center"
+                   AutomationProperties.LiveSetting="Assertive" />
+      </Grid>
+    </Border>
+
+    <ScrollViewer Grid.Row="3">
+      <utu:AutoLayout Padding="{utu:Responsive Narrow={StaticResource PaneInsetNarrow}, Normal={StaticResource PaneInsetNormal}}"
+                      Spacing="{StaticResource Space16}"
                       Orientation="Vertical"
-                      MaxWidth="700"
+                      MaxWidth="{StaticResource ReadingMaxWidth}"
                       HorizontalAlignment="Stretch">
 
-        <!-- Quote Title -->
         <TextBox Header="Quote Title"
-                 Text="{Binding Title, Mode=TwoWay}"
-                 PlaceholderText="e.g. Kitchen Renovation" />
+                 Text="{Binding Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                 PlaceholderText="e.g. Kitchen Renovation"
+                 AutomationProperties.Name="Quote title" />
 
-        <!-- Client Name -->
-        <AutoSuggestBox x:Name="ClientAutoSuggestBox"
-                        Header="Client Name"
-                        Text="{Binding ClientName, Mode=TwoWay}"
+        <!-- Client Name (Material text field, like the fields around it) -->
+        <AutoSuggestBox Header="Client Name"
+                        Text="{Binding ClientName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         PlaceholderText="Search clients or type a name"
-                        TextChanged="ClientAutoSuggest_TextChanged"
-                        SuggestionChosen="ClientAutoSuggest_SuggestionChosen"
-                        QueryIcon="Find"
+                        TextBoxStyle="{StaticResource MaterialOutlinedTextBoxStyle}"
+                        BorderThickness="1" BorderBrush="{ThemeResource OutlineBrush}" Background="Transparent"
+                        ItemsSource="{Binding ClientSuggestions}"
                         AutomationProperties.Name="Client name" />
 
-        <!-- Tax Rate -->
         <TextBox Header="Tax Rate (%)"
-                 Text="{Binding TaxRate, Mode=TwoWay}"
-                 PlaceholderText="13.0"
-                 InputScope="Number" />
+                 Text="{Binding TaxRate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                 PlaceholderText="13"
+                 InputScope="Number"
+                 AutomationProperties.Name="Tax rate (%)" />
 
-        <!-- Line Items Section -->
+        <!-- Valid Until (PRD F1.8): starts at the Settings default; expiry, the Send email and the PDF use it -->
+        <CalendarDatePicker Header="Valid Until"
+                            Date="{Binding ValidUntil, Mode=TwoWay}"
+                            PlaceholderText="Pick a date"
+                            HorizontalAlignment="Stretch"
+                            AutomationProperties.Name="Valid until" />
+
+        <!-- Line Items Section (the actions go under the heading on Narrow) -->
         <Grid utu:AutoLayout.PrimaryAlignment="Stretch"
-              MinHeight="40">
+              MinHeight="{StaticResource TouchTarget}">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="Auto" />
           </Grid.ColumnDefinitions>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
 
           <TextBlock Text="Line Items"
                      Style="{StaticResource TitleMedium}"
+                     AutomationProperties.HeadingLevel="Level2"
                      VerticalAlignment="Center" />
-          <Button Grid.Column="1"
-                  Click="OpenCatalogBrowser_Click"
-                  Style="{StaticResource MaterialTextButtonStyle}"
-                  Margin="0,0,4,0">
-            <StackPanel Orientation="Horizontal" Spacing="4">
-              <FontIcon Glyph="&#xE82D;" FontSize="14" />
-              <TextBlock Text="From Catalog" />
-            </StackPanel>
-          </Button>
-          <Button Grid.Column="2"
-                  Click="OpenAddLineItem_Click"
-                  Style="{StaticResource MaterialTextButtonStyle}">
-            <StackPanel Orientation="Horizontal" Spacing="4">
-              <FontIcon Glyph="&#xE710;" FontSize="14" />
-              <TextBlock Text="Add Item" />
-            </StackPanel>
-          </Button>
+          <StackPanel Grid.Row="{utu:Responsive Narrow=1, Normal=0}"
+                      Grid.Column="{utu:Responsive Narrow=0, Normal=1}"
+                      Orientation="Horizontal" Spacing="{StaticResource Space4}">
+            <Button Command="{Binding OpenCatalog}"
+                    Style="{StaticResource MaterialTextButtonStyle}"
+                    MinHeight="{StaticResource TouchTarget}"
+                    AutomationProperties.Name="Add from catalog">
+              <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space4}">
+                <FontIcon Glyph="&#xE82D;" FontSize="{StaticResource IconSizeMd}" />
+                <TextBlock Text="From Catalog" />
+              </StackPanel>
+            </Button>
+            <Button Command="{Binding AddLineItem}"
+                    Style="{StaticResource MaterialTextButtonStyle}"
+                    MinHeight="{StaticResource TouchTarget}"
+                    AutomationProperties.Name="Add line item">
+              <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space4}">
+                <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeMd}" />
+                <TextBlock Text="Add Item" />
+              </StackPanel>
+            </Button>
+          </StackPanel>
         </Grid>
 
-        <mvux:FeedView Source="{Binding LineItems}">
+        <mvux:FeedView Source="{Binding LineItems}"
+                       HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
           <DataTemplate>
-            <ItemsControl ItemsSource="{Binding Data}">
+            <ItemsControl ItemsSource="{Binding Data}" IsTabStop="False" HorizontalAlignment="Stretch">
               <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                  <utu:CardContentControl Margin="0,4"
-                                           Style="{StaticResource MaterialOutlinedCardContentControlStyle}"
-                                           Tapped="LineItemCard_Tapped">
+                  <!-- The item is a button (tap, Enter or Space opens it); Move up and down sit beside it in the card -->
+                  <utu:CardContentControl Margin="{StaticResource InsetY4}"
+                                          Style="{StaticResource StaticCardStyle}"
+                                          CornerRadius="{StaticResource RadiusMd}">
                     <Grid>
                       <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                       </Grid.ColumnDefinitions>
-                      <utu:AutoLayout Padding="16"
-                                      Spacing="8"
-                                      Orientation="Vertical">
-                        <TextBlock Text="{Binding Description}"
-                                   Style="{StaticResource BodyLarge}" />
-                        <Grid>
-                          <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                          </Grid.ColumnDefinitions>
+                      <Button Command="{Binding DataContext.EditLineItem, ElementName=EditorRoot}"
+                              CommandParameter="{Binding}"
+                              AutomationProperties.Name="{Binding Description}"
+                              Style="{StaticResource MaterialTextButtonStyle}"
+                              Foreground="{ThemeResource OnSurfaceBrush}"
+                              CornerRadius="{StaticResource RadiusMd}"
+                              Padding="{StaticResource Inset16}"
+                              HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                        <utu:AutoLayout Spacing="{StaticResource Space8}"
+                                        Orientation="Vertical"
+                                        HorizontalAlignment="Stretch">
+                          <TextBlock Text="{Binding Description}"
+                                     Style="{StaticResource BodyLarge}"
+                                     TextWrapping="Wrap" />
+                          <Grid ColumnSpacing="{StaticResource Space8}" utu:AutoLayout.CounterAlignment="Stretch">
+                            <Grid.ColumnDefinitions>
+                              <ColumnDefinition Width="*" />
+                              <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
 
-                          <TextBlock Style="{StaticResource BodySmall}"
-                                     Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                                     VerticalAlignment="Center">
-                            <Run Text="Qty: " />
-                            <Run Text="{Binding Quantity}" />
-                            <Run Text=" x $" />
-                            <Run Text="{Binding UnitPrice}" />
-                          </TextBlock>
+                            <TextBlock Style="{StaticResource BodySmall}"
+                                       Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                                       VerticalAlignment="Center">
+                              <Run Text="Qty " /><Run Text="{Binding Quantity}" /><Run Text=" × " /><Run Text="{Binding UnitPrice, Converter={StaticResource CurrencyFormatConverter}}" />
+                            </TextBlock>
 
-                          <TextBlock Grid.Column="1"
-                                     Style="{StaticResource LabelLarge}"
-                                     Foreground="{ThemeResource PrimaryBrush}"
-                                     VerticalAlignment="Center"
-                                     Margin="8,0">
-                            <Run Text="$" />
-                            <Run Text="{Binding LineTotal}" />
-                          </TextBlock>
-                        </Grid>
-                      </utu:AutoLayout>
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding LineTotal, Converter={StaticResource CurrencyFormatConverter}}"
+                                       Style="{StaticResource LabelLarge}"
+                                       FontFamily="{StaticResource MonospaceFontFamily}"
+                                       Foreground="{ThemeResource PrimaryBrush}"
+                                       VerticalAlignment="Center" />
+                          </Grid>
+                        </utu:AutoLayout>
+                      </Button>
                       <StackPanel Grid.Column="1" VerticalAlignment="Center"
-                                  Spacing="2" Margin="0,0,8,0">
+                                  Spacing="{StaticResource Space2}" Margin="{StaticResource GapEnd8}">
                         <Button Command="{Binding DataContext.MoveLineItemUp, ElementName=EditorRoot}"
                                 CommandParameter="{Binding}"
                                 AutomationProperties.Name="Move line item up"
+                                ToolTipService.ToolTip="Move up"
                                 Style="{StaticResource MaterialTextButtonStyle}"
-                                MinWidth="48" MinHeight="48"
-                                Padding="8"
+                                MinWidth="{StaticResource TouchTargetComfortable}" MinHeight="{StaticResource TouchTargetComfortable}"
+                                Padding="{StaticResource Inset8}"
                                 VerticalAlignment="Center">
-                          <FontIcon Glyph="&#xE70E;" FontSize="12" />
+                          <FontIcon Glyph="&#xE70E;" FontSize="{StaticResource IconSizeSm}" />
                         </Button>
                         <Button Command="{Binding DataContext.MoveLineItemDown, ElementName=EditorRoot}"
                                 CommandParameter="{Binding}"
                                 AutomationProperties.Name="Move line item down"
+                                ToolTipService.ToolTip="Move down"
                                 Style="{StaticResource MaterialTextButtonStyle}"
-                                MinWidth="48" MinHeight="48"
-                                Padding="8"
+                                MinWidth="{StaticResource TouchTargetComfortable}" MinHeight="{StaticResource TouchTargetComfortable}"
+                                Padding="{StaticResource Inset8}"
                                 VerticalAlignment="Center">
-                          <FontIcon Glyph="&#xE70D;" FontSize="12" />
+                          <FontIcon Glyph="&#xE70D;" FontSize="{StaticResource IconSizeSm}" />
                         </Button>
                       </StackPanel>
                     </Grid>
@@ -171,10 +242,10 @@
 
           <mvux:FeedView.NoneTemplate>
             <DataTemplate>
-              <StackPanel HorizontalAlignment="Center" Spacing="8" Margin="0,24">
-                <FontIcon Glyph="&#xE70F;" FontSize="32"
+              <StackPanel HorizontalAlignment="Center" Spacing="{StaticResource Space8}" Margin="{StaticResource InsetY24}">
+                <FontIcon Glyph="&#xE70F;" FontSize="{StaticResource IconSizeEmpty}"
                           Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                          HorizontalAlignment="Center" Opacity="0.6" />
+                          HorizontalAlignment="Center" />
                 <TextBlock Text="No line items yet"
                            Style="{StaticResource BodyLarge}"
                            Foreground="{ThemeResource OnSurfaceVariantBrush}"
@@ -182,58 +253,135 @@
                 <TextBlock Text="Add items from catalog or create custom entries"
                            Style="{StaticResource BodyMedium}"
                            Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                           HorizontalAlignment="Center" Opacity="0.7" />
+                           HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
               </StackPanel>
             </DataTemplate>
           </mvux:FeedView.NoneTemplate>
+
+          <mvux:FeedView.ProgressTemplate>
+            <DataTemplate>
+              <ProgressRing IsActive="True" HorizontalAlignment="Center" Margin="{StaticResource InsetY24}"
+                            AutomationProperties.Name="Loading line items" />
+            </DataTemplate>
+          </mvux:FeedView.ProgressTemplate>
+
+          <mvux:FeedView.ErrorTemplate>
+            <DataTemplate>
+              <StackPanel HorizontalAlignment="Center" Spacing="{StaticResource Space8}" Margin="{StaticResource InsetY24}"
+                          AutomationProperties.LiveSetting="Polite">
+                <TextBlock Text="Line items could not be loaded." Style="{StaticResource BodyLarge}"
+                           HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
+                <Button Content="Retry"
+                        Command="{Binding DataContext.Reload, ElementName=EditorRoot}"
+                        Style="{StaticResource MaterialOutlinedButtonStyle}"
+                        HorizontalAlignment="Center"
+                        AutomationProperties.Name="Retry loading line items" />
+              </StackPanel>
+            </DataTemplate>
+          </mvux:FeedView.ErrorTemplate>
+        </mvux:FeedView>
+
+        <!-- Totals (PRD F1.5): what the PDF will show; recomputed as items change and as the tax rate is typed -->
+        <mvux:FeedView Source="{Binding Totals}"
+                       HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+          <DataTemplate>
+            <utu:CardContentControl Style="{StaticResource TonalCardStyle}"
+                                    CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Inset16}">
+              <Grid RowSpacing="{StaticResource Space8}" ColumnSpacing="{StaticResource Space16}">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock Text="Subtotal" Style="{StaticResource BodyMedium}"
+                           Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                <TextBlock Grid.Column="1"
+                           Text="{Binding Data.Subtotal, Converter={StaticResource CurrencyFormatConverter}}"
+                           Style="{StaticResource BodyMedium}" FontFamily="{StaticResource MonospaceFontFamily}"
+                           HorizontalAlignment="Right" />
+                <TextBlock Grid.Row="1" Text="{Binding Data.TaxLabel}" Style="{StaticResource BodyMedium}"
+                           Foreground="{ThemeResource OnSurfaceVariantBrush}" TextWrapping="Wrap" />
+                <TextBlock Grid.Row="1" Grid.Column="1"
+                           Text="{Binding Data.Tax, Converter={StaticResource CurrencyFormatConverter}}"
+                           Style="{StaticResource BodyMedium}" FontFamily="{StaticResource MonospaceFontFamily}"
+                           HorizontalAlignment="Right" />
+                <TextBlock Grid.Row="2" Text="Total" Style="{StaticResource TitleMediumBold}" />
+                <TextBlock Grid.Row="2" Grid.Column="1"
+                           Text="{Binding Data.Total, Converter={StaticResource CurrencyFormatConverter}}"
+                           Style="{StaticResource TitleMediumBold}" FontFamily="{StaticResource MonospaceFontFamily}"
+                           Foreground="{ThemeResource PrimaryBrush}"
+                           HorizontalAlignment="Right"
+                           AutomationProperties.Name="Total" />
+              </Grid>
+            </utu:CardContentControl>
+          </DataTemplate>
         </mvux:FeedView>
 
         <!-- Photos Section -->
         <Grid utu:AutoLayout.PrimaryAlignment="Stretch"
-              MinHeight="40">
+              MinHeight="{StaticResource TouchTarget}">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
           </Grid.ColumnDefinitions>
           <TextBlock Text="Photos"
                      Style="{StaticResource TitleMedium}"
+                     AutomationProperties.HeadingLevel="Level2"
                      VerticalAlignment="Center" />
           <Button Grid.Column="1"
-                  Click="AddPhoto_Click"
+                  Command="{Binding AddPhoto}"
                   Style="{StaticResource MaterialFilledTonalButtonStyle}"
-                  VerticalAlignment="Center">
-            <StackPanel Orientation="Horizontal" Spacing="6">
-              <FontIcon Glyph="&#xE722;" FontSize="14" />
+                  MinHeight="{StaticResource TouchTarget}"
+                  VerticalAlignment="Center"
+                  AutomationProperties.Name="Add photo">
+            <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
+              <FontIcon Glyph="&#xE722;" FontSize="{StaticResource IconSizeMd}" />
               <TextBlock Text="Add Photo" />
             </StackPanel>
           </Button>
         </Grid>
 
-        <mvux:FeedView Source="{Binding Photos}">
+        <mvux:FeedView Source="{Binding Photos}"
+                       HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
           <DataTemplate>
             <muxc:ItemsRepeater ItemsSource="{Binding Data}">
               <muxc:ItemsRepeater.Layout>
-                <muxc:UniformGridLayout MinItemWidth="100" MinItemHeight="100"
-                                         MinColumnSpacing="8" MinRowSpacing="8" />
+                <muxc:UniformGridLayout MinItemWidth="{StaticResource ThumbnailSize}" MinItemHeight="{StaticResource ThumbnailSize}"
+                                        MinColumnSpacing="{StaticResource Space8}" MinRowSpacing="{StaticResource Space8}" />
               </muxc:ItemsRepeater.Layout>
               <muxc:ItemsRepeater.ItemTemplate>
                 <DataTemplate>
-                  <Grid Width="100" Height="100">
-                    <Border CornerRadius="8" BorderBrush="{ThemeResource OutlineVariantBrush}"
-                            BorderThickness="1">
-                      <Image Stretch="UniformToFill">
-                        <Image.Source>
-                          <BitmapImage UriSource="{Binding}" />
-                        </Image.Source>
-                      </Image>
-                    </Border>
+                  <Grid Width="{StaticResource ThumbnailSize}" Height="{StaticResource ThumbnailSize}">
+                    <!-- The thumbnail is a button: tap, Enter or Space opens the photo enlarged in a dialog (PRD F14.8) -->
+                    <Button Command="{Binding DataContext.ViewPhoto, ElementName=EditorRoot}"
+                            CommandParameter="{Binding}"
+                            AutomationProperties.Name="View photo enlarged"
+                            ToolTipService.ToolTip="View larger"
+                            Style="{StaticResource ListCardButtonStyle}"
+                            Padding="0">
+                      <!-- xaml-lint: allow card - clips the photo to rounded corners with a hairline stroke -->
+                      <Border CornerRadius="{StaticResource RadiusMd}" BorderBrush="{ThemeResource OutlineVariantBrush}"
+                              BorderThickness="1">
+                        <Image Stretch="UniformToFill" AutomationProperties.Name="Job photo">
+                          <Image.Source>
+                            <BitmapImage UriSource="{Binding}" />
+                          </Image.Source>
+                        </Image>
+                      </Border>
+                    </Button>
                     <Button HorizontalAlignment="Right" VerticalAlignment="Top"
                             Command="{Binding DataContext.DeletePhoto, ElementName=EditorRoot}"
                             CommandParameter="{Binding}"
                             AutomationProperties.Name="Delete photo"
-                            Background="{StaticResource ScrimBrush}" MinWidth="0" MinHeight="0"
-                            Padding="4" CornerRadius="0,8,0,8" Margin="0">
-                      <FontIcon Glyph="&#xE711;" FontSize="10" Foreground="{StaticResource AppBarForegroundBrush}" />
+                            ToolTipService.ToolTip="Delete photo"
+                            Background="{StaticResource ScrimFixedBrush}"
+                            MinWidth="{StaticResource TouchTarget}" MinHeight="{StaticResource TouchTarget}"
+                            Padding="0" CornerRadius="{StaticResource RadiusMd}">
+                      <FontIcon Glyph="&#xE711;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource AppBarForegroundFixedBrush}" />
                     </Button>
                   </Grid>
                 </DataTemplate>
@@ -243,10 +391,10 @@
 
           <mvux:FeedView.NoneTemplate>
             <DataTemplate>
-              <StackPanel HorizontalAlignment="Center" Spacing="8" Margin="0,16">
-                <FontIcon Glyph="&#xE722;" FontSize="32"
+              <StackPanel HorizontalAlignment="Center" Spacing="{StaticResource Space8}" Margin="{StaticResource InsetY16}">
+                <FontIcon Glyph="&#xE722;" FontSize="{StaticResource IconSizeEmpty}"
                           Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                          HorizontalAlignment="Center" Opacity="0.6" />
+                          HorizontalAlignment="Center" />
                 <TextBlock Text="No photos attached"
                            Style="{StaticResource BodyLarge}"
                            Foreground="{ThemeResource OnSurfaceVariantBrush}"
@@ -254,55 +402,105 @@
                 <TextBlock Text="Add photos to document the job"
                            Style="{StaticResource BodyMedium}"
                            Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                           HorizontalAlignment="Center" Opacity="0.7" />
+                           HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
               </StackPanel>
             </DataTemplate>
           </mvux:FeedView.NoneTemplate>
+
+          <mvux:FeedView.ErrorTemplate>
+            <DataTemplate>
+              <StackPanel HorizontalAlignment="Center" Spacing="{StaticResource Space8}" Margin="{StaticResource InsetY16}"
+                          AutomationProperties.LiveSetting="Polite">
+                <TextBlock Text="Photos could not be loaded." Style="{StaticResource BodyLarge}"
+                           HorizontalAlignment="Center" />
+                <Button Content="Retry"
+                        Command="{Binding DataContext.Reload, ElementName=EditorRoot}"
+                        Style="{StaticResource MaterialOutlinedButtonStyle}"
+                        HorizontalAlignment="Center"
+                        AutomationProperties.Name="Retry loading photos" />
+              </StackPanel>
+            </DataTemplate>
+          </mvux:FeedView.ErrorTemplate>
         </mvux:FeedView>
 
-        <!-- Notes -->
         <TextBox Header="Notes"
-                 Text="{Binding Notes, Mode=TwoWay}"
+                 Text="{Binding Notes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                  PlaceholderText="Additional notes for the client"
                  AcceptsReturn="True"
                  TextWrapping="Wrap"
-                 MinHeight="80" />
+                 MinHeight="{StaticResource NotesMinHeight}"
+                 AutomationProperties.Name="Notes" />
 
-        <!-- Validation Error -->
-        <mvux:FeedView Source="{Binding ValidationError}">
-          <DataTemplate>
-            <TextBlock Text="{Binding Data}"
-                       Foreground="{ThemeResource ErrorBrush}"
-                       Style="{StaticResource BodyMedium}"
-                       Visibility="{Binding Data, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert}"
-                       Margin="0,0,0,4" />
-          </DataTemplate>
-        </mvux:FeedView>
-
-        <!-- Export PDF -->
         <Button Content="Export PDF"
                 Command="{Binding ExportPdf}"
                 HorizontalAlignment="Stretch"
+                MinHeight="{StaticResource TouchTarget}"
                 Style="{StaticResource MaterialFilledTonalButtonStyle}"
-                Margin="0,8,0,0" />
+                Margin="{StaticResource GapTop8}"
+                AutomationProperties.Name="Export PDF" />
 
-        <!-- Status Actions -->
+        <!-- Status Actions (stacked full width on Narrow) -->
         <TextBlock Text="Status Actions"
                    Style="{StaticResource TitleMedium}"
-                   Margin="0,8,0,0" />
+                   AutomationProperties.HeadingLevel="Level2"
+                   Margin="{StaticResource GapTop8}" />
 
-        <utu:AutoLayout Spacing="8"
-                        Orientation="Horizontal">
+        <StackPanel Spacing="{StaticResource Space8}"
+                    Orientation="{utu:Responsive Narrow=Vertical, Normal=Horizontal}">
           <Button Content="Mark Sent"
                   Command="{Binding MarkSent}"
-                  Style="{StaticResource MaterialOutlinedButtonStyle}" />
+                  HorizontalAlignment="{utu:Responsive Narrow=Stretch, Normal=Left}"
+                  MinHeight="{StaticResource TouchTarget}"
+                  Style="{StaticResource MaterialOutlinedButtonStyle}"
+                  AutomationProperties.Name="Mark as sent" />
           <Button Content="Accepted"
                   Command="{Binding MarkAccepted}"
-                  Style="{StaticResource MaterialFilledButtonStyle}" />
+                  HorizontalAlignment="{utu:Responsive Narrow=Stretch, Normal=Left}"
+                  MinHeight="{StaticResource TouchTarget}"
+                  Style="{StaticResource MaterialFilledButtonStyle}"
+                  AutomationProperties.Name="Mark as accepted" />
           <Button Content="Declined"
                   Command="{Binding MarkDeclined}"
-                  Style="{StaticResource MaterialOutlinedButtonStyle}" />
-        </utu:AutoLayout>
+                  HorizontalAlignment="{utu:Responsive Narrow=Stretch, Normal=Left}"
+                  MinHeight="{StaticResource TouchTarget}"
+                  Style="{StaticResource MaterialOutlinedButtonStyle}"
+                  AutomationProperties.Name="Mark as declined" />
+        </StackPanel>
+
+        <!-- Status history (PRD F3.4), one line per change -->
+        <TextBlock Text="History"
+                   Style="{StaticResource TitleMedium}"
+                   AutomationProperties.HeadingLevel="Level2"
+                   Margin="{StaticResource GapTop8}" />
+        <mvux:FeedView Source="{Binding StatusHistory}"
+                       HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+          <DataTemplate>
+            <ItemsControl ItemsSource="{Binding Data}" IsTabStop="False">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <TextBlock Style="{StaticResource BodyMedium}" Margin="{StaticResource InsetY4}">
+                    <Run Text="{Binding Status}" FontWeight="SemiBold" /><Run Text=" · " /><Run Text="{Binding ChangedAt, Converter={StaticResource ShortDateConverter}}" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                  </TextBlock>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </DataTemplate>
+          <mvux:FeedView.NoneTemplate>
+            <DataTemplate>
+              <TextBlock Text="No status changes yet. Sending, accepting or declining the quote adds a line here."
+                         Style="{StaticResource BodyMedium}"
+                         Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                         TextWrapping="Wrap" />
+            </DataTemplate>
+          </mvux:FeedView.NoneTemplate>
+          <mvux:FeedView.ErrorTemplate>
+            <DataTemplate>
+              <TextBlock Text="The history could not be loaded."
+                         Style="{StaticResource BodyMedium}"
+                         Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+            </DataTemplate>
+          </mvux:FeedView.ErrorTemplate>
+        </mvux:FeedView>
 
       </utu:AutoLayout>
     </ScrollViewer>

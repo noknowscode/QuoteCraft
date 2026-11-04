@@ -1,0 +1,68 @@
+<!--
+  App colours beyond the Material roles (those are in ColorPaletteOverride.xaml and the status pills in
+  StatusColors.xaml).
+
+  ThemeDictionaries: values that change with the theme.
+  The rest is the brand (D6): the slate band and the amber accent look the same in Light and Dark, and so does
+  everything drawn on them. Those keys say so in their names: *Fixed when the ground under them is fixed (the band,
+  the amber, a photo), *Invariant for the accent, which is also drawn on themed surfaces.
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Light">
+      <Color x:Key="AlternateRowColor">#FAFBFC</Color>
+      <SolidColorBrush x:Key="AlternateRowBrush" Color="{StaticResource AlternateRowColor}" />
+      <Color x:Key="SuccessColor">#16A34A</Color>
+      <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}" />
+      <!-- Side rail: hover and selection washes of the primary colour -->
+      <Color x:Key="NavRailHoverColor">#1F2B4C7E</Color>
+      <SolidColorBrush x:Key="NavRailHoverBrush" Color="{StaticResource NavRailHoverColor}" />
+      <Color x:Key="NavRailSelectionColor">#332B4C7E</Color>
+      <SolidColorBrush x:Key="NavRailSelectionBrush" Color="{StaticResource NavRailSelectionColor}" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <Color x:Key="AlternateRowColor">#1A2332</Color>
+      <SolidColorBrush x:Key="AlternateRowBrush" Color="{StaticResource AlternateRowColor}" />
+      <Color x:Key="SuccessColor">#4ADE80</Color>
+      <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}" />
+      <Color x:Key="NavRailHoverColor">#1F93B5E1</Color>
+      <SolidColorBrush x:Key="NavRailHoverBrush" Color="{StaticResource NavRailHoverColor}" />
+      <Color x:Key="NavRailSelectionColor">#3393B5E1</Color>
+      <SolidColorBrush x:Key="NavRailSelectionBrush" Color="{StaticResource NavRailSelectionColor}" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
+  <!-- The delete button over a job photo -->
+  <SolidColorBrush x:Key="ScrimFixedBrush" Color="#80000000" />
+
+  <!-- The slate band (rail header, upgrade banner, dialog and document headers) and what sits on it -->
+  <Color x:Key="AppBarBackgroundColor">#2B4C7E</Color>
+  <SolidColorBrush x:Key="AppBarBackgroundFixedBrush" Color="{StaticResource AppBarBackgroundColor}" />
+  <Color x:Key="AppBarForegroundColor">#FFFFFF</Color>
+  <SolidColorBrush x:Key="AppBarForegroundFixedBrush" Color="{StaticResource AppBarForegroundColor}" />
+  <Color x:Key="AppBarButtonBackgroundColor">#26FFFFFF</Color>
+  <SolidColorBrush x:Key="AppBarButtonBackgroundFixedBrush" Color="{StaticResource AppBarButtonBackgroundColor}" />
+  <Color x:Key="UpgradeBannerStartColor">#2B4C7E</Color>
+  <Color x:Key="UpgradeBannerEndColor">#1A365D</Color>
+  <Color x:Key="UpgradeBannerSubtitleColor">#B0C4DE</Color>
+  <SolidColorBrush x:Key="UpgradeBannerSubtitleFixedBrush" Color="{StaticResource UpgradeBannerSubtitleColor}" />
+  <LinearGradientBrush x:Key="BannerGradientFixedBrush" StartPoint="0,0" EndPoint="1,0.5">
+    <GradientStop Color="{StaticResource UpgradeBannerStartColor}" Offset="0" />
+    <GradientStop Color="{StaticResource UpgradeBannerEndColor}" Offset="1" />
+  </LinearGradientBrush>
+
+  <!-- The amber accent -->
+  <Color x:Key="AppBarAccentColor">#F59E0B</Color>
+  <SolidColorBrush x:Key="AppBarAccentInvariantBrush" Color="{StaticResource AppBarAccentColor}" />
+  <!-- Text and icons on the amber: 5.6:1 (the slate band colour reached 4.0:1). -->
+  <Color x:Key="OnAccentColor">#1A365D</Color>
+  <SolidColorBrush x:Key="OnAccentFixedBrush" Color="{StaticResource OnAccentColor}" />
+  <!-- Hover and pressed: lighter amber keeps the dark label above 4.5:1 (darker amber dropped it to 2.4:1) -->
+  <Color x:Key="AppBarAccentHoverColor">#FBBF24</Color>
+  <SolidColorBrush x:Key="AppBarAccentHoverFixedBrush" Color="{StaticResource AppBarAccentHoverColor}" />
+  <Color x:Key="AppBarAccentPressedColor">#FCD34D</Color>
+  <SolidColorBrush x:Key="AppBarAccentPressedFixedBrush" Color="{StaticResource AppBarAccentPressedColor}" />
+
+</ResourceDictionary>

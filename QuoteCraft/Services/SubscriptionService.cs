@@ -1,4 +1,3 @@
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using QuoteCraft.Data.Remote;
 
@@ -8,19 +7,22 @@ public class SubscriptionService : ISubscriptionService
 {
     private readonly IAuthService _authService;
     private readonly SupabaseClient _supabase;
+    private readonly SupabaseConfig _config;
     private readonly ILogger<SubscriptionService> _logger;
     private SubscriptionTier _currentTier = SubscriptionTier.Free;
 
     public SubscriptionTier CurrentTier => _currentTier;
-    public event Action<SubscriptionTier>? TierChanged;
+    public bool IsAvailable => _config.IsConfigured;
 
     public SubscriptionService(
         IAuthService authService,
         SupabaseClient supabase,
+        SupabaseConfig config,
         ILogger<SubscriptionService> logger)
     {
         _authService = authService;
         _supabase = supabase;
+        _config = config;
         _logger = logger;
 
         _authService.AuthStateChanged += async state =>
@@ -32,7 +34,7 @@ public class SubscriptionService : ISubscriptionService
         };
     }
 
-    public async Task RefreshTierAsync()
+    private async Task RefreshTierAsync()
     {
         if (!_authService.CurrentState.IsAuthenticated)
         {
@@ -69,6 +71,9 @@ public class SubscriptionService : ISubscriptionService
 
     public async Task<string?> GetCheckoutUrlAsync(string tier = "pro", string interval = "monthly")
     {
+        if (!IsAvailable)
+            return null;
+
         try
         {
             var result = await _supabase.InvokeFunctionAsync<CheckoutResponse>(
@@ -86,18 +91,13 @@ public class SubscriptionService : ISubscriptionService
 
     public Task<string?> GetCustomerPortalUrlAsync()
     {
-        // Stripe Customer Portal URL — configured in Stripe Dashboard
-        // This is a static URL that redirects authenticated customers
-        return Task.FromResult<string?>("https://billing.stripe.com/p/login/YOUR_PORTAL_LINK");
+        // The Stripe customer portal login link (Stripe Dashboard), from the Supabase:CustomerPortalUrl setting.
+        return Task.FromResult(_config.CustomerPortalUrl);
     }
 
     private void UpdateTier(SubscriptionTier tier)
     {
-        if (_currentTier != tier)
-        {
-            _currentTier = tier;
-            TierChanged?.Invoke(tier);
-        }
+        _currentTier = tier;
     }
 
     private class SubscriptionRecord

@@ -1,15 +1,15 @@
-using QuoteCraft.Services;
-
 namespace QuoteCraft.Presentation;
 
+/// <summary>
+/// The notifications drawer (route <c>!Notifications</c>), opened by <see cref="MainModel.OpenNotifications"/>: the
+/// rail's bell from 800 px and the bottom tab bar's Alerts below (D18).
+/// </summary>
 public partial record NotificationsModel
 {
-    private readonly INavigator _navigator;
     private readonly INotificationService _notificationService;
 
-    public NotificationsModel(INavigator navigator, INotificationService notificationService)
+    public NotificationsModel(INotificationService notificationService)
     {
-        _navigator = navigator;
         _notificationService = notificationService;
     }
 
@@ -20,24 +20,22 @@ public partial record NotificationsModel
             (IImmutableList<NotificationEntity>)(await _notificationService.GetAllAsync()).ToImmutableList())
         .AsListFeed();
 
-    public IFeed<int> UnreadCount => Version
-        .SelectAsync(async (_, ct) => await _notificationService.GetUnreadCountAsync());
-
-    public async ValueTask MarkAsRead(NotificationEntity notification, CancellationToken ct)
-    {
-        await _notificationService.MarkAsReadAsync(notification.Id);
-        await Version.UpdateAsync(v => v + 1, ct);
-    }
+    /// <summary>What Mark all read could not do; shown under the bar.</summary>
+    public IState<string> ActionError => State<string>.Value(this, () => string.Empty);
 
     public async ValueTask MarkAllRead(CancellationToken ct)
     {
-        await _notificationService.MarkAllAsReadAsync();
+        await ActionError.UpdateAsync(_ => string.Empty, ct);
+        try
+        {
+            await _notificationService.MarkAllAsReadAsync();
+        }
+        catch (Exception ex)
+        {
+            ErrorReporter.Log(ex, "Mark all notifications read");
+            await ActionError.UpdateAsync(_ => ErrorReporter.Describe("The notifications could not be marked as read.", ex), ct);
+            return;
+        }
         await Version.UpdateAsync(v => v + 1, ct);
-    }
-
-    public async ValueTask GoBack(CancellationToken ct)
-    {
-        // Navigate to Dashboard within the Main region (Notifications is a peer route)
-        await _navigator.NavigateRouteAsync(this, "Dashboard");
     }
 }

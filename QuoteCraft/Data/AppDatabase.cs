@@ -2,121 +2,116 @@ using Microsoft.Data.Sqlite;
 
 namespace QuoteCraft.Data;
 
+/// <summary>
+/// The local SQLite database. Each operation opens its own connection and disposes it when done
+/// (<see cref="OpenConnectionAsync"/>): MVUX feeds read on background threads while pages write on the UI thread, and
+/// one shared connection let their commands and transactions interleave. Microsoft.Data.Sqlite pools the connections,
+/// so the SQLCipher key is derived once per pooled connection, not per operation; WAL lets readers run beside a
+/// writer, and a writer that finds the database busy retries for the command timeout (30 s).
+/// </summary>
 public class AppDatabase
 {
     private readonly string _connectionString;
     private readonly SemaphoreSlim _initLock = new(1, 1);
-    private SqliteConnection? _sharedConnection;
-    private bool _initialized;
+    private volatile bool _initialized;
 
     public AppDatabase()
+        : this(AppStorage.Root)
+    {
+    }
+
+    /// <param name="dir">The folder that holds the database (and, on desktop, its key file); tests pass a temporary folder.</param>
+    public AppDatabase(string dir)
     {
         SQLitePCL.Batteries_V2.Init();
 
-        var dbPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "QuoteCraft",
-            "quotecraft.db");
+        Directory.CreateDirectory(dir);
+        var dbPath = Path.Combine(dir, "quotecraft.db");
 
-        var dir = Path.GetDirectoryName(dbPath)!;
-        if (!Directory.Exists(dir))
+        var connectionString = new SqliteConnectionStringBuilder
         {
-            Directory.CreateDirectory(dir);
-        }
-
-#if __BROWSERWASM__
-        // WASM: browser storage is sandboxed, no encryption needed
-        _connectionString = $"Data Source={dbPath}";
-#else
-        var key = GetOrCreateEncryptionKey(dir);
-        _connectionString = $"Data Source={dbPath};Password={key}";
+            DataSource = dbPath,
+            ForeignKeys = true,
+            Pooling = true,
+        };
+#if !__WASM__
+        // WebAssembly: the database lives in the browser's IndexedDB storage for this site, where a key would have to
+        // sit next to it, so SQLCipher runs without one there (docs/DECISIONS-production-readiness.md, D1).
+        // Android, iOS and WinAppSDK keep the key in the platform's vault, desktop in a file beside the database (D13).
+        connectionString.Password = new StoredSecret("database-key", Path.Combine(dir, ".dbkey"), StoredSecret.PlatformVault)
+            .GetOrCreate(NewEncryptionKey);
 #endif
+        _connectionString = connectionString.ToString();
     }
 
-#if !__BROWSERWASM__
-    private static string GetOrCreateEncryptionKey(string appDir)
+#if !__WASM__
+    /// <summary>A random 32-character hex key.</summary>
+    private static string NewEncryptionKey()
     {
-        var keyFile = Path.Combine(appDir, ".dbkey");
-        if (File.Exists(keyFile))
-        {
-            return File.ReadAllText(keyFile).Trim();
-        }
-
-        // Generate a random 32-char hex key
         var keyBytes = new byte[16];
         System.Security.Cryptography.RandomNumberGenerator.Fill(keyBytes);
-        var key = Convert.ToHexString(keyBytes);
-        File.WriteAllText(keyFile, key);
-        return key;
+        return Convert.ToHexString(keyBytes);
     }
+#endif
+
+#if DEBUG
+    /// <summary>Debug verification only: operations fail until this moment (see <see cref="OpenConnectionAsync"/>).</summary>
+    public static DateTimeOffset FailUntil { get; set; } = DateTimeOffset.MinValue;
 #endif
 
     /// <summary>
-    /// Returns the shared persistent connection. Opens and initializes on first call.
-    /// Do NOT dispose the returned connection — it is shared across the app lifetime.
+    /// Opens a connection for one operation; the caller disposes it (<c>await using</c>). The first call creates or
+    /// migrates the schema.
     /// </summary>
-    public async Task<SqliteConnection> GetConnectionAsync()
+    public async Task<SqliteConnection> OpenConnectionAsync()
     {
-        if (_initialized && _sharedConnection is { State: System.Data.ConnectionState.Open })
-            return _sharedConnection;
-
-        await _initLock.WaitAsync();
+#if DEBUG
+        // Verification hook (--qc-fault=load, App.xaml.cs): every operation fails until the moment set, so the pages'
+        // error states and Retry can be checked at runtime.
+        if (DateTimeOffset.UtcNow < FailUntil)
+        {
+            throw new InvalidOperationException("Simulated database failure (--qc-fault=load).");
+        }
+#endif
+        var connection = new SqliteConnection(_connectionString);
         try
         {
-            if (_initialized && _sharedConnection is { State: System.Data.ConnectionState.Open })
-                return _sharedConnection;
-
-            // Open persistent connection
-            _sharedConnection?.Dispose();
-            _sharedConnection = new SqliteConnection(_connectionString);
-            await _sharedConnection.OpenAsync();
-
-            // PRAGMAs — set once on the persistent connection
-            var pragmaCmd = _sharedConnection.CreateCommand();
-            pragmaCmd.CommandText = "PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;";
-            await pragmaCmd.ExecuteNonQueryAsync();
-
+            await connection.OpenAsync();
             if (!_initialized)
             {
-                await InitializeCoreAsync(_sharedConnection);
-                _initialized = true;
+                await _initLock.WaitAsync();
+                try
+                {
+                    if (!_initialized)
+                    {
+                        await InitializeCoreAsync(connection);
+                        _initialized = true;
+                    }
+                }
+                finally
+                {
+                    _initLock.Release();
+                }
             }
-
-            return _sharedConnection;
+            return connection;
         }
-        finally
+        catch
         {
-            _initLock.Release();
+            await connection.DisposeAsync();
+            throw;
         }
-    }
-
-    // Keep for backward compat during init — creates a temporary connection
-    [Obsolete("Use GetConnectionAsync() instead")]
-    public async Task InitializeAsync()
-    {
-        await GetConnectionAsync();
-    }
-
-    // Keep for backward compat — but callers should migrate to GetConnectionAsync()
-    [Obsolete("Use GetConnectionAsync() instead")]
-    public async Task<SqliteConnection> CreateConnectionAsync()
-    {
-        var connection = new SqliteConnection(_connectionString);
-        await connection.OpenAsync();
-
-        var fkCmd = connection.CreateCommand();
-        fkCmd.CommandText = "PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;";
-        await fkCmd.ExecuteNonQueryAsync();
-
-        return connection;
     }
 
     private static async Task InitializeCoreAsync(SqliteConnection connection)
     {
-        // Enable WAL mode for better concurrent read performance
+#if !__WASM__
+        // Enable WAL mode for better concurrent read performance. Not on WebAssembly: WAL is for concurrent readers and
+        // the browser runtime has one thread, and the -wal/-shm side files would only add to what IndexedDB syncs.
+        // The browser keeps SQLite's default rollback journal.
         var walCmd = connection.CreateCommand();
         walCmd.CommandText = "PRAGMA journal_mode=WAL;";
         await walCmd.ExecuteNonQueryAsync();
+#endif
 
         var cmd = connection.CreateCommand();
         cmd.CommandText = """
@@ -189,7 +184,6 @@ public class AppDatabase
             """;
         await cmd.ExecuteNonQueryAsync();
 
-        // Seed catalog items if table is empty
         var countCmd = connection.CreateCommand();
         countCmd.CommandText = "SELECT COUNT(*) FROM catalog_items";
         var count = Convert.ToInt32(await countCmd.ExecuteScalarAsync());
@@ -199,22 +193,21 @@ public class AppDatabase
             await SeedCatalogItemsAsync(connection);
         }
 
-        // Run migrations
         await RunMigrationsAsync(connection);
     }
 
     private static async Task RunMigrationsAsync(SqliteConnection connection)
     {
-        // Get current schema version
         var versionCmd = connection.CreateCommand();
         versionCmd.CommandText = "SELECT COALESCE(MAX(version), 0) FROM schema_version";
         var currentVersion = Convert.ToInt32(await versionCmd.ExecuteScalarAsync());
 
-        var migrations = new SortedDictionary<int, string>
+        // Each migration runs once, in its own transaction, in version order.
+        var migrations = new SortedDictionary<int, Func<SqliteConnection, SqliteTransaction, Task>>
         {
-            { 2, "" },
+            { 2, Sql("") },
 
-            { 3, """
+            { 3, Sql("""
                 ALTER TABLE quotes ADD COLUMN synced_at TEXT;
                 ALTER TABLE quotes ADD COLUMN share_token TEXT;
                 ALTER TABLE clients ADD COLUMN synced_at TEXT;
@@ -245,37 +238,28 @@ public class AppDatabase
                 CREATE INDEX IF NOT EXISTS idx_status_history_quote_id ON status_history(quote_id);
                 CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications(is_read);
                 CREATE INDEX IF NOT EXISTS idx_quotes_share_token ON quotes(share_token);
-                """ },
+                """) },
 
-            { 4, """
+            { 4, Sql("""
                 ALTER TABLE business_profile ADD COLUMN website TEXT;
                 ALTER TABLE business_profile ADD COLUMN business_number TEXT;
-                """ },
+                """) },
 
-            { 5, $$"""
-                UPDATE quotes SET status='Sent',     valid_until='{{DateTimeOffset.UtcNow.AddDays(14):O}}', updated_at='{{DateTimeOffset.UtcNow:O}}' WHERE title='Drain Cleaning Service';
-                UPDATE quotes SET status='Viewed',   valid_until='{{DateTimeOffset.UtcNow.AddDays(14):O}}', updated_at='{{DateTimeOffset.UtcNow:O}}' WHERE title='Office Plumbing Fit-out';
-                UPDATE quotes SET status='Draft',    valid_until='{{DateTimeOffset.UtcNow.AddDays(14):O}}', updated_at='{{DateTimeOffset.UtcNow:O}}' WHERE title='Emergency Pipe Repair';
-                UPDATE quotes SET status='Sent',     valid_until='{{DateTimeOffset.UtcNow.AddDays(14):O}}', updated_at='{{DateTimeOffset.UtcNow:O}}' WHERE title='Bathroom Remodel';
-                UPDATE quotes SET valid_until='{{DateTimeOffset.UtcNow.AddDays(14):O}}', updated_at='{{DateTimeOffset.UtcNow:O}}' WHERE title='Kitchen Renovation';
-                UPDATE quotes SET valid_until='{{DateTimeOffset.UtcNow.AddDays(14):O}}', updated_at='{{DateTimeOffset.UtcNow:O}}' WHERE title='Water Heater Install';
-                """ },
+            // Migration 5 once set the status and dates of the old sample quotes, found by title, so it rewrote any
+            // user quote that happened to share one of those titles. It is a no-op now; the number stays taken.
+            { 5, Sql("") },
+
+            { 6, NumberQuotesPerYearAsync },
         };
 
-        foreach (var (version, sql) in migrations)
+        foreach (var (version, migrate) in migrations)
         {
             if (version <= currentVersion) continue;
 
             using var tx = connection.BeginTransaction();
             try
             {
-                if (!string.IsNullOrWhiteSpace(sql))
-                {
-                    var migCmd = connection.CreateCommand();
-                    migCmd.CommandText = sql;
-                    migCmd.Transaction = tx;
-                    await migCmd.ExecuteNonQueryAsync();
-                }
+                await migrate(connection, tx);
 
                 var insertVersion = connection.CreateCommand();
                 insertVersion.CommandText = "INSERT INTO schema_version (version, applied_at) VALUES (@v, @t)";
@@ -301,6 +285,105 @@ public class AppDatabase
             insertV1.Parameters.AddWithValue("@t", DateTimeOffset.UtcNow.ToString("O"));
             await insertV1.ExecuteNonQueryAsync();
         }
+    }
+
+    private static Func<SqliteConnection, SqliteTransaction, Task> Sql(string sql) => async (connection, tx) =>
+    {
+        if (!string.IsNullOrWhiteSpace(sql))
+        {
+            await ExecuteAsync(connection, tx, sql);
+        }
+    };
+
+    private static async Task ExecuteAsync(SqliteConnection connection, SqliteTransaction tx, string sql)
+    {
+        var cmd = connection.CreateCommand();
+        cmd.Transaction = tx;
+        cmd.CommandText = sql;
+        await cmd.ExecuteNonQueryAsync();
+    }
+
+    /// <summary>
+    /// Migration 6. Quote numbers came from the quote count plus one, so a delete made the next quote reuse a number,
+    /// and the PDF export (named after the number) overwrote the other quote's file. Numbers now come from a per-year
+    /// counter that never goes back, and a unique index keeps them distinct. Quotes that already share a number keep
+    /// it on the first one (oldest, not deleted first); the others take the next numbers of their year.
+    /// </summary>
+    private static async Task NumberQuotesPerYearAsync(SqliteConnection connection, SqliteTransaction tx)
+    {
+        await ExecuteAsync(connection, tx,
+            "CREATE TABLE quote_counters (year INTEGER PRIMARY KEY, last_number INTEGER NOT NULL)");
+
+        var quotes = new List<(string Id, string Number)>();
+        var read = connection.CreateCommand();
+        read.Transaction = tx;
+        read.CommandText = "SELECT id, quote_number FROM quotes ORDER BY is_deleted, created_at, rowid";
+        using (var reader = await read.ExecuteReaderAsync())
+        {
+            while (await reader.ReadAsync())
+            {
+                quotes.Add((reader.GetString(0), reader.GetString(1)));
+            }
+        }
+
+        // Every counter starts after the highest number its year already has.
+        var lastByYear = new Dictionary<int, int>();
+        foreach (var (_, number) in quotes)
+        {
+            if (QuoteNumberGenerator.TryParse(number, out _, out var year, out var sequence))
+            {
+                lastByYear[year] = Math.Max(lastByYear.GetValueOrDefault(year), sequence);
+            }
+        }
+
+        var taken = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var (id, number) in quotes)
+        {
+            if (taken.Add(number))
+            {
+                continue;
+            }
+
+            string renumbered;
+            if (QuoteNumberGenerator.TryParse(number, out var prefix, out var year, out _))
+            {
+                do
+                {
+                    lastByYear[year]++;
+                    renumbered = QuoteNumberGenerator.Format(prefix, year, lastByYear[year]);
+                }
+                while (!taken.Add(renumbered));
+            }
+            else
+            {
+                var suffix = 2;
+                do
+                {
+                    renumbered = $"{number}-{suffix++}";
+                }
+                while (!taken.Add(renumbered));
+            }
+
+            var update = connection.CreateCommand();
+            update.Transaction = tx;
+            update.CommandText = "UPDATE quotes SET quote_number = @number, updated_at = @now WHERE id = @id";
+            update.Parameters.AddWithValue("@number", renumbered);
+            update.Parameters.AddWithValue("@now", DateTimeOffset.UtcNow.ToString("O"));
+            update.Parameters.AddWithValue("@id", id);
+            await update.ExecuteNonQueryAsync();
+        }
+
+        foreach (var (year, last) in lastByYear)
+        {
+            var insert = connection.CreateCommand();
+            insert.Transaction = tx;
+            insert.CommandText = "INSERT INTO quote_counters (year, last_number) VALUES (@year, @last)";
+            insert.Parameters.AddWithValue("@year", year);
+            insert.Parameters.AddWithValue("@last", last);
+            await insert.ExecuteNonQueryAsync();
+        }
+
+        await ExecuteAsync(connection, tx, "CREATE UNIQUE INDEX ux_quotes_quote_number ON quotes(quote_number)");
     }
 
     private static async Task SeedCatalogItemsAsync(SqliteConnection connection)

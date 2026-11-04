@@ -1,7 +1,9 @@
-using QuoteCraft.Services;
-
 namespace QuoteCraft.Presentation;
 
+/// <summary>
+/// Sign in, create an account or get a sign-in link from the configured Supabase project (route <c>Auth</c>, from
+/// Settings' Sign In and Sign Out; D3, D17), or go on without an account.
+/// </summary>
 public partial record AuthModel
 {
     private readonly INavigator _navigator;
@@ -17,8 +19,12 @@ public partial record AuthModel
     public IState<string> Password => State<string>.Value(this, () => string.Empty);
     public IState<string> ErrorMessage => State<string>.Value(this, () => string.Empty);
     public IState<bool> IsSignUp => State<bool>.Value(this, () => false);
+    /// <summary>True while a request to the Supabase project runs (the page shows a progress bar).</summary>
     public IState<bool> IsBusy => State<bool>.Value(this, () => false);
     public IState<bool> MagicLinkSent => State<bool>.Value(this, () => false);
+
+    /// <summary>The mode switch under the actions names the other mode.</summary>
+    public IFeed<string> ModeToggleText => IsSignUp.Select(signUp => signUp ? "Have an account? Sign in" : "Don't have an account? Sign up");
 
     public async ValueTask SignIn(CancellationToken ct)
     {
@@ -38,8 +44,7 @@ public partial record AuthModel
             return;
         }
 
-        await IsBusy.UpdateAsync(_ => true, ct);
-        try
+        await RunBusyAsync("Sign in failed.", async () =>
         {
             var result = await _authService.SignInAsync(email, password);
             if (result.IsAuthenticated)
@@ -50,15 +55,7 @@ public partial record AuthModel
             {
                 await ErrorMessage.UpdateAsync(_ => "Invalid email or password.", ct);
             }
-        }
-        catch (HttpRequestException ex)
-        {
-            await ErrorMessage.UpdateAsync(_ => $"Sign in failed: {ex.Message}", ct);
-        }
-        finally
-        {
-            await IsBusy.UpdateAsync(_ => false, ct);
-        }
+        }, ct);
     }
 
     public async ValueTask SignUp(CancellationToken ct)
@@ -79,8 +76,7 @@ public partial record AuthModel
             return;
         }
 
-        await IsBusy.UpdateAsync(_ => true, ct);
-        try
+        await RunBusyAsync("Sign up failed.", async () =>
         {
             var result = await _authService.SignUpAsync(email, password);
             if (result.IsAuthenticated)
@@ -91,15 +87,7 @@ public partial record AuthModel
             {
                 await ErrorMessage.UpdateAsync(_ => "Check your email to confirm your account.", ct);
             }
-        }
-        catch (HttpRequestException ex)
-        {
-            await ErrorMessage.UpdateAsync(_ => $"Sign up failed: {ex.Message}", ct);
-        }
-        finally
-        {
-            await IsBusy.UpdateAsync(_ => false, ct);
-        }
+        }, ct);
     }
 
     public async ValueTask SendMagicLink(CancellationToken ct)
@@ -113,15 +101,23 @@ public partial record AuthModel
             return;
         }
 
-        await IsBusy.UpdateAsync(_ => true, ct);
-        try
+        await RunBusyAsync("The sign-in link could not be sent.", async () =>
         {
             await _authService.SignInWithMagicLinkAsync(email);
             await MagicLinkSent.UpdateAsync(_ => true, ct);
-        }
-        catch (HttpRequestException ex)
+        }, ct);
+    }
+
+    /// <summary>
+    /// A request to the Supabase project, with the progress bar showing; a failure of any kind says what did not
+    /// happen in the error line (<see cref="ErrorReporter.ReportFailureAsync"/>).
+    /// </summary>
+    private async ValueTask RunBusyAsync(string failure, Func<Task> request, CancellationToken ct)
+    {
+        await IsBusy.UpdateAsync(_ => true, ct);
+        try
         {
-            await ErrorMessage.UpdateAsync(_ => $"Failed to send magic link: {ex.Message}", ct);
+            await ErrorMessage.ReportFailureAsync(failure, request, ct);
         }
         finally
         {
@@ -137,7 +133,7 @@ public partial record AuthModel
         await MagicLinkSent.UpdateAsync(_ => false, ct);
     }
 
-    public async ValueTask SkipAuth(CancellationToken ct)
+    public async ValueTask SkipAuth()
     {
         // Allow Free tier users to use the app without authentication
         await _navigator.NavigateRouteAsync(this, "Main", qualifier: Qualifiers.ClearBackStack);
