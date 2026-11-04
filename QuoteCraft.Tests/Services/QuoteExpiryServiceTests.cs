@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging.Abstractions;
+using QuoteCraft.Helpers;
 using QuoteCraft.Models;
 using QuoteCraft.Services;
 using QuoteCraft.Tests.Data;
@@ -34,5 +35,28 @@ public class QuoteExpiryServiceTests
         var reminder = Assert.Single(await notifications.GetAllAsync());
         Assert.Equal(soon.Id, reminder.QuoteId);
         Assert.Equal("Quote #QC-2026-0002 expires in 2 days.", reminder.Message);
+    }
+
+    [Theory]
+    [InlineData(0, "Quote #QC-2026-0001 expires today.")]
+    [InlineData(1, "Quote #QC-2026-0001 expires in 1 day.")]
+    [InlineData(2, "Quote #QC-2026-0001 expires in 2 days.")]
+    public async Task The_reminder_counts_calendar_days_to_a_date_picked_in_the_editor(int daysAhead, string message)
+    {
+        using var test = new TestDatabase();
+        var day = DateTimeOffset.UtcNow.AddDays(daysAhead);
+        var quote = new QuoteEntity
+        {
+            Title = "Picked", QuoteNumber = "QC-2026-0001", Status = QuoteStatus.Sent,
+            ValidUntil = ValidUntilDate.FromPicker(day),
+        };
+        await test.Quotes.SaveAsync(quote);
+        var notifications = new NotificationService(test.Database, NullLogger<NotificationService>.Instance);
+        var service = new QuoteExpiryService(test.Quotes, new QuoteStatusService(test.Quotes, test.History, test.Profiles),
+            notifications, NullLogger<QuoteExpiryService>.Instance);
+
+        await service.CheckExpirationsAsync();
+
+        Assert.Equal(message, Assert.Single(await notifications.GetAllAsync()).Message);
     }
 }

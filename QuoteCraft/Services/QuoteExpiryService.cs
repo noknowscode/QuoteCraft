@@ -61,11 +61,14 @@ public class QuoteExpiryService : IDisposable
                     continue;
                 }
 
-                var daysLeft = (int)Math.Ceiling((validUntil - now).TotalDays);
+                // Calendar days in UTC, as the date is stored and shown: a quote valid through Friday expires "in 2
+                // days" on Wednesday, whatever the time.
+                var daysLeft = (validUntil.UtcDateTime.Date - now.UtcDateTime.Date).Days;
+                var when = daysLeft <= 0 ? "today" : $"in {daysLeft} day{(daysLeft != 1 ? "s" : "")}";
                 await _notificationService.CreateAsync(
                     NotificationType.QuoteExpiring,
                     "Quote Expiring Soon",
-                    $"Quote #{q.QuoteNumber} expires in {daysLeft} day{(daysLeft != 1 ? "s" : "")}.",
+                    $"Quote #{q.QuoteNumber} expires {when}.",
                     q.Id);
             }
         }
