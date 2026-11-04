@@ -448,3 +448,26 @@ quote rows already used, and it follows D16 (cards stay surfaces; states come fr
 Tradeoff: each card is its own tab stop (a `ListView` would give one stop and arrow keys), and the cards lose the
 small lift on hover that InteractionHelper drew. Coming back from the full editor makes the Quotes page again, with no
 quote open, as before the split.
+
+# A pass 2 (2026-11-04)
+
+## D20. A quote's valid-until date is set in the editor, and sending keeps it (proposed, 2026-11-04)
+
+Decision: PRD F1.8 is built. The full editor has a Valid Until date picker under the tax rate. A new quote starts at
+the Settings default ("Valid For", 14 days unless changed, counted from creation); expiry, the 3-day reminder, the Send email
+and the PDF read the same date. A picked day is stored as its last second in UTC (`Helpers/ValidUntilDate`), so the
+quote is valid through that day; a date the user did not touch keeps its exact time. A changed day before today is
+refused ("The valid-until date cannot be in the past."); an old quote past its date still saves when its date is left
+alone.
+
+This changes one rule of D11: sending kept the profile's number of days from today unless the quote's own date was
+later, which would have overwritten a shorter date picked in the editor. Now sending (Mark Sent, Send by email) and
+Reopen keep the quote's date while it is ahead, and give a quote whose date has passed the profile's number of days
+from today, as before.
+
+Reason: the review found F1.8 neither built nor cut. The date, its default, expiry and the PDF already existed; the
+editor field and the send rule are the small part that was missing (build small).
+
+Tradeoff: a Draft created some days before it is sent keeps the date it was given at creation (the PRD's "14 days from
+creation"), where it used to get a full period from the day it was sent. The editor shows the date, so it can be moved
+before sending.

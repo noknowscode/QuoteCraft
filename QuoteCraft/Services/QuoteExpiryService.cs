@@ -51,8 +51,8 @@ public class QuoteExpiryService : IDisposable
                 _logger.LogInformation("Auto-expired quote {QuoteNumber}", q.QuoteNumber);
             }
 
-            // One reminder per quote and validity period: the check runs every 5 minutes, and a quote sent again gets a
-            // new valid-until date, so "a reminder since 3 days before this date" is the test.
+            // One reminder per quote and valid-until date: the check runs every 5 minutes, and a quote reopened or given
+            // a new date in the editor has a new one, so "a reminder since 3 days before this date" is the test.
             foreach (var q in await _quoteRepo.GetExpirableAsync(now.AddDays(3)))
             {
                 if (q.ValidUntil is not { } validUntil || validUntil <= now

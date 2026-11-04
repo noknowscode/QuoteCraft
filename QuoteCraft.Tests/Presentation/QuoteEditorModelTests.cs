@@ -21,7 +21,7 @@ public class QuoteEditorModelTests
     internal static async Task<QuoteEditorModel> Create(ModelHarness h, QuoteEntity quote)
     {
         var model = new QuoteEditorModel(quote, h.Navigator, h.Db.Quotes, h.Db.Clients, h.Delivery, h.LineItemDialogs, h.Photos, h.Status, h.Dispatcher, h.Board);
-        _ = (await model.Title, await model.Notes, await model.TaxRate, await model.ClientName, await model.ValidationError);
+        _ = (await model.Title, await model.Notes, await model.TaxRate, await model.ClientName, await model.ValidUntil, await model.ValidationError);
         return model;
     }
 
@@ -282,5 +282,114 @@ public class QuoteEditorModelTests
         await model.ExportPdf(None);
 
         Assert.StartsWith("QC-2026-0001.pdf is saved in", await model.ValidationError);
+    }
+
+    /// <summary>A day in the picker as the control hands it back: midnight, local time.</summary>
+    private static DateTimeOffset Picked(DateTime day) => new(DateTime.SpecifyKind(day.Date, DateTimeKind.Unspecified));
+
+    [Fact]
+    public async Task A_new_quote_is_valid_for_the_settings_number_of_days()
+    {
+        using var h = new ModelHarness();
+        var profile = await h.Db.Profiles.GetAsync();
+        profile.QuoteValidDays = 30;
+        await h.Db.Profiles.SaveAsync(profile);
+        var quote = await h.Creation.CreateDraftAsync("Service call");
+
+        var model = await Create(h, quote);
+
+        Assert.Equal(DateTimeOffset.UtcNow.AddDays(30).UtcDateTime.Date, (await model.ValidUntil)!.Value.Date);
+    }
+
+    [Fact]
+    public async Task Save_stores_the_picked_valid_until_day_through_its_end()
+    {
+        using var h = new ModelHarness();
+        var quote = await h.AddQuoteAsync("Service call");
+        var model = await Create(h, quote);
+        var day = DateTime.UtcNow.Date.AddDays(45);
+
+        await model.ValidUntil.UpdateAsync(_ => Picked(day), None);
+        await model.Save(None);
+
+        Assert.Equal(new DateTimeOffset(day.AddDays(1).AddSeconds(-1), TimeSpan.Zero), (await h.Db.Quotes.GetByIdAsync(quote.Id))!.ValidUntil);
+        Assert.Equal(["-"], h.Navigator.Routes);
+    }
+
+    [Fact]
+    public async Task Save_keeps_an_untouched_valid_until_date_as_it_was()
+    {
+        using var h = new ModelHarness();
+        var stored = DateTimeOffset.UtcNow.AddDays(14);
+        var quote = await h.AddQuoteAsync("Service call", validUntil: stored);
+        var model = await Create(h, quote);
+
+        await model.Title.UpdateAsync(_ => "Service call - furnace", None);
+        await model.Save(None);
+
+        Assert.Equal(stored, (await h.Db.Quotes.GetByIdAsync(quote.Id))!.ValidUntil);
+    }
+
+    [Fact]
+    public async Task A_valid_until_day_in_the_past_is_refused_and_says_why()
+    {
+        using var h = new ModelHarness();
+        var stored = DateTimeOffset.UtcNow.AddDays(14);
+        var quote = await h.AddQuoteAsync("Service call", validUntil: stored);
+        var model = await Create(h, quote);
+
+        await model.ValidUntil.UpdateAsync(_ => Picked(DateTime.UtcNow.Date.AddDays(-2)), None);
+        await model.MarkSent(None);
+
+        Assert.Equal("The valid-until date cannot be in the past.", await model.ValidationError);
+        Assert.Empty(h.Navigator.Requests);
+        var saved = (await h.Db.Quotes.GetByIdAsync(quote.Id))!;
+        Assert.Equal((stored, QuoteStatus.Draft), (saved.ValidUntil, saved.Status));
+    }
+
+    [Fact]
+    public async Task An_answered_quote_past_its_date_still_saves_when_the_date_is_left_alone()
+    {
+        using var h = new ModelHarness();
+        var quote = await h.AddQuoteAsync("Service call", QuoteStatus.Accepted, validUntil: DateTimeOffset.UtcNow.AddDays(-40));
+        var model = await Create(h, quote);
+
+        await model.Notes.UpdateAsync(_ => "Paid in full.", None);
+        await model.Save(None);
+
+        Assert.Equal(string.Empty, await model.ValidationError);
+        Assert.Equal("Paid in full.", (await h.Db.Quotes.GetByIdAsync(quote.Id))!.Notes);
+    }
+
+    [Fact]
+    public async Task Back_after_changing_the_valid_until_day_asks()
+    {
+        using var h = new ModelHarness();
+        var model = await Create(h, await h.AddQuoteAsync("Service call"));
+
+        await model.ValidUntil.UpdateAsync(_ => Picked(DateTime.UtcNow.Date.AddDays(60)), None);
+        h.Navigator.Confirm(false);
+        await model.Back(None);
+
+        Assert.Equal(["!Confirm"], h.Navigator.Routes);
+    }
+
+    [Fact]
+    public async Task Mark_sent_keeps_the_picked_day_and_the_quote_expires_after_it()
+    {
+        using var h = new ModelHarness();
+        var quote = await h.AddQuoteAsync("Service call");
+        var model = await Create(h, quote);
+        var day = DateTime.UtcNow.Date.AddDays(5);
+
+        await model.ValidUntil.UpdateAsync(_ => Picked(day), None);
+        await model.MarkSent(None);
+
+        var end = new DateTimeOffset(day.AddDays(1).AddSeconds(-1), TimeSpan.Zero);
+        var sent = (await h.Db.Quotes.GetByIdAsync(quote.Id))!;
+        Assert.Equal((QuoteStatus.Sent, end), (sent.Status, sent.ValidUntil));
+
+        Assert.Empty(await h.Status.ExpireOverdueAsync(end.AddMinutes(-1)));
+        Assert.Single(await h.Status.ExpireOverdueAsync(end.AddMinutes(1)));
     }
 }

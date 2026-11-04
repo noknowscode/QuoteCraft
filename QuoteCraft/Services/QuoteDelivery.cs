@@ -59,8 +59,8 @@ public sealed class QuoteDelivery
             : null;
 
     /// <summary>
-    /// Send by email: the PDF, then the email, then the quote marked Sent with a fresh validity period unless the client
-    /// has already answered. Without an email app it throws, and the quote stays as it was.
+    /// Send by email: the PDF, then the email, then the quote marked Sent (<see cref="QuoteStatusService.MarkSentAsync"/>:
+    /// not when the client has already answered). Without an email app it throws, and the quote stays as it was.
     /// </summary>
     /// <returns>The PDF's note (<see cref="ExportPdfAsync"/>).</returns>
     public async Task<string?> SendByEmailAsync(string quoteId, string recipient, string subject, string body)

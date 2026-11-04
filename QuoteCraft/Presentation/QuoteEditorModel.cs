@@ -20,6 +20,7 @@ public partial record QuoteEditorModel
     private string _savedNotes;
     private string _savedTaxRate;
     private string _savedClientName;
+    private DateTimeOffset? _savedValidUntil;
 
     public QuoteEditorModel(
         QuoteEntity quote,
@@ -48,12 +49,14 @@ public partial record QuoteEditorModel
         _savedNotes = quote.Notes ?? string.Empty;
         _savedTaxRate = Money.FormatRate(quote.TaxRate);
         _savedClientName = quote.ClientName ?? string.Empty;
+        _savedValidUntil = ValidUntilDate.ToPicker(quote.ValidUntil);
 
         Title = State<string>.Value(this, () => quote.Title);
         Notes = State<string>.Value(this, () => quote.Notes ?? string.Empty);
         TaxRate = State<string>.Value(this, () => Money.FormatRate(quote.TaxRate));
         ClientName = State<string>.Value(this, () => quote.ClientName ?? string.Empty);
         QuoteNumber = State<string>.Value(this, () => quote.QuoteNumber);
+        ValidUntil = State<DateTimeOffset?>.Value(this, () => ValidUntilDate.ToPicker(quote.ValidUntil));
     }
 
     public IState<string> Title { get; }
@@ -61,6 +64,12 @@ public partial record QuoteEditorModel
     public IState<string> TaxRate { get; }
     public IState<string> ClientName { get; }
     public IState<string> QuoteNumber { get; }
+
+    /// <summary>
+    /// The day the quote is valid until (PRD F1.8), as the date picker shows it. A new quote starts at the Settings
+    /// default (<see cref="QuoteCreationService"/>); the date is stored only when it was changed (<see cref="ValidUntilDate"/>).
+    /// </summary>
+    public IState<DateTimeOffset?> ValidUntil { get; }
 
     public IState<string> ValidationError => State<string>.Value(this, () => string.Empty);
 
@@ -180,13 +189,16 @@ public partial record QuoteEditorModel
     }
 
     /// <summary>
-    /// The checks Save, Export PDF and the status buttons run before they write the edits: a title, and a tax rate from
-    /// 0 to 100. A failed one says why in the message line, and nothing is written.
+    /// The checks Save, Export PDF and the status buttons run before they write the edits: a title, a tax rate from 0
+    /// to 100, and a changed valid-until date that is not in the past. A failed one says why in the message line, and
+    /// nothing is written.
     /// </summary>
     private async ValueTask<bool> ValidateEditsAsync(CancellationToken ct)
     {
+        var validUntil = await ValidUntil;
         var error = string.IsNullOrWhiteSpace(await Title) ? "Quote title is required."
             : !Money.TryParseRate(await TaxRate, out var tax) || tax > 100 ? "Tax rate must be a number between 0 and 100."
+            : validUntil is { } picked && !ValidUntilDate.SameDay(picked, _savedValidUntil) ? ValidUntilDate.Check(picked, DateTimeOffset.UtcNow)
             : null;
         await ValidationError.UpdateAsync(_ => error ?? string.Empty, ct);
         return error is null;
@@ -261,7 +273,8 @@ public partial record QuoteEditorModel
         return await Title != _savedTitle ||
                await Notes != _savedNotes ||
                await TaxRate != _savedTaxRate ||
-               await ClientName != _savedClientName;
+               await ClientName != _savedClientName ||
+               !ValidUntilDate.SameDay(await ValidUntil, _savedValidUntil);
     }
 
     /// <summary>The back arrow: asks before dropping unsaved edits.</summary>
@@ -304,9 +317,14 @@ public partial record QuoteEditorModel
         var notes = await Notes ?? string.Empty;
         var rateText = await TaxRate ?? string.Empty;
         var typedClient = await ClientName ?? string.Empty;
+        var validUntil = await ValidUntil;
 
         existing.Title = title;
         existing.Notes = notes;
+
+        // An untouched date keeps its exact time; a picked day is valid to its end.
+        if (validUntil is { } picked && !ValidUntilDate.SameDay(picked, _savedValidUntil))
+            existing.ValidUntil = ValidUntilDate.FromPicker(picked);
 
         // A changed name links the quote to the client with that name (or to none), so the client's counts and the
         // Send address follow the name on the quote.
@@ -321,6 +339,7 @@ public partial record QuoteEditorModel
         await _quoteRepo.SaveAsync(existing);
         _board.QuotesChanged();
         (_savedTitle, _savedNotes, _savedTaxRate, _savedClientName) = (title, notes, rateText, typedClient);
+        _savedValidUntil = validUntil ?? _savedValidUntil;
     }
 
     /// <summary>When the quote was sent, accepted, declined, expired or reopened (PRD F3.4), oldest first.</summary>

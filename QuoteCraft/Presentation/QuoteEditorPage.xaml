@@ -12,7 +12,7 @@
 
   <!--
     Quote editor: one column at every size, capped at ReadingMaxWidth (720) and centred from Normal up. From the top:
-    title, client, tax rate, line items, totals, photos, notes, export, status actions, history.
+    title, client, tax rate, valid until, line items, totals, photos, notes, export, status actions, history.
     The text fields write to the model as they are typed (UpdateSourceTrigger=PropertyChanged): the top bar's Save
     takes no focus, so a field that only committed when left would lose its last edit.
       Narrow   16 px sides; the line-item actions go under the "Line Items" heading; status actions stack full width.
@@ -115,6 +115,13 @@
                  PlaceholderText="13"
                  InputScope="Number"
                  AutomationProperties.Name="Tax rate (%)" />
+
+        <!-- Valid Until (PRD F1.8): starts at the Settings default; expiry, the Send email and the PDF use it -->
+        <CalendarDatePicker Header="Valid Until"
+                            Date="{Binding ValidUntil, Mode=TwoWay}"
+                            PlaceholderText="Pick a date"
+                            HorizontalAlignment="Stretch"
+                            AutomationProperties.Name="Valid until" />
 
         <!-- Line Items Section (the actions go under the heading on Narrow) -->
         <Grid utu:AutoLayout.PrimaryAlignment="Stretch"

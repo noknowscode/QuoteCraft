@@ -135,8 +135,9 @@ public partial record QuoteDetailModel
         await ShowNoteAsync(await _delivery.ExportPdfAsync(_quoteId), ct), ct);
 
     /// <summary>
-    /// Send: the dialog, then either the PDF alone, or the PDF, the email and the quote marked Sent (with a fresh
-    /// validity period) unless the client has already answered. Without an email app the quote stays as it was.
+    /// Send: the dialog, then either the PDF alone, or the PDF, the email and the quote marked Sent unless the client has
+    /// already answered (<see cref="QuoteStatusService"/> keeps a valid-until date that is ahead). Without an email app
+    /// the quote stays as it was.
     /// </summary>
     public ValueTask SendQuote(CancellationToken ct) => ActionError.ReportFailureAsync("The quote could not be sent.", async () =>
     {

@@ -5,8 +5,8 @@ namespace QuoteCraft.Services;
 /// <list type="bullet">
 /// <item>Only a quote a client has (Sent or Viewed) expires. A Draft has not been offered to anyone, so its
 /// valid-until date is a plan, not a deadline.</item>
-/// <item>Sending starts the validity period: the quote stays valid for the profile's number of days from today, or
-/// until its own date if that is later.</item>
+/// <item>Sending keeps the quote's valid-until date (set in the editor, PRD F1.8) while it is ahead; a quote whose
+/// date has passed gets the profile's number of days from today, so it does not expire at once.</item>
 /// <item>Reopening an expired quote makes it a Draft again with a fresh validity period, ready to send again
 /// (F17.3).</item>
 /// </list>
@@ -39,10 +39,9 @@ public class QuoteStatusService
 
         var now = DateTimeOffset.UtcNow;
         quote.Status = status;
-        if (status is QuoteStatus.Sent or QuoteStatus.Draft)
+        if ((status is QuoteStatus.Sent or QuoteStatus.Draft) && (quote.ValidUntil is not { } current || current <= now))
         {
-            var validFrom = now.AddDays((await _profileRepo.GetAsync()).QuoteValidDays);
-            quote.ValidUntil = quote.ValidUntil is { } current && current > validFrom ? current : validFrom;
+            quote.ValidUntil = now.AddDays((await _profileRepo.GetAsync()).QuoteValidDays);
         }
         if (status == QuoteStatus.Sent)
         {

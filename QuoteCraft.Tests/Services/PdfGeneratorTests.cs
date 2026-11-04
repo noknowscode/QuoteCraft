@@ -100,6 +100,15 @@ public class PdfGeneratorTests
     }
 
     [PdfToTextFact]
+    public async Task The_header_shows_the_valid_until_day_set_in_the_editor()
+    {
+        var quote = Quote(1);
+        quote.ValidUntil = ValidUntilDate.FromPicker(new DateTimeOffset(new DateTime(2026, 12, 1)));
+
+        Assert.Contains("Valid Until: Dec 01, 2026", PdfToText(await RenderAsync(quote)));
+    }
+
+    [PdfToTextFact]
     public async Task The_watermark_shows_only_when_the_plan_has_one()
     {
         Assert.Contains("Created with QuoteCraft", PdfToText(await RenderAsync(Quote(1), watermark: true)));

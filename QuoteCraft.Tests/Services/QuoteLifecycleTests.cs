@@ -109,6 +109,19 @@ public class QuoteLifecycleTests
     }
 
     [Fact]
+    public async Task Sending_keeps_a_valid_until_date_that_is_ahead_even_when_sooner_than_the_default()
+    {
+        using var test = new TestDatabase();
+        var soon = Now.AddDays(3);
+        var draft = await AddAsync(test, QuoteStatus.Draft, soon);
+
+        await Status(test).MarkSentAsync(draft.Id);
+
+        var sent = (await test.Quotes.GetByIdAsync(draft.Id))!;
+        Assert.Equal((QuoteStatus.Sent, soon), (sent.Status, sent.ValidUntil));
+    }
+
+    [Fact]
     public async Task An_expired_quote_can_be_reopened_and_sent_again()
     {
         using var test = new TestDatabase();
