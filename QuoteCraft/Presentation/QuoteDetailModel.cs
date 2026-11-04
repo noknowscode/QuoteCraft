@@ -1,15 +1,5 @@
 namespace QuoteCraft.Presentation;
 
-/// <summary>What the Send dialog starts from: the quote, its client's email and the business's name.</summary>
-public record QuoteSendDetails(
-    string QuoteId,
-    string QuoteNumber,
-    string Title,
-    string? ClientName,
-    string ClientEmail,
-    string BusinessName,
-    DateTimeOffset? ValidUntil);
-
 /// <summary>
 /// The open quote on the Quotes page (route <c>./QuoteDetail</c>, the page's detail region): its detail and print
 /// preview, inline edits of line items and notes, and its actions (send, PDF, duplicate, delete, reopen, the full
@@ -20,26 +10,22 @@ public partial record QuoteDetailModel
     private readonly string _quoteId;
     private readonly INavigator _navigator;
     private readonly IQuoteRepository _quoteRepo;
-    private readonly IClientRepository _clientRepo;
-    private readonly IBusinessProfileRepository _profileRepo;
+    private readonly QuoteDelivery _delivery;
+    private readonly QuoteLineItemDialogs _lineItems;
     private readonly QuoteCreationService _creation;
-    private readonly IShareService _shareService;
     private readonly IFeatureGateService _featureGate;
     private readonly QuoteStatusService _status;
-    private readonly IEmailLauncherService _email;
     private readonly QuoteBoard _board;
 
     public QuoteDetailModel(
         QuoteEntity? quote,
         INavigator navigator,
         IQuoteRepository quoteRepo,
-        IClientRepository clientRepo,
-        IBusinessProfileRepository profileRepo,
+        QuoteDelivery delivery,
+        QuoteLineItemDialogs lineItems,
         QuoteCreationService creation,
-        IShareService shareService,
         IFeatureGateService featureGate,
         QuoteStatusService status,
-        IEmailLauncherService email,
         QuoteBoard board)
     {
         // Navigation can restore the detail region's last route without its data (back from the full editor, when the
@@ -47,13 +33,11 @@ public partial record QuoteDetailModel
         _quoteId = quote?.Id ?? string.Empty;
         _navigator = navigator;
         _quoteRepo = quoteRepo;
-        _clientRepo = clientRepo;
-        _profileRepo = profileRepo;
+        _delivery = delivery;
+        _lineItems = lineItems;
         _creation = creation;
-        _shareService = shareService;
         _featureGate = featureGate;
         _status = status;
-        _email = email;
         _board = board;
     }
 
@@ -72,19 +56,15 @@ public partial record QuoteDetailModel
     /// <summary>What the last action could not do (a PDF that could not be written, say); shown in a banner.</summary>
     public IState<string> ActionError => State<string>.Value(this, () => string.Empty);
 
-    /// <summary>The quote, its items, its client and the business, read again whenever quotes change.</summary>
+    /// <summary>
+    /// The quote, its items, its client and the business, read again whenever quotes change; none when the quote is
+    /// gone (the page shows its empty state).
+    /// </summary>
     private IFeed<QuotePreviewData> Data => Feed.AsyncEnumerable(_board.WatchAsync)
         .Select(state => state.Version)
-        .SelectAsync(async (_, ct) =>
-        {
-            if (await _quoteRepo.GetByIdAsync(_quoteId) is not { } quote)
-            {
-                return null!;
-            }
-            var client = string.IsNullOrEmpty(quote.ClientId) ? null : await _clientRepo.GetByIdAsync(quote.ClientId);
-            var profile = await _profileRepo.GetAsync();
-            return new QuotePreviewData(quote, quote.LineItems.ToImmutableList(), profile, client);
-        });
+        .SelectDataAsync(async (_, ct) => await _delivery.ReadAsync(_quoteId) is { } data
+            ? Option.Some(data)
+            : Option.None<QuotePreviewData>());
 
     public IFeed<QuoteDetail> Detail => Data.Select(d => new QuoteDetail(d.Quote, d.LineItems, d.Client));
 
@@ -147,21 +127,12 @@ public partial record QuoteDetailModel
         _board.QuotesChanged();
     }, ct);
 
-    public ValueTask DownloadPdf(CancellationToken ct) =>
-        ActionError.ReportFailureAsync("The PDF could not be created.", ExportPdfAsync, ct);
-
     /// <summary>
-    /// Saves the quote's PDF (<see cref="IShareService"/>); the quote's status does not change. When nothing opened the
-    /// saved file, the banner says where it is.
+    /// Saves the quote's PDF; the quote's status does not change. When nothing opened the saved file, the banner says
+    /// where it is.
     /// </summary>
-    private async Task ExportPdfAsync()
-    {
-        if (await _quoteRepo.GetByIdAsync(_quoteId) is { } quote
-            && await _shareService.GenerateAndDownloadPdfAsync(quote) is { Length: > 0 } note)
-        {
-            await ActionError.UpdateAsync(_ => note, CancellationToken.None);
-        }
-    }
+    public ValueTask DownloadPdf(CancellationToken ct) => ActionError.ReportFailureAsync("The PDF could not be created.", async () =>
+        await ShowNoteAsync(await _delivery.ExportPdfAsync(_quoteId), ct), ct);
 
     /// <summary>
     /// Send: the dialog, then either the PDF alone, or the PDF, the email and the quote marked Sent (with a fresh
@@ -169,38 +140,30 @@ public partial record QuoteDetailModel
     /// </summary>
     public ValueTask SendQuote(CancellationToken ct) => ActionError.ReportFailureAsync("The quote could not be sent.", async () =>
     {
-        if (await GetSendDetailsAsync() is not { } details
+        if (await _delivery.GetSendDetailsAsync(_quoteId) is not { } details
             || await _navigator.ShowDialogAsync<SendQuoteChoice>(this, "SendQuote", details, ct) is not { } choice)
         {
             return;
         }
 
-        await ExportPdfAsync();
         if (choice.PdfOnly)
         {
+            await ShowNoteAsync(await _delivery.ExportPdfAsync(_quoteId), ct);
             return;
         }
 
-        if (!await _email.ComposeEmailAsync(choice.Recipient, choice.Subject, choice.Body))
-        {
-            throw new InvalidOperationException("No email app opened, so the quote is not marked as sent.");
-        }
-        await _status.MarkSentAsync(_quoteId);
+        var note = await _delivery.SendByEmailAsync(_quoteId, choice.Recipient, choice.Subject, choice.Body);
         _board.QuotesChanged();
+        await ShowNoteAsync(note, ct);
     }, ct);
 
-    /// <summary>The quote as the Send dialog fills it in, or null when it is gone.</summary>
-    private async Task<QuoteSendDetails?> GetSendDetailsAsync()
+    /// <summary>What the user needs to know about the saved PDF (where it is, when no app opened it), in the banner.</summary>
+    private async ValueTask ShowNoteAsync(string? note, CancellationToken ct)
     {
-        if (await _quoteRepo.GetByIdAsync(_quoteId) is not { } quote)
+        if (note is { Length: > 0 })
         {
-            return null;
+            await ActionError.UpdateAsync(_ => note, ct);
         }
-
-        var client = string.IsNullOrEmpty(quote.ClientId) ? null : await _clientRepo.GetByIdAsync(quote.ClientId);
-        var profile = await _profileRepo.GetAsync();
-        return new QuoteSendDetails(quote.Id, quote.QuoteNumber, quote.Title, quote.ClientName, client?.Email ?? string.Empty,
-            profile.BusinessName ?? "Our Company", quote.ValidUntil);
     }
 
     /// <summary>A Draft copy with the same items, opened in the editor; the plan limit first (only where plans exist).</summary>
@@ -254,30 +217,19 @@ public partial record QuoteDetailModel
         }
     }
 
-    /// <summary>The line-item dialog: a new item goes last; an edited one keeps its place.</summary>
+    /// <summary>The line-item dialog (<see cref="QuoteLineItemDialogs"/>): every view of the quote reads it again.</summary>
     private ValueTask EditLineItemAsync(LineItemEntity? item, CancellationToken ct) => ActionError.ReportFailureAsync("The line item could not be saved.", async () =>
     {
-        if (await _navigator.ShowDialogAsync<LineItemEditResult>(this, "LineItemEditor", new LineItemEditRequest(item), ct) is not { } result)
+        if (await _lineItems.EditAsync(_navigator, this, _quoteId, item, ct))
         {
-            return;
+            _board.QuotesChanged();
         }
-
-        if (result.Saved is { } saved)
-        {
-            saved.QuoteId = _quoteId;
-            await _quoteRepo.SaveLineItemAsync(saved);
-        }
-        else if (result.DeletedId is { Length: > 0 } deletedId)
-        {
-            await _quoteRepo.DeleteLineItemAsync(deletedId);
-        }
-        _board.QuotesChanged();
     }, ct);
 
     /// <summary>From Catalog: the browser adds items as they are tapped; the quote reloads when it closes.</summary>
     public ValueTask OpenCatalog(CancellationToken ct) => ActionError.ReportFailureAsync("The catalog could not be opened.", async () =>
     {
-        await _navigator.ShowDialogAsync<object>(this, "CatalogBrowser", new CatalogBrowserRequest(_quoteId), ct);
+        await _lineItems.OpenCatalogAsync(_navigator, this, _quoteId, ct);
         _board.QuotesChanged();
     }, ct);
 }

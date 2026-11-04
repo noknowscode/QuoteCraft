@@ -7,10 +7,10 @@ public partial record QuoteEditorModel
     private readonly INavigator _navigator;
     private readonly IQuoteRepository _quoteRepo;
     private readonly IClientRepository _clientRepo;
-    private readonly IShareService _shareService;
+    private readonly QuoteDelivery _delivery;
+    private readonly QuoteLineItemDialogs _lineItems;
     private readonly string _quoteId;
     private readonly IPhotoService _photoService;
-    private readonly IStatusHistoryRepository _statusHistoryRepo;
     private readonly QuoteStatusService _status;
     private readonly IDispatcher _dispatcher;
     private readonly QuoteBoard _board;
@@ -26,9 +26,9 @@ public partial record QuoteEditorModel
         INavigator navigator,
         IQuoteRepository quoteRepo,
         IClientRepository clientRepo,
-        IShareService shareService,
+        QuoteDelivery delivery,
+        QuoteLineItemDialogs lineItems,
         IPhotoService photoService,
-        IStatusHistoryRepository statusHistoryRepo,
         QuoteStatusService status,
         IDispatcher dispatcher,
         QuoteBoard board)
@@ -39,9 +39,9 @@ public partial record QuoteEditorModel
         _navigator = navigator;
         _quoteRepo = quoteRepo;
         _clientRepo = clientRepo;
-        _shareService = shareService;
+        _delivery = delivery;
+        _lineItems = lineItems;
         _photoService = photoService;
-        _statusHistoryRepo = statusHistoryRepo;
         _quoteId = quote.Id;
 
         _savedTitle = quote.Title;
@@ -135,30 +135,19 @@ public partial record QuoteEditorModel
 
     public ValueTask EditLineItem(LineItemEntity item, CancellationToken ct) => EditLineItemAsync(item, ct);
 
-    /// <summary>The line-item dialog: a new item goes last; an edited one keeps its place; Delete removes it.</summary>
+    /// <summary>The line-item dialog (<see cref="QuoteLineItemDialogs"/>): the items are read again when they changed.</summary>
     private ValueTask EditLineItemAsync(LineItemEntity? item, CancellationToken ct) => ValidationError.ReportFailureAsync("The line item could not be saved.", async () =>
     {
-        if (await _navigator.ShowDialogAsync<LineItemEditResult>(this, "LineItemEditor", new LineItemEditRequest(item), ct) is not { } result)
+        if (await _lineItems.EditAsync(_navigator, this, _quoteId, item, ct))
         {
-            return;
+            await LineItemsChangedAsync(ct);
         }
-
-        if (result.Saved is { } saved)
-        {
-            saved.QuoteId = _quoteId;
-            await _quoteRepo.SaveLineItemAsync(saved);
-        }
-        else if (result.DeletedId is { Length: > 0 } deletedId)
-        {
-            await _quoteRepo.DeleteLineItemAsync(deletedId);
-        }
-        await LineItemsChangedAsync(ct);
     }, ct);
 
     /// <summary>From Catalog: the browser adds items as they are tapped; the list reloads when it closes.</summary>
     public ValueTask OpenCatalog(CancellationToken ct) => ValidationError.ReportFailureAsync("The catalog could not be opened.", async () =>
     {
-        await _navigator.ShowDialogAsync<object>(this, "CatalogBrowser", new CatalogBrowserRequest(_quoteId), ct);
+        await _lineItems.OpenCatalogAsync(_navigator, this, _quoteId, ct);
         await LineItemsChangedAsync(ct);
     }, ct);
 
@@ -240,8 +229,7 @@ public partial record QuoteEditorModel
         {
             await PersistEditsAsync();
             // When nothing opened the saved file, the message line says where it is.
-            if (await _quoteRepo.GetByIdAsync(_quoteId) is { } quote
-                && await _shareService.GenerateAndDownloadPdfAsync(quote) is { Length: > 0 } note)
+            if (await _delivery.ExportPdfAsync(_quoteId) is { Length: > 0 } note)
             {
                 await ValidationError.UpdateAsync(_ => note, ct);
             }
@@ -322,7 +310,7 @@ public partial record QuoteEditorModel
     /// <summary>When the quote was sent, accepted, declined, expired or reopened (PRD F3.4), oldest first.</summary>
     public IListFeed<StatusHistoryEntry> StatusHistory => LineItemsVersion
         .SelectAsync(async (_, ct) =>
-            (IImmutableList<StatusHistoryEntry>)(await _statusHistoryRepo.GetByQuoteIdAsync(_quoteId)).ToImmutableList())
+            (IImmutableList<StatusHistoryEntry>)(await _status.GetHistoryAsync(_quoteId)).ToImmutableList())
         .AsListFeed();
 
     private async ValueTask UpdateStatus(QuoteStatus status, CancellationToken ct)

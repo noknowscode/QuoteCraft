@@ -19,7 +19,7 @@ public class QuoteEditorModelTests
     /// </summary>
     internal static async Task<QuoteEditorModel> Create(ModelHarness h, QuoteEntity quote)
     {
-        var model = new QuoteEditorModel(quote, h.Navigator, h.Db.Quotes, h.Db.Clients, h.Share, h.Photos, h.Db.History, h.Status, h.Dispatcher, h.Board);
+        var model = new QuoteEditorModel(quote, h.Navigator, h.Db.Quotes, h.Db.Clients, h.Delivery, h.LineItemDialogs, h.Photos, h.Status, h.Dispatcher, h.Board);
         _ = (await model.Title, await model.Notes, await model.TaxRate, await model.ClientName, await model.ValidationError);
         return model;
     }

@@ -105,6 +105,8 @@ public partial class App : Application
 
                     services.AddSingleton<IStatusHistoryRepository, StatusHistoryRepository>();
                     services.AddSingleton<Services.QuoteStatusService>();
+                    services.AddSingleton<Services.QuoteDelivery>();
+                    services.AddSingleton<QuoteLineItemDialogs>();
 
                     services.AddSingleton<HttpClient>();
 

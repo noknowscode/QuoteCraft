@@ -24,6 +24,9 @@ public class QuoteStatusService
         _profileRepo = profileRepo;
     }
 
+    /// <summary>When the quote was sent, accepted, declined, expired or reopened (PRD F3.4), oldest first.</summary>
+    public Task<List<StatusHistoryEntry>> GetHistoryAsync(string quoteId) => _history.GetByQuoteIdAsync(quoteId);
+
     /// <summary>An explicit status change (the editor's Mark Sent, Accepted and Declined).</summary>
     public async Task<QuoteEntity?> SetStatusAsync(string quoteId, QuoteStatus status, string changedBy = "user")
     {

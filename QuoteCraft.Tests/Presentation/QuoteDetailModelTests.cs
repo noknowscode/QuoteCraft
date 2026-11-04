@@ -18,8 +18,8 @@ public class QuoteDetailModelTests
     internal static async Task<QuoteDetailModel> Create(ModelHarness h, QuoteEntity quote)
     {
         h.Board.Open(quote.Id);
-        var model = new QuoteDetailModel(quote, h.Navigator, h.Db.Quotes, h.Db.Clients, h.Db.Profiles, h.Creation, h.Share,
-            h.FeatureGate, h.Status, h.Email, h.Board);
+        var model = new QuoteDetailModel(quote, h.Navigator, h.Db.Quotes, h.Delivery, h.LineItemDialogs, h.Creation,
+            h.FeatureGate, h.Status, h.Board);
         _ = (await model.IsEditMode, await model.EditingNotes, await model.IsPreviewMode, await model.ActionError, await model.UpgradeMessage);
         return model;
     }

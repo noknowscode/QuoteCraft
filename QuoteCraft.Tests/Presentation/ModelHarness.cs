@@ -4,6 +4,7 @@ using NSubstitute;
 using QuoteCraft.Data;
 using QuoteCraft.Helpers;
 using QuoteCraft.Models;
+using QuoteCraft.Presentation;
 using QuoteCraft.Services;
 using QuoteCraft.Tests.Data;
 
@@ -29,6 +30,8 @@ public sealed class ModelHarness : IDisposable
         Subscription = Substitute.For<ISubscriptionService>();
         FeatureGate = new FeatureGateService(Db.Quotes, Db.Clients, Subscription);
         Notifications = new NotificationService(Db.Database, NullLogger<NotificationService>.Instance);
+        Delivery = new QuoteDelivery(Db.Quotes, Db.Clients, Db.Profiles, Share, Email, Status);
+        LineItemDialogs = new QuoteLineItemDialogs(Db.Quotes);
     }
 
     public TestDatabase Db { get; }
@@ -40,6 +43,8 @@ public sealed class ModelHarness : IDisposable
     public ISubscriptionService Subscription { get; }
     public FeatureGateService FeatureGate { get; }
     public NotificationService Notifications { get; }
+    public QuoteDelivery Delivery { get; }
+    public QuoteLineItemDialogs LineItemDialogs { get; }
     public IShareService Share { get; } = Substitute.For<IShareService>();
     public IEmailLauncherService Email { get; } = Substitute.For<IEmailLauncherService>();
     public IPhotoService Photos { get; } = Substitute.For<IPhotoService>();
