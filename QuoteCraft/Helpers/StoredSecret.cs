@@ -73,7 +73,10 @@ public sealed class StoredSecret
             return;
         }
 
-        Directory.CreateDirectory(Path.GetDirectoryName(_file)!);
+        if (Path.GetDirectoryName(_file) is { Length: > 0 } folder)
+        {
+            Directory.CreateDirectory(folder);
+        }
         File.WriteAllText(_file, value);
     }
 

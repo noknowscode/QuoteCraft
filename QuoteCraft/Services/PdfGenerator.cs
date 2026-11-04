@@ -477,16 +477,18 @@ public static class QuotePdf
     {
         private bool _open;
         private float _top;
+        private SKCanvas? _canvas;
 
         public Func<SKCanvas, (float Top, float Bottom)> Decorate { get; set; } = _ => (Margin, PageHeight - Margin);
-        public SKCanvas Canvas { get; private set; } = null!;
+        /// <summary>The open page's canvas; <see cref="NewPage"/> opens the first.</summary>
+        public SKCanvas Canvas => _canvas ?? throw new InvalidOperationException("No page is open.");
         public float Y { get; set; }
         public float Bottom { get; private set; }
 
         public void NewPage()
         {
             EndPage();
-            Canvas = document.BeginPage(PageWidth, PageHeight);
+            _canvas = document.BeginPage(PageWidth, PageHeight);
             _open = true;
             var (top, bottom) = Decorate(Canvas);
             Y = _top = top;

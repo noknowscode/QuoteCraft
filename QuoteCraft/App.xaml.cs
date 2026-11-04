@@ -44,7 +44,9 @@ public partial class App : Application
     /// <summary>The services once the host has started; null before (and if startup failed).</summary>
     public static IServiceProvider? ServicesOrNull => (Current as App)?.Host?.Services;
 
-    public static Window MainAppWindow => ((App)Current).MainWindow!;
+    /// <summary>The app's window, for the pickers that need their owner window or its UI thread.</summary>
+    public static Window MainAppWindow =>
+        (Current as App)?.MainWindow ?? throw new InvalidOperationException("The app's window is not open yet.");
 
     [SuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Uno.Extensions APIs are used in a way that is safe for trimming in this template context.")]
     protected async override void OnLaunched(LaunchActivatedEventArgs args)
@@ -175,7 +177,10 @@ public partial class App : Application
     /// </summary>
     private async Task ShowOnboardingOnFirstRunAsync()
     {
-        var services = Host!.Services;
+        if (Host?.Services is not { } services)
+        {
+            return;
+        }
         if (await services.GetRequiredService<Services.IOnboardingService>().IsOnboardingCompleteAsync())
         {
             return;

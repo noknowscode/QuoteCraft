@@ -110,12 +110,12 @@ public class SupabaseClient
         {
             _logger.LogInformation("Access token expired, attempting refresh");
             var refreshed = await _authService.RefreshSessionAsync();
-            if (refreshed.IsAuthenticated)
+            if (refreshed is { IsAuthenticated: true, AccessToken: { } token })
             {
                 // Clone the request with new token
                 var retry = new HttpRequestMessage(request.Method, request.RequestUri);
                 retry.Headers.Add("apikey", _anonKey);
-                retry.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", refreshed.AccessToken!);
+                retry.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
                 if (request.Content is not null)
                 {
                     var contentBytes = await request.Content.ReadAsByteArrayAsync();

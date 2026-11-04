@@ -143,12 +143,12 @@ public partial class App
                 var dashboard = await WaitForAsync<DashboardPage>(root);
                 var quotes = await Host.Services.GetRequiredService<IQuoteRepository>().GetAllAsync();
                 var quote = quotes.OrderByDescending(q => q.LineItems.Count).FirstOrDefault();
-                if (dashboard is null || quote is null)
+                if (dashboard?.Navigator() is not { } navigator || quote is null)
                 {
                     VerificationArgs.Log($"route={spec} failed: dashboard={dashboard is not null} quote={quote is not null}");
                     return;
                 }
-                var response = await dashboard.Navigator()!.NavigateRouteAsync(dashboard, "QuoteEditor", data: quote);
+                var response = await navigator.NavigateRouteAsync(dashboard, "QuoteEditor", data: quote);
                 VerificationArgs.Log($"route={spec} quote={quote.QuoteNumber} success={response?.Success}");
                 return;
             }

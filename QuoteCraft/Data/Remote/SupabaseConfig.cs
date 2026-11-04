@@ -33,13 +33,11 @@ public sealed class SupabaseConfig
 
     public SupabaseConfig(string? url, string? anonKey, string? customerPortalUrl = null)
     {
-        var hasUrl = Uri.TryCreate(url?.Trim(), UriKind.Absolute, out var uri)
-            && (uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeHttp);
-        var hasKey = !string.IsNullOrWhiteSpace(anonKey);
-
-        IsConfigured = hasUrl && hasKey;
-        Url = IsConfigured ? uri!.GetLeftPart(UriPartial.Authority) : string.Empty;
-        AnonKey = IsConfigured ? anonKey!.Trim() : string.Empty;
+        IsConfigured = Uri.TryCreate(url?.Trim(), UriKind.Absolute, out var uri)
+            && (uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeHttp)
+            && !string.IsNullOrWhiteSpace(anonKey);
+        Url = IsConfigured && uri is not null ? uri.GetLeftPart(UriPartial.Authority) : string.Empty;
+        AnonKey = IsConfigured ? anonKey?.Trim() ?? string.Empty : string.Empty;
         CustomerPortalUrl = IsConfigured
             && Uri.TryCreate(customerPortalUrl?.Trim(), UriKind.Absolute, out var portal)
             && portal.Scheme == Uri.UriSchemeHttps
