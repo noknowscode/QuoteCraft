@@ -45,8 +45,9 @@
       </ResourceDictionary.ThemeDictionaries>
 
       <!--
-        Cards here are surfaces, not buttons (Styles/Cards.xaml): no Material hover, pressed or focus wash. On touch, a
-        swipe that starts on a card can leave the hover wash up. List cards draw their states with InteractionHelper.
+        Cards here are surfaces, not buttons (Styles/Cards.xaml, D16): no Material hover, pressed or focus wash. On
+        touch, a swipe that starts on a card could leave the hover wash up. A list card's states come from the button it
+        holds (ListCardButtonStyle).
       -->
       <SolidColorBrush x:Key="FilledCardContentBorderBrushPointerOver" Color="Transparent" />
       <SolidColorBrush x:Key="FilledCardContentBorderBrushPressed" Color="Transparent" />

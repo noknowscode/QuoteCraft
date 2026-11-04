@@ -3,7 +3,8 @@
 
   StaticCardStyle: a surface that is not a button. It fills its slot like the Borders it replaced (the Material base
   style centres the card) and takes no keyboard focus. The Material hover, pressed and focus washes are off for every
-  card (App.xaml); cards that react to the pointer get their states from Helpers/InteractionHelper.
+  card (App.xaml, D16); a card that can be tapped holds a ListCardButtonStyle button, which carries the hover, pressed
+  and focus states, Enter and Space, and the item's accessible name.
   No attached-property setters here: on WinAppSDK a style BasedOn a Toolkit template throws on them
   (microsoft/microsoft-ui-xaml#6388).
 -->
@@ -46,6 +47,23 @@
   <!-- A surface card with the standard inset (stat cards, list cards) -->
   <Style x:Key="PaddedCardStyle" TargetType="utu:CardContentControl" BasedOn="{StaticResource StaticCardStyle}">
     <Setter Property="Padding" Value="{StaticResource CardInset}" />
+  </Style>
+
+  <!--
+    The tap target of a list card (quotes, clients, catalog categories and items): a Material text button that fills
+    the card, so the card gets Material's hover, pressed and focus states, a keyboard stop with Enter and Space, and a
+    button's name for screen readers. Put the item's name on it (AutomationProperties.Name) and the command with the
+    item as its parameter.
+  -->
+  <Style x:Key="ListCardButtonStyle" TargetType="Button" BasedOn="{StaticResource MaterialTextButtonStyle}">
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="VerticalAlignment" Value="Stretch" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Stretch" />
+    <Setter Property="Foreground" Value="{ThemeResource OnSurfaceBrush}" />
+    <Setter Property="CornerRadius" Value="{StaticResource RadiusMd}" />
+    <Setter Property="Padding" Value="{StaticResource CardInset}" />
+    <Setter Property="MinHeight" Value="{StaticResource TouchTarget}" />
   </Style>
 
   <!-- A tinted panel without a stroke: search fields, totals, notes, notices -->

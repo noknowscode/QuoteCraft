@@ -8,7 +8,6 @@
       xmlns:um="using:Uno.Material"
       xmlns:mvux="using:Uno.Extensions.Reactive.UI"
       xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-      xmlns:helpers="using:QuoteCraft.Helpers"
       xmlns:ctrl="using:QuoteCraft.Controls"
       Background="{ThemeResource BackgroundBrush}">
 
@@ -348,67 +347,75 @@
             <mvux:FeedView Grid.Row="2" Source="{Binding Quotes}">
               <DataTemplate>
                 <ScrollViewer Padding="{utu:Responsive Narrow={StaticResource ListInsetNarrow}, Normal={StaticResource ListInsetNormal}, Widest={StaticResource ListInsetWidest}}">
-                  <muxc:ItemsRepeater ItemsSource="{Binding Data}"
-                                      utu:CommandExtensions.Command="{Binding Parent.OpenQuote}">
+                  <muxc:ItemsRepeater ItemsSource="{Binding Data}">
                     <muxc:ItemsRepeater.Layout>
                       <muxc:StackLayout Spacing="{StaticResource Space4}" />
                     </muxc:ItemsRepeater.Layout>
                     <muxc:ItemsRepeater.ItemTemplate>
                       <DataTemplate>
-                        <utu:CardContentControl Style="{StaticResource PaddedCardStyle}"
-                                                CornerRadius="{StaticResource RadiusMd}"
-                                                AutomationProperties.Name="{Binding Quote.Title}"
-                                                helpers:InteractionHelper.IsSelected="{Binding IsSelected}"
-                                                helpers:InteractionHelper.Command="{Binding DataContext.OpenQuote, ElementName=DashboardRoot}"
-                                                helpers:InteractionHelper.IsInteractive="True">
+                        <!-- The card is a button (tap, Enter or Space opens the quote); the open quote's card is tinted -->
+                        <utu:CardContentControl Style="{StaticResource StaticCardStyle}"
+                                                CornerRadius="{StaticResource RadiusMd}">
                           <Grid>
-                            <Grid.RowDefinitions>
-                              <RowDefinition Height="Auto" />
-                              <RowDefinition Height="Auto" />
-                              <RowDefinition Height="Auto" />
-                              <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
+                            <Border Background="{ThemeResource PrimaryContainerBrush}"
+                                    BorderBrush="{ThemeResource PrimaryBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="{StaticResource RadiusMd}"
+                                    Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}" />
+                            <Button Command="{Binding DataContext.OpenQuote, ElementName=DashboardRoot}"
+                                    CommandParameter="{Binding}"
+                                    AutomationProperties.Name="{Binding Quote.Title}"
+                                    Style="{StaticResource ListCardButtonStyle}">
+                              <Grid>
+                                <Grid.RowDefinitions>
+                                  <RowDefinition Height="Auto" />
+                                  <RowDefinition Height="Auto" />
+                                  <RowDefinition Height="Auto" />
+                                  <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
 
-                            <!-- Title + Status -->
-                            <Grid ColumnSpacing="{StaticResource Space8}">
-                              <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                              </Grid.ColumnDefinitions>
-                              <TextBlock Text="{Binding Quote.Title}"
-                                         Style="{StaticResource BodyMediumSemiBold}"
-                                         TextTrimming="CharacterEllipsis" />
-                              <ctrl:StatusPill Grid.Column="1" Status="{Binding Quote.Status}" />
-                            </Grid>
+                                <!-- Title + Status -->
+                                <Grid ColumnSpacing="{StaticResource Space8}">
+                                  <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                  </Grid.ColumnDefinitions>
+                                  <TextBlock Text="{Binding Quote.Title}"
+                                             Style="{StaticResource BodyMediumSemiBold}"
+                                             TextTrimming="CharacterEllipsis" />
+                                  <ctrl:StatusPill Grid.Column="1" Status="{Binding Quote.Status}" />
+                                </Grid>
 
-                            <!-- Client -->
-                            <TextBlock Grid.Row="1"
-                                       Text="{Binding Quote.ClientName}"
-                                       Style="{StaticResource BodySmall}"
-                                       Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                                       TextTrimming="CharacterEllipsis"
-                                       Margin="{StaticResource GapTop2}" />
+                                <!-- Client -->
+                                <TextBlock Grid.Row="1"
+                                           Text="{Binding Quote.ClientName}"
+                                           Style="{StaticResource BodySmall}"
+                                           Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                                           TextTrimming="CharacterEllipsis"
+                                           Margin="{StaticResource GapTop2}" />
 
-                            <!-- Divider -->
-                            <Border Grid.Row="2" Height="{StaticResource HairlineThickness}"
-                                    Background="{ThemeResource OutlineVariantBrush}"
-                                    Margin="{StaticResource GapTop8}" />
+                                <!-- Divider -->
+                                <Border Grid.Row="2" Height="{StaticResource HairlineThickness}"
+                                        Background="{ThemeResource OutlineVariantBrush}"
+                                        Margin="{StaticResource GapTop8}" />
 
-                            <!-- Amount + Date -->
-                            <Grid Grid.Row="3" Margin="{StaticResource GapTop8}">
-                              <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                              </Grid.ColumnDefinitions>
-                              <TextBlock Foreground="{ThemeResource PrimaryBrush}"
-                                         FontFamily="{StaticResource MonospaceFontFamily}"
-                                         Style="{StaticResource BodyMediumSemiBold}"
-                                         Text="{Binding Quote.Total, Converter={StaticResource CurrencyFormatConverter}}" />
-                              <TextBlock Grid.Column="1"
-                                         Style="{StaticResource BodySmall}"
-                                         Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                                         Text="{Binding Quote.CreatedAt, Converter={StaticResource RelativeDateConverter}}" />
-                            </Grid>
+                                <!-- Amount + Date -->
+                                <Grid Grid.Row="3" Margin="{StaticResource GapTop8}">
+                                  <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                  </Grid.ColumnDefinitions>
+                                  <TextBlock Foreground="{ThemeResource PrimaryBrush}"
+                                             FontFamily="{StaticResource MonospaceFontFamily}"
+                                             Style="{StaticResource BodyMediumSemiBold}"
+                                             Text="{Binding Quote.Total, Converter={StaticResource CurrencyFormatConverter}}" />
+                                  <TextBlock Grid.Column="1"
+                                             Style="{StaticResource BodySmall}"
+                                             Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                                             Text="{Binding Quote.CreatedAt, Converter={StaticResource RelativeDateConverter}}" />
+                                </Grid>
+                              </Grid>
+                            </Button>
                           </Grid>
                         </utu:CardContentControl>
                       </DataTemplate>

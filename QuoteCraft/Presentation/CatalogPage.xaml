@@ -8,7 +8,6 @@
       xmlns:um="using:Uno.Material"
       xmlns:mvux="using:Uno.Extensions.Reactive.UI"
       xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-      xmlns:helpers="using:QuoteCraft.Helpers"
       Background="{ThemeResource BackgroundBrush}">
 
   <!--
@@ -131,8 +130,7 @@
         <mvux:FeedView Grid.Row="1" Source="{Binding CategoryCards}">
           <DataTemplate>
             <ScrollViewer Padding="{utu:Responsive Narrow={StaticResource ListInsetNarrow}, Normal={StaticResource ListInsetNormal}, Widest={StaticResource ListInsetWidest}}">
-              <muxc:ItemsRepeater ItemsSource="{Binding Data}"
-                                  utu:CommandExtensions.Command="{Binding Parent.SelectCategoryCard}">
+              <muxc:ItemsRepeater ItemsSource="{Binding Data}">
                 <muxc:ItemsRepeater.Layout>
                   <muxc:UniformGridLayout MinItemWidth="156" MinItemHeight="130"
                                           MinColumnSpacing="{StaticResource Space8}" MinRowSpacing="{StaticResource Space8}"
@@ -140,33 +138,39 @@
                 </muxc:ItemsRepeater.Layout>
                 <muxc:ItemsRepeater.ItemTemplate>
                   <DataTemplate>
-                    <utu:CardContentControl Style="{StaticResource StaticCardStyle}"
-                            Padding="{StaticResource Inset16}"
-                            AutomationProperties.Name="{Binding Name}"
-                            helpers:InteractionHelper.Command="{Binding DataContext.SelectCategoryCard, ElementName=CatalogRoot}"
-                            helpers:InteractionHelper.IsInteractive="True">
-                      <StackPanel Spacing="{StaticResource Space8}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <!-- Icon Circle -->
-                        <utu:CardContentControl Style="{StaticResource AvatarCardStyle}" Width="{StaticResource AvatarSize}" Height="{StaticResource AvatarSize}" CornerRadius="{StaticResource RadiusCircle40}">
-                          <FontIcon Glyph="{Binding IconGlyph}"
-                                    FontSize="{StaticResource IconSizeXl}"
-                                    Foreground="{ThemeResource OnPrimaryContainerBrush}"
-                                    HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </utu:CardContentControl>
-                        <!-- Name -->
-                        <TextBlock Text="{Binding Name}"
-                                   Style="{StaticResource TitleSmall}"
-                                   FontWeight="SemiBold"
-                                   HorizontalAlignment="Center"
-                                   TextAlignment="Center" TextWrapping="Wrap" />
-                        <!-- Item Count -->
-                        <TextBlock Style="{StaticResource BodySmall}"
-                                   Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                                   HorizontalAlignment="Center">
-                          <Run Text="{Binding ItemCount}" />
-                          <Run Text=" items" />
-                        </TextBlock>
-                      </StackPanel>
+                    <!-- The card is a button: tap, Enter or Space opens the category (again closes it) -->
+                    <utu:CardContentControl Style="{StaticResource StaticCardStyle}">
+                      <Button Command="{Binding DataContext.SelectCategoryCard, ElementName=CatalogRoot}"
+                              CommandParameter="{Binding}"
+                              AutomationProperties.Name="{Binding Name}"
+                              Style="{StaticResource ListCardButtonStyle}"
+                              CornerRadius="{StaticResource RadiusLg}"
+                              Padding="{StaticResource Inset16}"
+                              HorizontalContentAlignment="Center"
+                              VerticalContentAlignment="Center">
+                        <StackPanel Spacing="{StaticResource Space8}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                          <!-- Icon Circle -->
+                          <utu:CardContentControl Style="{StaticResource AvatarCardStyle}" Width="{StaticResource AvatarSize}" Height="{StaticResource AvatarSize}" CornerRadius="{StaticResource RadiusCircle40}">
+                            <FontIcon Glyph="{Binding IconGlyph}"
+                                      FontSize="{StaticResource IconSizeXl}"
+                                      Foreground="{ThemeResource OnPrimaryContainerBrush}"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center" />
+                          </utu:CardContentControl>
+                          <!-- Name -->
+                          <TextBlock Text="{Binding Name}"
+                                     Style="{StaticResource TitleSmall}"
+                                     FontWeight="SemiBold"
+                                     HorizontalAlignment="Center"
+                                     TextAlignment="Center" TextWrapping="Wrap" />
+                          <!-- Item Count -->
+                          <TextBlock Style="{StaticResource BodySmall}"
+                                     Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                                     HorizontalAlignment="Center">
+                            <Run Text="{Binding ItemCount}" />
+                            <Run Text=" items" />
+                          </TextBlock>
+                        </StackPanel>
+                      </Button>
                     </utu:CardContentControl>
                   </DataTemplate>
                 </muxc:ItemsRepeater.ItemTemplate>
@@ -292,38 +296,38 @@
               <!-- Items List -->
               <utu:CardContentControl Style="{StaticResource StaticCardStyle}"
                       Padding="{utu:Responsive Narrow={StaticResource Inset8}, Normal={StaticResource Inset16}}">
-                <muxc:ItemsRepeater ItemsSource="{Binding Data.Items}"
-                                    utu:CommandExtensions.Command="{Binding Parent.EditItem}">
+                <muxc:ItemsRepeater ItemsSource="{Binding Data.Items}">
                   <muxc:ItemsRepeater.Layout>
                     <muxc:StackLayout Spacing="{StaticResource Space4}" />
                   </muxc:ItemsRepeater.Layout>
                   <muxc:ItemsRepeater.ItemTemplate>
                     <DataTemplate>
+                      <!-- The row is a button: tap, Enter or Space opens the item -->
                       <utu:CardContentControl Style="{StaticResource StaticCardStyle}" Background="{ThemeResource BackgroundBrush}"
-                              BorderBrush="{ThemeResource OutlineVariantBrush}"
-                              BorderThickness="1" CornerRadius="{StaticResource RadiusMd}"
-                              Padding="{StaticResource Inset16x12}"
-                              MinHeight="{StaticResource TouchTargetComfortable}"
-                              AutomationProperties.Name="{Binding Description}"
-                              helpers:InteractionHelper.Command="{Binding DataContext.EditItem, ElementName=CatalogRoot}"
-                              helpers:InteractionHelper.RestBackground="BackgroundBrush"
-                              helpers:InteractionHelper.IsInteractive="True">
-                        <Grid ColumnSpacing="{StaticResource Space12}">
-                          <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                          </Grid.ColumnDefinitions>
-                          <TextBlock Text="{Binding Description}"
-                                     Style="{StaticResource BodyMedium}"
-                                     TextWrapping="Wrap"
-                                     VerticalAlignment="Center" />
-                          <TextBlock Grid.Column="1"
-                                     Text="{Binding UnitPrice, Converter={StaticResource CurrencyFormatConverter}}"
-                                     FontFamily="{StaticResource MonospaceFontFamily}"
-                                     Style="{StaticResource BodyMedium}"
-                                     Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                                     VerticalAlignment="Center" />
-                        </Grid>
+                              CornerRadius="{StaticResource RadiusMd}">
+                        <Button Command="{Binding DataContext.EditItem, ElementName=CatalogRoot}"
+                                CommandParameter="{Binding}"
+                                AutomationProperties.Name="{Binding Description}"
+                                Style="{StaticResource ListCardButtonStyle}"
+                                Padding="{StaticResource Inset16x12}"
+                                MinHeight="{StaticResource TouchTargetComfortable}">
+                          <Grid ColumnSpacing="{StaticResource Space12}">
+                            <Grid.ColumnDefinitions>
+                              <ColumnDefinition Width="*" />
+                              <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding Description}"
+                                       Style="{StaticResource BodyMedium}"
+                                       TextWrapping="Wrap"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding UnitPrice, Converter={StaticResource CurrencyFormatConverter}}"
+                                       FontFamily="{StaticResource MonospaceFontFamily}"
+                                       Style="{StaticResource BodyMedium}"
+                                       Foreground="{ThemeResource OnSurfaceVariantBrush}"
+                                       VerticalAlignment="Center" />
+                          </Grid>
+                        </Button>
                       </utu:CardContentControl>
                     </DataTemplate>
                   </muxc:ItemsRepeater.ItemTemplate>
