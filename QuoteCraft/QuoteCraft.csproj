@@ -2,10 +2,7 @@
   <PropertyGroup>
     <!-- Uno.Sdk skips the heads the build OS can't build (iOS on Linux, Windows off Windows). -->
     <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-windows10.0.19041;net10.0-browserwasm;net10.0-desktop</TargetFrameworks>
-    <!--
-      App-only override for single-head builds (CI, RID-specific publish): -p:QuoteCraftTargetFrameworks=net10.0-desktop.
-      A global -p:TargetFrameworks would also retarget the test project.
-    -->
+    <!-- One head at a time (CI, RID-specific publish): -p:QuoteCraftTargetFrameworks=net10.0-desktop. -->
     <TargetFrameworks Condition="'$(QuoteCraftTargetFrameworks)' != ''">$(QuoteCraftTargetFrameworks)</TargetFrameworks>
 
     <OutputType>Exe</OutputType>
@@ -60,10 +57,6 @@
     <WindowsSdkPackageVersion>10.0.19041.87</WindowsSdkPackageVersion>
   </PropertyGroup>
 
-  <ItemGroup>
-    <!-- WholeFeedViewStateSelector.StatesFor: the tests' seam onto a protected override -->
-    <InternalsVisibleTo Include="QuoteCraft.Tests" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.Sqlite.Core" />

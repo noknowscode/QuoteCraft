@@ -1,5 +1,9 @@
 # QuoteCraft
 
+- **Owner:** Matthew Mattei (@noknowscode)
+- **Status:** ready for review
+- **What it is:** Quotes for contractors: line items from a catalog, a PDF on every platform and a status lifecycle, local-first.
+
 A professional quoting app for contractors and small businesses, built with [Uno Platform](https://platform.uno) and .NET 10.
 
 QuoteCraft helps service professionals create, manage, and send quotes to clients — all from a single cross-platform application that runs on Windows, macOS, Linux, iOS, Android, and WebAssembly.
@@ -51,9 +55,6 @@ Debug desktop build, sample data (`--qc-seed=sample`), Light theme, 1280 × 800 
 ├── Directory.Build.props
 ├── Directory.Packages.props
 ├── docs/                                # PRD, architecture, design and revenue-model briefs; production-readiness decisions
-├── QuoteCraft.Tests/                    # xUnit tests: the page models (Presentation/, driven as the pages drive them over real
-│                                        # temporary SQLCipher databases), money rules, quote numbering and migrations, status and
-│                                        # expiry, quote creation, line items, client links, concurrent access, feature gates, …
 └── QuoteCraft/
     ├── QuoteCraft.csproj
     ├── App.xaml / App.xaml.cs          # App shell, DI, routing, styles
@@ -104,13 +105,11 @@ Debug desktop build, sample data (`--qc-seed=sample`), Light theme, 1280 × 800 
    dotnet run --project QuoteCraft/QuoteCraft.csproj -f net10.0-desktop
    ```
 
-4. **Run the tests**
-   ```bash
-   dotnet test QuoteCraft.Tests/QuoteCraft.Tests.csproj -p:QuoteCraftTargetFrameworks=net10.0-desktop
-   ```
-   301 tests: the page and dialog models (137, in `QuoteCraft.Tests/Presentation`), money, numbering, migrations,
-   status and expiry rules, quote creation, the PDF and the stored secrets. `QuoteCraftTargetFrameworks` limits the app
-   to one head, so a restore needs no mobile workload. CI (`.github/workflows/ci.yml`) uses it for every job.
+4. **Tests**
+   This folder holds the one app project Studio opens. The unit tests (301: the page and dialog models, money,
+   numbering, migrations, status and expiry rules, quote creation, the PDF and the stored secrets) live in the
+   development repository, [noknowscode/QuoteCraft](https://github.com/noknowscode/QuoteCraft).
+   `QuoteCraftTargetFrameworks` limits the app to one head, so a restore needs no mobile workload.
 
 ### Target Frameworks
 
