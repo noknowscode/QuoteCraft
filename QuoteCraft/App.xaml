@@ -262,6 +262,8 @@
                                 VerticalScrollBarVisibility="Hidden"
                                 HorizontalScrollMode="Auto"
                                 VerticalScrollMode="Disabled"
+                                IsHorizontalRailEnabled="True"
+                                IsVerticalRailEnabled="False"
                                 IsTabStop="False"
                                 AutomationProperties.AccessibilityView="Raw" />
                 </Grid>
