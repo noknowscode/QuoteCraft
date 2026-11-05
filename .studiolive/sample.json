@@ -10,12 +10,12 @@
     "ios"
   ],
   "sourcePath": "QuoteCraft/QuoteCraft.csproj",
-  "iconUrl": "https://raw.githubusercontent.com/unoplatform/Uno.Samples/master/studio/quotecraft/.studiolive/icon.png",
+  "iconUrl": "https://raw.githubusercontent.com/noknowscode/QuoteCraft/studio/.studiolive/icon.png",
   "screenshots": [
-    "https://raw.githubusercontent.com/unoplatform/Uno.Samples/master/studio/quotecraft/.studiolive/screenshots/quotes-desktop.png",
-    "https://raw.githubusercontent.com/unoplatform/Uno.Samples/master/studio/quotecraft/.studiolive/screenshots/preview-desktop.png",
-    "https://raw.githubusercontent.com/unoplatform/Uno.Samples/master/studio/quotecraft/.studiolive/screenshots/quote-phone.png",
-    "https://raw.githubusercontent.com/unoplatform/Uno.Samples/master/studio/quotecraft/.studiolive/screenshots/editor-phone.png"
+    "https://raw.githubusercontent.com/noknowscode/QuoteCraft/studio/.studiolive/screenshots/quotes-desktop.png",
+    "https://raw.githubusercontent.com/noknowscode/QuoteCraft/studio/.studiolive/screenshots/preview-desktop.png",
+    "https://raw.githubusercontent.com/noknowscode/QuoteCraft/studio/.studiolive/screenshots/quote-phone.png",
+    "https://raw.githubusercontent.com/noknowscode/QuoteCraft/studio/.studiolive/screenshots/editor-phone.png"
   ],
   "showcase": {
     "summary": "Quotes for contractors: line items from a catalog, a PDF on every platform and a status lifecycle, local-first.",
