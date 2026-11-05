@@ -10,12 +10,12 @@
     "ios"
   ],
   "sourcePath": "QuoteCraft/QuoteCraft.csproj",
-  "iconUrl": "https://raw.githubusercontent.com/noknowscode/QuoteCraft/studio/.studiolive/icon.png",
+  "iconUrl": "https://raw.githubusercontent.com/noknowscode/QuoteCraft/studio-sub/QuoteCraft/.studiolive/icon.png",
   "screenshots": [
-    "https://raw.githubusercontent.com/noknowscode/QuoteCraft/studio/.studiolive/screenshots/quotes-desktop.png",
-    "https://raw.githubusercontent.com/noknowscode/QuoteCraft/studio/.studiolive/screenshots/preview-desktop.png",
-    "https://raw.githubusercontent.com/noknowscode/QuoteCraft/studio/.studiolive/screenshots/quote-phone.png",
-    "https://raw.githubusercontent.com/noknowscode/QuoteCraft/studio/.studiolive/screenshots/editor-phone.png"
+    "https://raw.githubusercontent.com/noknowscode/QuoteCraft/studio-sub/QuoteCraft/.studiolive/screenshots/quotes-desktop.png",
+    "https://raw.githubusercontent.com/noknowscode/QuoteCraft/studio-sub/QuoteCraft/.studiolive/screenshots/preview-desktop.png",
+    "https://raw.githubusercontent.com/noknowscode/QuoteCraft/studio-sub/QuoteCraft/.studiolive/screenshots/quote-phone.png",
+    "https://raw.githubusercontent.com/noknowscode/QuoteCraft/studio-sub/QuoteCraft/.studiolive/screenshots/editor-phone.png"
   ],
   "showcase": {
     "summary": "Quotes for contractors: line items from a catalog, a PDF on every platform and a status lifecycle, local-first.",
