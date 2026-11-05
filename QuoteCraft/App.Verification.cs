@@ -197,7 +197,7 @@ public partial class App
         return page is not null && model(page.DataContext) is { } found ? await select(found) : null;
     }
 
-    private static async Task<T?> WaitForAsync<T>(DependencyObject root) where T : DependencyObject
+    private static async Task<T?> WaitForAsync<T>(DependencyObject root) where T : class, DependencyObject
     {
         for (var i = 0; i < 100; i++)
         {
@@ -210,7 +210,7 @@ public partial class App
         return null;
     }
 
-    private static IEnumerable<T> Descendants<T>(DependencyObject parent) where T : DependencyObject
+    private static IEnumerable<T> Descendants<T>(DependencyObject parent) where T : class, DependencyObject
     {
         for (var i = 0; i < Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
         {
@@ -226,7 +226,7 @@ public partial class App
         }
     }
 
-    private static T? Find<T>(DependencyObject parent) where T : DependencyObject
+    private static T? Find<T>(DependencyObject parent) where T : class, DependencyObject
     {
         for (var i = 0; i < Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
         {
