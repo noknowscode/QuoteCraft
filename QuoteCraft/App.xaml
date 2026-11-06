@@ -12,23 +12,16 @@
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
         <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
-        <utum:MaterialToolkitTheme>
-          <!-- The palette (Styles/ColorPaletteOverride.xaml, Light and Dark) is the one place the brand's colours live:
-               Uno Platform Studio's Themes tab edits it, and every role brush, control and page follows. -->
+        <!--
+          Material with the Toolkit. The palette (Styles/ColorPaletteOverride.xaml, Light and Dark) is the one place the
+          brand's colours live: Uno Platform Studio's Themes tab edits it, and every role brush, control and page follows.
+          The design's typeface is DM Sans: DefaultFontFamily sets the theme's root font and every type-scale family
+          (BodyMedium, TitleLarge...); weights resolve through Assets/Fonts/DMSans-Regular.ttf.manifest.
+        -->
+        <utum:MaterialToolkitTheme DefaultFontFamily="ms-appx:///Assets/Fonts/DMSans-Regular.ttf#DM Sans">
           <utum:MaterialToolkitTheme.Colors>
             <ut:ThemeColors OverrideSource="ms-appx:///Styles/ColorPaletteOverride.xaml" />
           </utum:MaterialToolkitTheme.Colors>
-          <!-- Uno Themes 9: the type ramp (BodyMedium, TitleLarge, ...) reads DefaultFontFamily, which stayed Roboto;
-               the Material*FontFamily keys still feed Material control styles. Weights resolve through
-               Assets/Fonts/DMSans-Regular.ttf.manifest. -->
-          <utum:MaterialToolkitTheme.FontOverrideDictionary>
-            <ResourceDictionary>
-              <FontFamily x:Key="DefaultFontFamily">ms-appx:///Assets/Fonts/DMSans-Regular.ttf#DM Sans</FontFamily>
-              <FontFamily x:Key="MaterialLightFontFamily">ms-appx:///Assets/Fonts/DMSans-Regular.ttf#DM Sans</FontFamily>
-              <FontFamily x:Key="MaterialRegularFontFamily">ms-appx:///Assets/Fonts/DMSans-Regular.ttf#DM Sans</FontFamily>
-              <FontFamily x:Key="MaterialMediumFontFamily">ms-appx:///Assets/Fonts/DMSans-Medium.ttf#DM Sans Medium</FontFamily>
-            </ResourceDictionary>
-          </utum:MaterialToolkitTheme.FontOverrideDictionary>
         </utum:MaterialToolkitTheme>
         <ResourceDictionary Source="ms-appx:///Styles/Layout.xaml" />
         <ResourceDictionary Source="ms-appx:///Styles/Cards.xaml" />
@@ -124,7 +117,7 @@
       <!-- Disabled controls -->
       <x:Double x:Key="DisabledOpacity">0.4</x:Double>
 
-      <!-- Monospace Font -->
+      <!-- The design's figure font (amounts, quantities, quote numbers): a second family, which the theme has no key for -->
       <FontFamily x:Key="MonospaceFontFamily">ms-appx:///Assets/Fonts/JetBrainsMono-Regular.ttf#JetBrains Mono</FontFamily>
 
       <!--
