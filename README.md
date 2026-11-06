@@ -38,7 +38,7 @@ Debug desktop build, sample data (`--qc-seed=sample`), Light theme, 1280 × 800 
 - **Runtime:** .NET 10
 - **Renderer:** Skia
 - **UI:** WinUI / XAML with Uno Toolkit controls
-- **Design System:** Material Design 3 (Uno Material)
+- **Design System:** Material Design 3 through Uno.Themes (`MaterialToolkitTheme`): the brand palette in `Styles/ColorPaletteOverride.xaml` (the file Uno Platform Studio's Themes tab edits), role brushes, semantic text and control styles, DM Sans as the theme's `DefaultFontFamily`, and the theme's `Space*`, `Radius*` and `ControlHeight*` tokens
 - **Architecture:** MVUX (Model-View-Update-eXtended)
 - **Navigation:** Uno Navigation Extensions (region-based)
 - **Dependency Injection:** Microsoft.Extensions.Hosting
@@ -71,7 +71,7 @@ Debug desktop build, sample data (`--qc-seed=sample`), Light theme, 1280 × 800 
     ├── Models/                          # Data entities
     ├── Data/                            # SQLite database & repositories
     ├── Services/                        # PDF, email, sharing, feature gates, quote creation, status and expiry rules
-    ├── Styles/                          # Color palette, status colors, layout tokens (Layout.xaml)
+    ├── Styles/                          # The palette (ColorPaletteOverride.xaml), card styles, layout values with no theme token
     ├── Helpers/                         # Value converters & utilities
     ├── Controls/                        # Custom controls (sparkline, status pill)
     └── Assets/                          # Fonts (DM Sans, JetBrains Mono), icons
@@ -145,9 +145,12 @@ Every page uses the Uno Toolkit's `utu:Responsive` with the default breakpoints:
 | Wide | 800 to 1080 | side rail | one pane, stat cards above the list | one column, capped and centred |
 | Widest | 1080 and up | side rail | list and detail side by side, page capped at 1600 px | Settings adds the quote preview from 1400 px |
 
-Spacing, insets, widths, radii and touch sizes are tokens in `QuoteCraft/Styles/Layout.xaml`; colours are theme
-resources (`Styles/ColorPaletteOverride.xaml`, `Styles/StatusColors.xaml`, `App.xaml`). Screenshots of each page at
-360, 599, 600, 800, 1080 and 1920 px in Light and Dark are in [docs/evidence](docs/evidence).
+The look comes from the Material theme. Colours are the palette's roles (`Styles/ColorPaletteOverride.xaml`, Light and
+Dark), used through their brushes; the two status colours with no role (accepted and sent) are App.xaml's own Light and
+Default brushes. Spacing, radii and control sizes are the theme's `Space*`, `Radius*` and `ControlHeight*` tokens;
+`QuoteCraft/Styles/Layout.xaml` keeps only what no token says (two-axis insets, page frames, widths, the 1400 px split).
+The PDF prints in fixed colours (`Services/PrintColors.cs`). Screenshots of each page at 360, 599, 600, 800, 1080 and
+1920 px in Light and Dark are in [docs/evidence](docs/evidence) (before the theme pass).
 
 ## Local-first, with optional sign-in and billing
 

@@ -525,3 +525,34 @@ relative paths can be used instead. If they can, the URLs become `icon.png` and 
 
 Also in the file: `showcase.requires` lists only an email app (Send opens a mailto link). Supabase sign-in and Stripe
 billing are left out: the app runs fully without them and hides them (D3).
+
+# Theme pass (studio branch, 2026-11-06)
+
+## D25. The look comes from Uno.Themes: palette, role brushes, semantic styles and tokens (owner rule, 2026-11-05)
+
+Decision: QuoteCraft keeps Material (`MaterialToolkitTheme`) and takes its whole look from it, so Uno Platform Studio's
+Themes tab drives the app.
+
+- Colours: the brand's are only in `Styles/ColorPaletteOverride.xaml` (the theme's `Colors`, Light and Dark). Pages,
+  cards and dialogs use the role brushes. The slate band is `PrimaryBrush`/`OnPrimaryBrush` under
+  `RequestedTheme="Light"` (the design keeps it the same in both modes); the amber call to action is the filled button
+  on the Secondary role, whose Dark value is now the same amber, with `OnSecondary` #1A365D in both modes. Status
+  pills: Draft and Expired `SurfaceVariant`, Viewed `SecondaryContainer`, Declined `ErrorContainer`; Accepted (Success)
+  and Sent have no role and are App.xaml's only Light and Default brushes. `BrandColors.xaml` and `StatusColors.xaml`
+  are gone.
+- Type: DM Sans is the theme's `DefaultFontFamily`; JetBrains Mono stays an app key for figures.
+- Spacing, radius, sizes: `Space*`, `Radius*CornerRadius`, `ControlHeight*`, `IconSize*`, `TouchTargetMinSize`
+  (measured: `SpaceN00` = N × 8 px, `RadiusN00` = N × 4 px); `DefaultSpacing="8"` and `DefaultCornerRadius="4"` on the
+  theme. `Styles/Layout.xaml` keeps what no token says.
+- The PDF keeps print colours (`Services/PrintColors.cs`): paper does not follow Dark mode. It is the theme gate's one
+  remaining finding.
+- Dialogs follow the theme: `AppDialogStyle` gives the surface through ThemeResource (Material's dialog style uses a
+  StaticResource), and each dialog takes the window's theme (`Helpers/DialogTheme`).
+
+Reason: an app's own colour, spacing and radius keys outrank the theme, so Studio's palette edits did not reach the
+screen (Cargo, 2026-11-05); the owner's rule is that samples use Uno.Themes and the libraries' resources.
+
+Tradeoff: small visible shifts. The selected rail item is the `PrimaryContainer` pair (its label darker in Light);
+Declined in Dark is the brighter `ErrorContainer`; table stripes are `BackgroundBrush`; the band's gradient is solid;
+the accent button takes the theme's padding (8 px wider); icons 18 → 16, 20 → 24, 36 → 32; Settings' section gap
+28 → 24. The status pill keeps an 8 px radius: `RadiusFull` draws an oval on Skia.

@@ -40,7 +40,7 @@ element), `--qc-fault=load` (the database fails for the first 20 s). Under Xvfb 
 ## Open
 
 - Owner: D17 to D20 and D22 to D24 are proposed (D23 the custom icon, D24 the `.studiolive` URLs).
-- Dialogs are drawn Light in the Dark theme (found in A pass 2, outside its closed scope); flyouts follow the theme.
+- Dialogs follow the theme on the `studio` branch (theme pass, D25); flyouts follow it too.
 - A photo opens at most 560 px wide (Material's dialog); a full-window viewer would need a page outside the dialogs
   (D22).
 - `ISyncService` is registered and never resolved: D8 keeps `SyncService` for the sync pass.
