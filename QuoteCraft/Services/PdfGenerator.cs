@@ -91,13 +91,13 @@ public static class QuotePdf
     private const float ContentWidth = PageWidth - 2 * Margin;
     private const float CellPadding = 6;
 
-    // Printed-page colours (not theme resources): the blue, greys and stripe of the earlier QuestPDF layout.
-    private static readonly SKColor Brand = SKColor.Parse("#1565C0");
-    private static readonly SKColor Ink = SKColors.Black;
-    private static readonly SKColor Rule = SKColor.Parse("#E0E0E0");
-    private static readonly SKColor Stripe = SKColor.Parse("#F5F5F5");
-    private static readonly SKColor Muted = SKColor.Parse("#757575");
-    private static readonly SKColor Faint = SKColor.Parse("#BDBDBD");
+    // Printed-page colours, which do not follow the app's theme (PrintColors says why).
+    private static readonly SKColor Brand = PrintColors.Brand;
+    private static readonly SKColor Ink = PrintColors.Ink;
+    private static readonly SKColor Rule = PrintColors.Rule;
+    private static readonly SKColor Stripe = PrintColors.Stripe;
+    private static readonly SKColor Muted = PrintColors.Muted;
+    private static readonly SKColor Faint = PrintColors.Faint;
 
     // Line-item columns, 4 : 1 : 1 : 1 of the content width.
     private static readonly float[] ColumnWidths = [ContentWidth * 4 / 7, ContentWidth / 7, ContentWidth / 7, ContentWidth / 7];
@@ -188,7 +188,7 @@ public static class QuotePdf
                     DrawTableHeader(page, headers, headerHeight, text);
                 }
 
-                using (var fill = Fill(i % 2 == 0 ? SKColors.White : Stripe))
+                using (var fill = Fill(i % 2 == 0 ? PrintColors.Paper : Stripe))
                 {
                     page.Canvas.DrawRect(Margin, page.Y, ContentWidth, rowHeight, fill);
                 }
@@ -338,7 +338,7 @@ public static class QuotePdf
         {
             page.Canvas.DrawRect(Margin, page.Y, ContentWidth, height, fill);
         }
-        DrawRow(page.Canvas, headers.Select(h => new List<string> { h }).ToArray(), page.Y + CellPadding, text.BodyBold, SKColors.White);
+        DrawRow(page.Canvas, headers.Select(h => new List<string> { h }).ToArray(), page.Y + CellPadding, text.BodyBold, PrintColors.OnBrand);
         page.Y += height;
     }
 
