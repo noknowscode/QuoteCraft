@@ -9,7 +9,7 @@
                xmlns:utu="using:Uno.Toolkit.UI"
                xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
                xmlns:ctrl="using:QuoteCraft.Controls"
-               Style="{StaticResource ContentDialogStyle}"
+               Style="{StaticResource AppDialogStyle}"
                CloseButtonText="Done"
                DefaultButton="Close">
 

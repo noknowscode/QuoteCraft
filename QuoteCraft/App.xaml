@@ -170,6 +170,16 @@
         </Setter>
       </Style>
 
+      <!--
+        The app's dialogs: the theme's dialog with its surface through ThemeResource. Material's style sets the dialog's
+        Background with a StaticResource alias of SurfaceBrush, which keeps the first theme's surface: a dialog open while
+        the theme changed, or opened in the other theme, drew Light under Dark content. Each dialog also takes the window's
+        theme as it is built (Helpers/DialogTheme), since it opens in a popup outside the content the theme service themes.
+      -->
+      <Style x:Key="AppDialogStyle" TargetType="ContentDialog" BasedOn="{StaticResource ContentDialogStyle}">
+        <Setter Property="Background" Value="{ThemeResource SurfaceBrush}" />
+      </Style>
+
       <!-- Drawers opened by "!" Page routes (Presentation/DrawerFlyout): from the right, sized for a list. -->
       <Style x:Key="SideDrawerFlyoutPresenterStyle" TargetType="FlyoutPresenter" BasedOn="{StaticResource RightDrawerFlyoutPresenterStyle}">
         <Setter Property="utu:DrawerFlyoutPresenter.DrawerLength" Value="420" />

@@ -5,7 +5,7 @@
                xmlns:uen="using:Uno.Extensions.Navigation.UI"
                xmlns:utu="using:Uno.Toolkit.UI"
                xmlns:ctrl="using:QuoteCraft.Controls"
-               Style="{StaticResource ContentDialogStyle}">
+               Style="{StaticResource AppDialogStyle}">
 
   <StackPanel Spacing="{StaticResource Space200}" MinWidth="{utu:Responsive Narrow=0, Normal={StaticResource DialogMinWidth}}">
 

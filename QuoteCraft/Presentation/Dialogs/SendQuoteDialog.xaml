@@ -5,7 +5,7 @@
                xmlns:uen="using:Uno.Extensions.Navigation.UI"
                xmlns:utu="using:Uno.Toolkit.UI"
                xmlns:ctrl="using:QuoteCraft.Controls"
-               Style="{StaticResource ContentDialogStyle}">
+               Style="{StaticResource AppDialogStyle}">
   <!-- The message scrolls inside its box, so the actions stay in view in a short window -->
     <StackPanel Spacing="{StaticResource Space150}"
                 MinWidth="{utu:Responsive Narrow=0, Normal={StaticResource DialogMinWidth}}">

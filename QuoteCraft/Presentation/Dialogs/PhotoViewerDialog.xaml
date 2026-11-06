@@ -7,7 +7,7 @@
 <ContentDialog x:Class="QuoteCraft.Presentation.PhotoViewerDialog"
                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-               Style="{StaticResource ContentDialogStyle}"
+               Style="{StaticResource AppDialogStyle}"
                CloseButtonText="Close">
   <Image Stretch="Uniform"
          AutomationProperties.Name="Job photo, enlarged">
