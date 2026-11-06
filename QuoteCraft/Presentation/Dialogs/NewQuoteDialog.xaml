@@ -8,7 +8,7 @@
                xmlns:uen="using:Uno.Extensions.Navigation.UI"
                xmlns:utu="using:Uno.Toolkit.UI"
                xmlns:ctrl="using:QuoteCraft.Controls"
-               Style="{StaticResource MaterialContentDialogStyle}">
+               Style="{StaticResource ContentDialogStyle}">
   <StackPanel Spacing="{StaticResource Space16}"
               MinWidth="{utu:Responsive Narrow=0, Normal={StaticResource DialogMinWidth}}">
     <ctrl:DialogHeader Glyph="&#xE1D0;" Title="New Quote" Subtitle="Create a new quote for a client" />
@@ -22,7 +22,7 @@
                     Text="{Binding ClientName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     ItemsSource="{Binding ClientSuggestions}"
                     PlaceholderText="Start typing a client name..."
-                    TextBoxStyle="{StaticResource MaterialOutlinedTextBoxStyle}"
+                    TextBoxStyle="{StaticResource OutlinedTextBoxStyle}"
                     AutomationProperties.Name="Client name" />
 
     <TextBlock Text="{Binding ValidationError}"
@@ -34,8 +34,8 @@
 
     <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}" HorizontalAlignment="Right">
       <!-- xaml-lint: allow backbar - a dialog Cancel that closes the dialog, not a page back bar -->
-      <Button Content="Cancel" uen:Navigation.Request="-" Style="{StaticResource MaterialTextButtonStyle}" AutomationProperties.Name="Cancel" />
-      <Button Content="Create" Command="{Binding Create}" Style="{StaticResource MaterialFilledButtonStyle}" AutomationProperties.Name="Create quote" />
+      <Button Content="Cancel" uen:Navigation.Request="-" Style="{StaticResource TextButtonStyle}" AutomationProperties.Name="Cancel" />
+      <Button Content="Create" Command="{Binding Create}" Style="{StaticResource FilledButtonStyle}" AutomationProperties.Name="Create quote" />
     </StackPanel>
   </StackPanel>
 </ContentDialog>

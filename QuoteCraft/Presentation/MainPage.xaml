@@ -92,7 +92,7 @@
                       Command="{Binding OpenTab}" CommandParameter="Dashboard"
                       Content="Quotes"
                       IsSelectable="True"
-                      Style="{StaticResource MaterialBottomTabBarItemStyle}"
+                      Style="{StaticResource BottomTabBarItemStyle}"
                       AutomationProperties.Name="Quotes">
         <utu:TabBarItem.Icon>
           <FontIcon Glyph="&#xE8A5;" />
@@ -103,7 +103,7 @@
                       Command="{Binding OpenTab}" CommandParameter="Clients"
                       Content="Clients"
                       IsSelectable="True"
-                      Style="{StaticResource MaterialBottomTabBarItemStyle}"
+                      Style="{StaticResource BottomTabBarItemStyle}"
                       AutomationProperties.Name="Clients">
         <utu:TabBarItem.Icon>
           <FontIcon Glyph="&#xE77B;" />
@@ -114,7 +114,7 @@
                       Command="{Binding OpenTab}" CommandParameter="Catalog"
                       Content="Catalog"
                       IsSelectable="True"
-                      Style="{StaticResource MaterialBottomTabBarItemStyle}"
+                      Style="{StaticResource BottomTabBarItemStyle}"
                       AutomationProperties.Name="Catalog">
         <utu:TabBarItem.Icon>
           <FontIcon Glyph="&#xE7BF;" />
@@ -128,7 +128,7 @@
                       IsSelectable="False"
                       BadgeValue="{Binding UnreadBadge}"
                       BadgeVisibility="{Binding HasUnreadNotifications, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}"
-                      Style="{StaticResource MaterialBottomTabBarItemStyle}">
+                      Style="{StaticResource BottomTabBarItemStyle}">
         <utu:TabBarItem.Icon>
           <FontIcon Glyph="&#xEA8F;" />
         </utu:TabBarItem.Icon>
@@ -138,7 +138,7 @@
                       Command="{Binding OpenTab}" CommandParameter="Settings"
                       Content="Settings"
                       IsSelectable="True"
-                      Style="{StaticResource MaterialBottomTabBarItemStyle}"
+                      Style="{StaticResource BottomTabBarItemStyle}"
                       AutomationProperties.Name="Settings">
         <utu:TabBarItem.Icon>
           <FontIcon Glyph="&#xE115;" />
@@ -159,17 +159,17 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
 
-      <!-- Brand Header -->
-      <Border Background="{StaticResource AppBarBackgroundFixedBrush}"
+      <!-- Brand Header: the brand band, Primary under the Light theme in both modes (the design keeps it fixed) -->
+      <Border Background="{ThemeResource PrimaryBrush}" RequestedTheme="Light"
               Height="{StaticResource RailBrandHeight}" HorizontalAlignment="Stretch">
         <StackPanel x:Name="BrandFull" Orientation="Horizontal" Spacing="{StaticResource Space8}"
                     HorizontalAlignment="Center" VerticalAlignment="Center"
                     AutomationProperties.Name="QuoteCraft">
           <TextBlock Text="QC"
-                     Foreground="{StaticResource AppBarForegroundFixedBrush}"
+                     Foreground="{ThemeResource OnPrimaryBrush}"
                      Style="{StaticResource TitleMediumBold}" />
           <TextBlock x:Name="BrandLabel" Text="QuoteCraft"
-                     Foreground="{StaticResource AppBarForegroundFixedBrush}"
+                     Foreground="{ThemeResource OnPrimaryBrush}"
                      Style="{StaticResource LabelLarge}"
                      VerticalAlignment="Center" />
         </StackPanel>
@@ -177,7 +177,7 @@
 
       <!-- Amber accent bar -->
       <Border Grid.Row="1" Height="{StaticResource AccentBarHeight}"
-              Background="{StaticResource AppBarAccentInvariantBrush}" />
+              Background="{ThemeResource SecondaryBrush}" />
 
       <!-- Tab items - horizontal icon + label, stacked vertically -->
       <utu:TabBar x:Name="SideTabs"
@@ -249,7 +249,7 @@
                 Margin="{StaticResource RailActionMargin}"
                 MinHeight="{StaticResource TouchTarget}"
                 HorizontalAlignment="Stretch"
-                Style="{StaticResource MaterialTextButtonStyle}"
+                Style="{StaticResource TextButtonStyle}"
                 AutomationProperties.Name="Notifications"
                 ToolTipService.ToolTip="Notifications">
           <Grid>
@@ -270,7 +270,7 @@
                 Margin="{StaticResource RailActionMargin}"
                 MinHeight="{StaticResource TouchTarget}"
                 HorizontalAlignment="Stretch"
-                Style="{StaticResource MaterialTextButtonStyle}"
+                Style="{StaticResource TextButtonStyle}"
                 AutomationProperties.Name="{Binding ThemeLabel}"
                 ToolTipService.ToolTip="Theme">
           <Button.Flyout>
@@ -301,7 +301,7 @@
                 MinHeight="{StaticResource TouchTarget}"
                 HorizontalAlignment="Stretch"
                 Command="{Binding ToggleRail}"
-                Style="{StaticResource MaterialTextButtonStyle}"
+                Style="{StaticResource TextButtonStyle}"
                 AutomationProperties.Name="Collapse sidebar"
                 ToolTipService.ToolTip="Collapse sidebar">
           <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}"

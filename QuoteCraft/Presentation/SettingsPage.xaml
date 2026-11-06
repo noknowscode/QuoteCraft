@@ -65,22 +65,22 @@
             <Button Grid.Column="1" Content="Retry"
                     Command="{Binding Reload}"
                     AutomationProperties.Name="Retry loading settings"
-                    Style="{StaticResource MaterialOutlinedButtonStyle}" />
+                    Style="{StaticResource OutlinedButtonStyle}" />
           </Grid>
         </utu:CardContentControl>
 
         <!-- Upgrade Banner (only where billing is configured; AccountSettingsModel) -->
-        <utu:CardContentControl Style="{StaticResource BannerCardStyle}" Padding="{StaticResource Inset24}"
+        <utu:CardContentControl Style="{StaticResource BannerCardStyle}" RequestedTheme="Light" Padding="{StaticResource Inset24}"
                 DataContext="{Binding Account}"
                 Visibility="{Binding LocalModeNote, Converter={StaticResource EmptyToVisibleConverter}}">
           <StackPanel Spacing="{StaticResource Space16}">
             <StackPanel Spacing="{StaticResource Space4}">
               <TextBlock Text="Unlock QuoteCraft Pro"
                          Style="{StaticResource TitleMedium}"
-                         Foreground="{StaticResource AppBarForegroundFixedBrush}" FontWeight="Bold" />
+                         Foreground="{ThemeResource OnPrimaryBrush}" FontWeight="Bold" />
               <TextBlock Text="Unlimited quotes, custom branding, and priority support"
                          Style="{StaticResource BodySmall}"
-                         Foreground="{StaticResource UpgradeBannerSubtitleFixedBrush}"
+                         Foreground="{ThemeResource OnPrimaryMediumBrush}"
                          TextWrapping="Wrap" />
             </StackPanel>
             <!-- Monthly, or yearly at the annual discount (PRD F13.6) -->
@@ -88,13 +88,13 @@
               <Button Style="{StaticResource AccentButtonStyle}"
                       Command="{Binding UpgradeToPro}"
                       AutomationProperties.Name="Upgrade to Pro, billed monthly">
-                <TextBlock Text="Upgrade — $15/mo" Foreground="{StaticResource OnAccentFixedBrush}"
+                <TextBlock Text="Upgrade — $15/mo"
                            Style="{StaticResource LabelLargeSemiBold}" />
               </Button>
-              <Button Style="{StaticResource MaterialOutlinedButtonStyle}"
+              <Button Style="{StaticResource OutlinedButtonStyle}"
                       Command="{Binding UpgradeToProAnnual}"
-                      BorderBrush="{StaticResource AppBarForegroundFixedBrush}"
-                      Foreground="{StaticResource AppBarForegroundFixedBrush}"
+                      BorderBrush="{ThemeResource OnPrimaryBrush}"
+                      Foreground="{ThemeResource OnPrimaryBrush}"
                       MinHeight="{StaticResource TouchTarget}"
                       AutomationProperties.Name="Upgrade to Pro, billed yearly">
                 <TextBlock Text="$144/yr (save 20%)" Style="{StaticResource LabelLargeSemiBold}" />
@@ -236,7 +236,7 @@
                   <Button Command="{Binding RemoveLogo}"
                           AutomationProperties.Name="Remove logo"
                           ToolTipService.ToolTip="Remove logo"
-                          Style="{StaticResource MaterialTextButtonStyle}"
+                          Style="{StaticResource TextButtonStyle}"
                           MinHeight="{StaticResource TouchTarget}" MinWidth="{StaticResource TouchTarget}"
                           Padding="{StaticResource InsetX8}"
                           Visibility="{Binding LogoPath, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert, FallbackValue=Collapsed}">
@@ -245,7 +245,7 @@
                   </Button>
                   <Button Command="{Binding UploadLogo}"
                           AutomationProperties.Name="Upload logo"
-                          Style="{StaticResource MaterialTextButtonStyle}"
+                          Style="{StaticResource TextButtonStyle}"
                           MinHeight="{StaticResource TouchTarget}" Padding="{StaticResource InsetX8}">
                     <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space4}">
                       <TextBlock Text="Upload" Style="{StaticResource BodyMedium}"
@@ -446,7 +446,7 @@
 
               <!-- Opens the Catalog page, where categories and items are added -->
               <Button Command="{Binding OpenCatalog}"
-                      Style="{StaticResource MaterialTextButtonStyle}"
+                      Style="{StaticResource TextButtonStyle}"
                       HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
                       MinHeight="{StaticResource TouchTarget}"
                       Padding="{StaticResource FormRowInset}"
@@ -553,7 +553,7 @@
                 <Grid Padding="{StaticResource FormRowInset}" MinHeight="{utu:Responsive Narrow={StaticResource FormRowMinHeightNarrow}, Wide={StaticResource FormRowMinHeight}}">
                   <Button Command="{Binding ManageSubscription}"
                           HorizontalAlignment="Stretch"
-                          Style="{StaticResource MaterialTextButtonStyle}"
+                          Style="{StaticResource TextButtonStyle}"
                           AutomationProperties.Name="Manage subscription">
                     <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
                       <FontIcon Glyph="&#xE8A7;" FontSize="{StaticResource IconSizeLg}"
@@ -585,7 +585,7 @@
                 <!-- Signed out: Sign In opens the sign-in page; signed in: Sign Out -->
                 <Button Command="{Binding SignIn}"
                         HorizontalAlignment="Stretch"
-                        Style="{StaticResource MaterialTextButtonStyle}"
+                        Style="{StaticResource TextButtonStyle}"
                         AutomationProperties.Name="Sign in"
                         Visibility="{Binding IsSignedIn, Converter={StaticResource InverseBoolConverter}, FallbackValue=Visible}">
                   <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
@@ -598,7 +598,7 @@
                 </Button>
                 <Button Command="{Binding SignOut}"
                         HorizontalAlignment="Stretch"
-                        Style="{StaticResource MaterialTextButtonStyle}"
+                        Style="{StaticResource TextButtonStyle}"
                         AutomationProperties.Name="Sign out"
                         Visibility="{Binding IsSignedIn, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
                   <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
@@ -640,7 +640,7 @@
                 AutomationProperties.Name="Save settings"
                 HorizontalAlignment="Stretch"
                 MinHeight="{StaticResource TouchTarget}"
-                Style="{StaticResource MaterialFilledButtonStyle}" />
+                Style="{StaticResource FilledButtonStyle}" />
 
         </StackPanel>
       </ScrollViewer>

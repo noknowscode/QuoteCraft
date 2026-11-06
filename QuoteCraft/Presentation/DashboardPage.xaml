@@ -97,8 +97,8 @@
                 AutomationProperties.Name="Create new quote"
                 Style="{StaticResource AccentButtonStyle}">
           <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-            <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource OnAccentFixedBrush}" />
-            <TextBlock Text="New Quote" Foreground="{StaticResource OnAccentFixedBrush}" Style="{StaticResource LabelLargeSemiBold}" />
+            <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" />
+            <TextBlock Text="New Quote" Style="{StaticResource LabelLargeSemiBold}" />
           </StackPanel>
         </Button>
       </Grid>
@@ -125,7 +125,7 @@
                 Command="{Binding DismissError}"
                 AutomationProperties.Name="Dismiss"
                 ToolTipService.ToolTip="Dismiss"
-                Style="{StaticResource MaterialTextButtonStyle}"
+                Style="{StaticResource TextButtonStyle}"
                 MinWidth="{StaticResource TouchTarget}" MinHeight="{StaticResource TouchTarget}">
           <FontIcon Glyph="&#xE711;" FontSize="{StaticResource IconSizeSm}" Foreground="{ThemeResource OnErrorContainerBrush}" />
         </Button>
@@ -183,7 +183,7 @@
               <ctrl:SparklineControl Grid.Column="1" Height="{StaticResource SparklineHeight}"
                                      AutomationProperties.AccessibilityView="Raw"
                                      Values="{Binding Data.SentDailyValues}"
-                                     StrokeColor="{StaticResource AppBarAccentInvariantBrush}" />
+                                     StrokeColor="{ThemeResource SecondaryBrush}" />
             </Grid>
           </utu:CardContentControl>
 
@@ -339,8 +339,8 @@
                 <utu:ChipGroup ItemsSource="{Binding FilterNames}"
                                SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"
                                SelectionMode="Single"
-                               Style="{StaticResource MaterialFilterChipGroupStyle}"
-                               ItemContainerStyle="{StaticResource MaterialChipStyle}"
+                               Style="{StaticResource FilterChipGroupStyle}"
+                               ItemContainerStyle="{StaticResource ChipStyle}"
                                AutomationProperties.Name="Filter by status" />
               </ScrollViewer>
             </StackPanel>
@@ -444,8 +444,8 @@
                             HorizontalAlignment="Center" Margin="{StaticResource GapTop8}"
                             AutomationProperties.Name="Create quote">
                       <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-                        <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource OnAccentFixedBrush}" />
-                        <TextBlock Text="Create Quote" Foreground="{StaticResource OnAccentFixedBrush}" Style="{StaticResource LabelLargeSemiBold}" />
+                        <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" />
+                        <TextBlock Text="Create Quote" Style="{StaticResource LabelLargeSemiBold}" />
                       </StackPanel>
                     </Button>
                   </StackPanel>
@@ -470,7 +470,7 @@
                                HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
                     <Button Content="Retry"
                             Command="{Binding DataContext.Refresh, ElementName=DashboardRoot}"
-                            Style="{StaticResource MaterialOutlinedButtonStyle}"
+                            Style="{StaticResource OutlinedButtonStyle}"
                             HorizontalAlignment="Center"
                             AutomationProperties.Name="Retry loading quotes" />
                   </StackPanel>

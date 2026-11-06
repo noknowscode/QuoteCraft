@@ -131,7 +131,7 @@
                        HorizontalAlignment="Center" />
             <Button Content="Retry"
                     Command="{Binding Refresh, ElementName=NotificationsFeed}"
-                    Style="{StaticResource MaterialOutlinedButtonStyle}"
+                    Style="{StaticResource OutlinedButtonStyle}"
                     HorizontalAlignment="Center"
                     AutomationProperties.Name="Retry loading notifications" />
           </StackPanel>

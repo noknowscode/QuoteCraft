@@ -102,7 +102,7 @@
         <AutoSuggestBox Header="Client Name"
                         Text="{Binding ClientName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         PlaceholderText="Search clients or type a name"
-                        TextBoxStyle="{StaticResource MaterialOutlinedTextBoxStyle}"
+                        TextBoxStyle="{StaticResource OutlinedTextBoxStyle}"
                         BorderThickness="1" BorderBrush="{ThemeResource OutlineBrush}" Background="Transparent"
                         ItemsSource="{Binding ClientSuggestions}"
                         AutomationProperties.Name="Client name" />
@@ -140,7 +140,7 @@
                       Grid.Column="{utu:Responsive Narrow=0, Normal=1}"
                       Orientation="Horizontal" Spacing="{StaticResource Space4}">
             <Button Command="{Binding OpenCatalog}"
-                    Style="{StaticResource MaterialTextButtonStyle}"
+                    Style="{StaticResource TextButtonStyle}"
                     MinHeight="{StaticResource TouchTarget}"
                     AutomationProperties.Name="Add from catalog">
               <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space4}">
@@ -149,7 +149,7 @@
               </StackPanel>
             </Button>
             <Button Command="{Binding AddLineItem}"
-                    Style="{StaticResource MaterialTextButtonStyle}"
+                    Style="{StaticResource TextButtonStyle}"
                     MinHeight="{StaticResource TouchTarget}"
                     AutomationProperties.Name="Add line item">
               <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space4}">
@@ -178,7 +178,7 @@
                       <Button Command="{Binding DataContext.EditLineItem, ElementName=EditorRoot}"
                               CommandParameter="{Binding}"
                               AutomationProperties.Name="{Binding Description}"
-                              Style="{StaticResource MaterialTextButtonStyle}"
+                              Style="{StaticResource TextButtonStyle}"
                               Foreground="{ThemeResource OnSurfaceBrush}"
                               CornerRadius="{StaticResource RadiusMd}"
                               Padding="{StaticResource Inset16}"
@@ -216,7 +216,7 @@
                                 CommandParameter="{Binding}"
                                 AutomationProperties.Name="Move line item up"
                                 ToolTipService.ToolTip="Move up"
-                                Style="{StaticResource MaterialTextButtonStyle}"
+                                Style="{StaticResource TextButtonStyle}"
                                 MinWidth="{StaticResource TouchTargetComfortable}" MinHeight="{StaticResource TouchTargetComfortable}"
                                 Padding="{StaticResource Inset8}"
                                 VerticalAlignment="Center">
@@ -226,7 +226,7 @@
                                 CommandParameter="{Binding}"
                                 AutomationProperties.Name="Move line item down"
                                 ToolTipService.ToolTip="Move down"
-                                Style="{StaticResource MaterialTextButtonStyle}"
+                                Style="{StaticResource TextButtonStyle}"
                                 MinWidth="{StaticResource TouchTargetComfortable}" MinHeight="{StaticResource TouchTargetComfortable}"
                                 Padding="{StaticResource Inset8}"
                                 VerticalAlignment="Center">
@@ -273,7 +273,7 @@
                            HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
                 <Button Content="Retry"
                         Command="{Binding DataContext.Reload, ElementName=EditorRoot}"
-                        Style="{StaticResource MaterialOutlinedButtonStyle}"
+                        Style="{StaticResource OutlinedButtonStyle}"
                         HorizontalAlignment="Center"
                         AutomationProperties.Name="Retry loading line items" />
               </StackPanel>
@@ -334,7 +334,7 @@
                      VerticalAlignment="Center" />
           <Button Grid.Column="1"
                   Command="{Binding AddPhoto}"
-                  Style="{StaticResource MaterialFilledTonalButtonStyle}"
+                  Style="{StaticResource FilledTonalButtonStyle}"
                   MinHeight="{StaticResource TouchTarget}"
                   VerticalAlignment="Center"
                   AutomationProperties.Name="Add photo">
@@ -378,10 +378,10 @@
                             CommandParameter="{Binding}"
                             AutomationProperties.Name="Delete photo"
                             ToolTipService.ToolTip="Delete photo"
-                            Background="{StaticResource ScrimFixedBrush}"
+                            Background="{ThemeResource SurfaceInverseMediumBrush}"
                             MinWidth="{StaticResource TouchTarget}" MinHeight="{StaticResource TouchTarget}"
                             Padding="0" CornerRadius="{StaticResource RadiusMd}">
-                      <FontIcon Glyph="&#xE711;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource AppBarForegroundFixedBrush}" />
+                      <FontIcon Glyph="&#xE711;" FontSize="{StaticResource IconSizeSm}" Foreground="{ThemeResource OnSurfaceInverseBrush}" />
                     </Button>
                   </Grid>
                 </DataTemplate>
@@ -415,7 +415,7 @@
                            HorizontalAlignment="Center" />
                 <Button Content="Retry"
                         Command="{Binding DataContext.Reload, ElementName=EditorRoot}"
-                        Style="{StaticResource MaterialOutlinedButtonStyle}"
+                        Style="{StaticResource OutlinedButtonStyle}"
                         HorizontalAlignment="Center"
                         AutomationProperties.Name="Retry loading photos" />
               </StackPanel>
@@ -435,7 +435,7 @@
                 Command="{Binding ExportPdf}"
                 HorizontalAlignment="Stretch"
                 MinHeight="{StaticResource TouchTarget}"
-                Style="{StaticResource MaterialFilledTonalButtonStyle}"
+                Style="{StaticResource FilledTonalButtonStyle}"
                 Margin="{StaticResource GapTop8}"
                 AutomationProperties.Name="Export PDF" />
 
@@ -451,19 +451,19 @@
                   Command="{Binding MarkSent}"
                   HorizontalAlignment="{utu:Responsive Narrow=Stretch, Normal=Left}"
                   MinHeight="{StaticResource TouchTarget}"
-                  Style="{StaticResource MaterialOutlinedButtonStyle}"
+                  Style="{StaticResource OutlinedButtonStyle}"
                   AutomationProperties.Name="Mark as sent" />
           <Button Content="Accepted"
                   Command="{Binding MarkAccepted}"
                   HorizontalAlignment="{utu:Responsive Narrow=Stretch, Normal=Left}"
                   MinHeight="{StaticResource TouchTarget}"
-                  Style="{StaticResource MaterialFilledButtonStyle}"
+                  Style="{StaticResource FilledButtonStyle}"
                   AutomationProperties.Name="Mark as accepted" />
           <Button Content="Declined"
                   Command="{Binding MarkDeclined}"
                   HorizontalAlignment="{utu:Responsive Narrow=Stretch, Normal=Left}"
                   MinHeight="{StaticResource TouchTarget}"
-                  Style="{StaticResource MaterialOutlinedButtonStyle}"
+                  Style="{StaticResource OutlinedButtonStyle}"
                   AutomationProperties.Name="Mark as declined" />
         </StackPanel>
 

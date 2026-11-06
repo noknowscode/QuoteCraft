@@ -7,9 +7,9 @@
       <Color x:Key="PrimaryContainerColor">#D6E4F0</Color>
       <Color x:Key="OnPrimaryContainerColor">#0A1929</Color>
 
-      <!-- Secondary: Amber - CTAs, construction energy -->
+      <!-- Secondary: Amber - CTAs, construction energy. The same amber and the same text on it in both themes. -->
       <Color x:Key="SecondaryColor">#F59E0B</Color>
-      <Color x:Key="OnSecondaryColor">#1F2937</Color>
+      <Color x:Key="OnSecondaryColor">#1A365D</Color>
       <Color x:Key="SecondaryContainerColor">#FEF3C7</Color>
       <Color x:Key="OnSecondaryContainerColor">#78350F</Color>
 
@@ -49,8 +49,8 @@
       <Color x:Key="OnPrimaryContainerColor">#D6E4F0</Color>
 
       <!-- Secondary -->
-      <Color x:Key="SecondaryColor">#FCD34D</Color>
-      <Color x:Key="OnSecondaryColor">#78350F</Color>
+      <Color x:Key="SecondaryColor">#F59E0B</Color>
+      <Color x:Key="OnSecondaryColor">#1A365D</Color>
       <Color x:Key="SecondaryContainerColor">#92400E</Color>
       <Color x:Key="OnSecondaryContainerColor">#FEF3C7</Color>
 

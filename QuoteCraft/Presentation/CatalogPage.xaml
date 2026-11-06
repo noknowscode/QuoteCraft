@@ -89,8 +89,8 @@
                 AutomationProperties.Name="Add catalog item"
                 Style="{StaticResource AccentButtonStyle}">
           <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-            <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource OnAccentFixedBrush}" />
-            <TextBlock Text="Add Item" Foreground="{StaticResource OnAccentFixedBrush}" Style="{StaticResource LabelLargeSemiBold}" />
+            <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" />
+            <TextBlock Text="Add Item" Style="{StaticResource LabelLargeSemiBold}" />
           </StackPanel>
         </Button>
       </Grid>
@@ -186,8 +186,8 @@
                         HorizontalAlignment="Center" Margin="{StaticResource GapTop8}"
                         AutomationProperties.Name="Add catalog item">
                   <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-                    <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource OnAccentFixedBrush}" />
-                    <TextBlock Text="Add Item" Foreground="{StaticResource OnAccentFixedBrush}" Style="{StaticResource LabelLargeSemiBold}" />
+                    <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" />
+                    <TextBlock Text="Add Item" Style="{StaticResource LabelLargeSemiBold}" />
                   </StackPanel>
                 </Button>
               </StackPanel>
@@ -212,7 +212,7 @@
                            HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
                 <Button Content="Retry"
                         Command="{Binding DataContext.RefreshList, ElementName=CatalogRoot}"
-                        Style="{StaticResource MaterialOutlinedButtonStyle}"
+                        Style="{StaticResource OutlinedButtonStyle}"
                         HorizontalAlignment="Center"
                         AutomationProperties.Name="Retry loading the catalog" />
               </StackPanel>
@@ -233,7 +233,7 @@
               <!-- Back to the categories (one-pane layouts) -->
               <Button Command="{Binding DataContext.BackToList, ElementName=CatalogRoot}"
                       Visibility="{utu:Responsive Narrow=Visible, Widest=Collapsed}"
-                      Style="{StaticResource MaterialTextButtonStyle}"
+                      Style="{StaticResource TextButtonStyle}"
                       MinHeight="{StaticResource TouchTarget}"
                       Margin="{StaticResource LeadingIconNudge}"
                       AutomationProperties.Name="Back to categories">
@@ -275,9 +275,8 @@
                         Style="{StaticResource AccentButtonStyle}"
                         MinWidth="{StaticResource TouchTarget}">
                   <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-                    <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource OnAccentFixedBrush}" />
-                    <TextBlock Text="Add Item" Visibility="{utu:Responsive Narrow=Collapsed, Normal=Visible}"
-                               Foreground="{StaticResource OnAccentFixedBrush}" Style="{StaticResource LabelLargeSemiBold}" />
+                    <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" />
+                    <TextBlock Text="Add Item" Visibility="{utu:Responsive Narrow=Collapsed, Normal=Visible}" Style="{StaticResource LabelLargeSemiBold}" />
                   </StackPanel>
                 </Button>
               </Grid>
@@ -367,11 +366,11 @@
               <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}" HorizontalAlignment="Center">
                 <Button Content="Back"
                         Command="{Binding DataContext.BackToList, ElementName=CatalogRoot}"
-                        Style="{StaticResource MaterialTextButtonStyle}"
+                        Style="{StaticResource TextButtonStyle}"
                         AutomationProperties.Name="Back to categories" />
                 <Button Content="Retry"
                         Command="{Binding DataContext.RefreshList, ElementName=CatalogRoot}"
-                        Style="{StaticResource MaterialOutlinedButtonStyle}"
+                        Style="{StaticResource OutlinedButtonStyle}"
                         AutomationProperties.Name="Retry loading the category" />
               </StackPanel>
             </StackPanel>

@@ -5,7 +5,7 @@
                xmlns:uen="using:Uno.Extensions.Navigation.UI"
                xmlns:utu="using:Uno.Toolkit.UI"
                xmlns:ctrl="using:QuoteCraft.Controls"
-               Style="{StaticResource MaterialContentDialogStyle}">
+               Style="{StaticResource ContentDialogStyle}">
   <StackPanel Spacing="{StaticResource Space16}"
               MinWidth="{utu:Responsive Narrow=0, Normal={StaticResource DialogMinWidth}}">
     <ctrl:DialogHeader Glyph="&#xE82D;" Title="{Binding Heading}" Subtitle="{Binding Subheading}"
@@ -46,12 +46,12 @@
       </Grid.ColumnDefinitions>
       <Button Content="Delete Item" Command="{Binding Delete}"
               Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}"
-              Style="{StaticResource MaterialTextButtonStyle}"
+              Style="{StaticResource TextButtonStyle}"
               Foreground="{ThemeResource ErrorBrush}"
               AutomationProperties.Name="Delete item" />
       <!-- xaml-lint: allow backbar - a dialog Cancel that closes the dialog, not a page back bar -->
-      <Button Grid.Column="2" Content="Cancel" uen:Navigation.Request="-" Style="{StaticResource MaterialTextButtonStyle}" AutomationProperties.Name="Cancel" />
-      <Button Grid.Column="3" Content="Save" Command="{Binding Save}" Style="{StaticResource MaterialFilledButtonStyle}" AutomationProperties.Name="Save item" />
+      <Button Grid.Column="2" Content="Cancel" uen:Navigation.Request="-" Style="{StaticResource TextButtonStyle}" AutomationProperties.Name="Cancel" />
+      <Button Grid.Column="3" Content="Save" Command="{Binding Save}" Style="{StaticResource FilledButtonStyle}" AutomationProperties.Name="Save item" />
     </Grid>
   </StackPanel>
 </ContentDialog>

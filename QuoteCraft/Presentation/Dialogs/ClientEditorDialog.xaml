@@ -5,7 +5,7 @@
                xmlns:uen="using:Uno.Extensions.Navigation.UI"
                xmlns:utu="using:Uno.Toolkit.UI"
                xmlns:ctrl="using:QuoteCraft.Controls"
-               Style="{StaticResource MaterialContentDialogStyle}">
+               Style="{StaticResource ContentDialogStyle}">
   <StackPanel Spacing="{StaticResource Space16}"
               MinWidth="{utu:Responsive Narrow=0, Normal={StaticResource DialogMinWidth}}">
     <ctrl:DialogHeader Glyph="&#xE77B;" Title="{Binding Heading}" Subtitle="{Binding Subheading}"
@@ -42,8 +42,8 @@
 
     <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}" HorizontalAlignment="Right">
       <!-- xaml-lint: allow backbar - a dialog Cancel that closes the dialog, not a page back bar -->
-      <Button Content="Cancel" uen:Navigation.Request="-" Style="{StaticResource MaterialTextButtonStyle}" AutomationProperties.Name="Cancel" />
-      <Button Content="Save" Command="{Binding Save}" Style="{StaticResource MaterialFilledButtonStyle}" AutomationProperties.Name="Save client" />
+      <Button Content="Cancel" uen:Navigation.Request="-" Style="{StaticResource TextButtonStyle}" AutomationProperties.Name="Cancel" />
+      <Button Content="Save" Command="{Binding Save}" Style="{StaticResource FilledButtonStyle}" AutomationProperties.Name="Save client" />
     </StackPanel>
   </StackPanel>
 </ContentDialog>

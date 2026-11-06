@@ -5,7 +5,7 @@
                xmlns:uen="using:Uno.Extensions.Navigation.UI"
                xmlns:utu="using:Uno.Toolkit.UI"
                xmlns:ctrl="using:QuoteCraft.Controls"
-               Style="{StaticResource MaterialContentDialogStyle}">
+               Style="{StaticResource ContentDialogStyle}">
 
   <StackPanel Spacing="{StaticResource Space16}" MinWidth="{utu:Responsive Narrow=0, Normal={StaticResource DialogMinWidth}}">
 
@@ -33,7 +33,7 @@
       </Grid.ColumnDefinitions>
       <Button Content="-" Command="{Binding DecreaseQuantity}"
               AutomationProperties.Name="Decrease quantity"
-              Style="{StaticResource MaterialOutlinedButtonStyle}"
+              Style="{StaticResource OutlinedButtonStyle}"
               VerticalAlignment="Bottom"
               MinWidth="{StaticResource TouchTarget}" MinHeight="{StaticResource TouchTarget}" Padding="{StaticResource Inset8x4}" CornerRadius="{StaticResource RadiusMd}" />
       <TextBox Grid.Column="1"
@@ -44,7 +44,7 @@
                AutomationProperties.Name="Quantity" />
       <Button Content="+" Command="{Binding IncreaseQuantity}" Grid.Column="2"
               AutomationProperties.Name="Increase quantity"
-              Style="{StaticResource MaterialOutlinedButtonStyle}"
+              Style="{StaticResource OutlinedButtonStyle}"
               VerticalAlignment="Bottom"
               MinWidth="{StaticResource TouchTarget}" MinHeight="{StaticResource TouchTarget}" Padding="{StaticResource Inset8x4}" CornerRadius="{StaticResource RadiusMd}" />
     </Grid>
@@ -58,16 +58,16 @@
                Visibility="{Binding ValidationError, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert, FallbackValue=Collapsed}" />
 
     <!-- Line total -->
-    <utu:CardContentControl Style="{StaticResource BannerCardStyle}">
+    <utu:CardContentControl Style="{StaticResource BannerCardStyle}" RequestedTheme="Light">
       <Grid>
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*" />
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
-        <TextBlock Text="Line Total" Foreground="{StaticResource UpgradeBannerSubtitleFixedBrush}"
+        <TextBlock Text="Line Total" Foreground="{ThemeResource OnPrimaryMediumBrush}"
                    Style="{StaticResource BodyMedium}" VerticalAlignment="Center" />
         <TextBlock Grid.Column="1" Text="{Binding LineTotal}"
-                   Foreground="{StaticResource AppBarForegroundFixedBrush}"
+                   Foreground="{ThemeResource OnPrimaryBrush}"
                    FontFamily="{StaticResource MonospaceFontFamily}"
                    Style="{StaticResource TitleLargeBold}" VerticalAlignment="Center" />
       </Grid>
@@ -82,12 +82,12 @@
       </Grid.ColumnDefinitions>
       <Button Content="Delete" Command="{Binding Delete}"
               Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}"
-              Style="{StaticResource MaterialTextButtonStyle}"
+              Style="{StaticResource TextButtonStyle}"
               Foreground="{ThemeResource ErrorBrush}"
               AutomationProperties.Name="Delete line item" />
       <!-- xaml-lint: allow backbar - a dialog Cancel that closes the dialog, not a page back bar -->
-      <Button Grid.Column="2" Content="Cancel" uen:Navigation.Request="-" Style="{StaticResource MaterialTextButtonStyle}" AutomationProperties.Name="Cancel" />
-      <Button Grid.Column="3" Content="Save" Command="{Binding Save}" Style="{StaticResource MaterialFilledButtonStyle}" AutomationProperties.Name="Save line item" />
+      <Button Grid.Column="2" Content="Cancel" uen:Navigation.Request="-" Style="{StaticResource TextButtonStyle}" AutomationProperties.Name="Cancel" />
+      <Button Grid.Column="3" Content="Save" Command="{Binding Save}" Style="{StaticResource FilledButtonStyle}" AutomationProperties.Name="Save line item" />
     </Grid>
   </StackPanel>
 </ContentDialog>

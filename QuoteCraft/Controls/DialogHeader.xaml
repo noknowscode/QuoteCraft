@@ -1,10 +1,10 @@
-<!-- The slate banner at the top of the app's dialogs: an amber icon, a title and a line under it. -->
+<!-- The brand band at the top of the app's dialogs (Light roles in both modes): an amber icon, a title and a line under it. -->
 <UserControl x:Class="QuoteCraft.Controls.DialogHeader"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:utu="using:Uno.Toolkit.UI"
              IsTabStop="False">
-  <utu:CardContentControl Style="{StaticResource BannerCardStyle}">
+  <utu:CardContentControl Style="{StaticResource BannerCardStyle}" RequestedTheme="Light">
     <Grid ColumnSpacing="{StaticResource Space12}">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="Auto" />
@@ -12,18 +12,18 @@
       </Grid.ColumnDefinitions>
       <FontIcon Glyph="{x:Bind Glyph, Mode=OneWay}"
                 FontSize="{StaticResource IconSize2xl}"
-                Foreground="{StaticResource AppBarAccentInvariantBrush}"
+                Foreground="{ThemeResource SecondaryBrush}"
                 VerticalAlignment="Center"
                 AutomationProperties.AccessibilityView="Raw" />
       <StackPanel Grid.Column="1" Spacing="{StaticResource Space2}" VerticalAlignment="Center">
         <TextBlock Text="{x:Bind Title, Mode=OneWay}"
                    Style="{StaticResource TitleMediumBold}"
-                   Foreground="{StaticResource AppBarForegroundFixedBrush}"
+                   Foreground="{ThemeResource OnPrimaryBrush}"
                    AutomationProperties.HeadingLevel="Level1"
                    TextWrapping="Wrap" />
         <TextBlock Text="{x:Bind Subtitle, Mode=OneWay}"
                    Style="{StaticResource BodySmall}"
-                   Foreground="{StaticResource UpgradeBannerSubtitleFixedBrush}"
+                   Foreground="{ThemeResource OnPrimaryMediumBrush}"
                    TextWrapping="Wrap" />
       </StackPanel>
     </Grid>

@@ -13,7 +13,8 @@
       <ResourceDictionary.MergedDictionaries>
         <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
         <utum:MaterialToolkitTheme>
-          <!-- Uno Themes 9: colour overrides live on Colors (ColorOverrideSource is deprecated). -->
+          <!-- The palette (Styles/ColorPaletteOverride.xaml, Light and Dark) is the one place the brand's colours live:
+               Uno Platform Studio's Themes tab edits it, and every role brush, control and page follows. -->
           <utum:MaterialToolkitTheme.Colors>
             <ut:ThemeColors OverrideSource="ms-appx:///Styles/ColorPaletteOverride.xaml" />
           </utum:MaterialToolkitTheme.Colors>
@@ -29,18 +30,31 @@
             </ResourceDictionary>
           </utum:MaterialToolkitTheme.FontOverrideDictionary>
         </utum:MaterialToolkitTheme>
-        <ResourceDictionary Source="ms-appx:///Styles/BrandColors.xaml" />
-        <ResourceDictionary Source="ms-appx:///Styles/StatusColors.xaml" />
         <ResourceDictionary Source="ms-appx:///Styles/Layout.xaml" />
         <ResourceDictionary Source="ms-appx:///Styles/Cards.xaml" />
       </ResourceDictionary.MergedDictionaries>
 
-      <!-- The rail's Theme button shows the window's theme: a sun in Light, a moon in Dark. -->
+      <!--
+        Light and Default (Dark) colours the palette has no role for, the only hex outside it. Every colour with a role is
+        the palette's (Styles/ColorPaletteOverride.xaml), used through the role's brush: Draft and Expired are the
+        SurfaceVariant pair, Viewed the SecondaryContainer pair and Declined the ErrorContainer pair. What stays here is
+        green for an accepted quote and a done step (Success), and the blue of a sent quote. Each pair is at least
+        4.5:1, and a status pill always carries its name and an icon, so colour is never the only signal.
+        The rail's Theme button shows the window's theme: a sun in Light, a moon in Dark.
+      -->
       <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Light">
+          <SolidColorBrush x:Key="SuccessBrush" Color="#047857" />
+          <SolidColorBrush x:Key="SuccessContainerBrush" Color="#D1FAE5" />
+          <SolidColorBrush x:Key="StatusSentBrush" Color="#1D4ED8" />
+          <SolidColorBrush x:Key="StatusSentContainerBrush" Color="#DBEAFE" />
           <x:String x:Key="ThemeIconGlyph">&#xE706;</x:String>
         </ResourceDictionary>
-        <ResourceDictionary x:Key="Dark">
+        <ResourceDictionary x:Key="Default">
+          <SolidColorBrush x:Key="SuccessBrush" Color="#6EE7B7" />
+          <SolidColorBrush x:Key="SuccessContainerBrush" Color="#064E3B" />
+          <SolidColorBrush x:Key="StatusSentBrush" Color="#93BBFD" />
+          <SolidColorBrush x:Key="StatusSentContainerBrush" Color="#1E3A5F" />
           <x:String x:Key="ThemeIconGlyph">&#xE708;</x:String>
         </ResourceDictionary>
       </ResourceDictionary.ThemeDictionaries>
@@ -113,61 +127,48 @@
       <!-- Monospace Font -->
       <FontFamily x:Key="MonospaceFontFamily">ms-appx:///Assets/Fonts/JetBrainsMono-Regular.ttf#JetBrains Mono</FontFamily>
 
-      <!-- Accent Button Style (orange with darker hover/pressed) -->
-      <Style x:Key="AccentButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource AppBarAccentInvariantBrush}" />
-        <Setter Property="Foreground" Value="{StaticResource OnAccentFixedBrush}" />
+      <!--
+        The amber call to action (New Quote, Send, Add Item...): the theme's filled button on the Secondary role, through
+        its lightweight-styling keys. The design keeps the amber the same in Light and Dark, so the palette gives
+        Secondary one value in both. Content inherits OnSecondary; hover and pressed are the theme's state layers.
+      -->
+      <Style x:Key="AccentButtonStyle" TargetType="Button" BasedOn="{StaticResource FilledButtonStyle}">
         <Setter Property="CornerRadius" Value="{StaticResource RadiusMd}" />
-        <Setter Property="Padding" Value="{StaticResource ButtonInset}" />
         <Setter Property="MinHeight" Value="{StaticResource TouchTarget}" />
-        <Setter Property="UseSystemFocusVisuals" Value="True" />
-        <Setter Property="BorderThickness" Value="0" />
         <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="VerticalAlignment" Value="Center" />
-        <Setter Property="Template">
+        <Setter Property="utu:ResourceExtensions.Resources">
           <Setter.Value>
-            <ControlTemplate TargetType="Button">
-              <Border x:Name="RootBorder"
-                      Background="{TemplateBinding Background}"
-                      BorderBrush="{TemplateBinding BorderBrush}"
-                      BorderThickness="{TemplateBinding BorderThickness}"
-                      CornerRadius="{TemplateBinding CornerRadius}"
-                      Padding="{TemplateBinding Padding}">
-                <VisualStateManager.VisualStateGroups>
-                  <VisualStateGroup x:Name="CommonStates">
-                    <VisualState x:Name="Normal" />
-                    <VisualState x:Name="PointerOver">
-                      <Storyboard>
-                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootBorder"
-                                                       Storyboard.TargetProperty="Background">
-                          <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource AppBarAccentHoverFixedBrush}" />
-                        </ObjectAnimationUsingKeyFrames>
-                      </Storyboard>
-                    </VisualState>
-                    <VisualState x:Name="Pressed">
-                      <Storyboard>
-                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootBorder"
-                                                       Storyboard.TargetProperty="Background">
-                          <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource AppBarAccentPressedFixedBrush}" />
-                        </ObjectAnimationUsingKeyFrames>
-                      </Storyboard>
-                    </VisualState>
-                    <VisualState x:Name="Disabled">
-                      <Storyboard>
-                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootBorder"
-                                                       Storyboard.TargetProperty="Opacity">
-                          <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{StaticResource DisabledOpacity}" />
-                        </ObjectAnimationUsingKeyFrames>
-                      </Storyboard>
-                    </VisualState>
-                  </VisualStateGroup>
-                </VisualStateManager.VisualStateGroups>
-                <ContentPresenter Content="{TemplateBinding Content}"
-                                  ContentTemplate="{TemplateBinding ContentTemplate}"
-                                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
-              </Border>
-            </ControlTemplate>
+            <ResourceDictionary>
+              <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                  <StaticResource x:Key="FilledButtonBackground" ResourceKey="SecondaryBrush" />
+                  <StaticResource x:Key="FilledButtonBackgroundPointerOver" ResourceKey="SecondaryBrush" />
+                  <StaticResource x:Key="FilledButtonBackgroundPressed" ResourceKey="SecondaryBrush" />
+                  <StaticResource x:Key="FilledButtonForeground" ResourceKey="OnSecondaryBrush" />
+                  <StaticResource x:Key="FilledButtonForegroundPointerOver" ResourceKey="OnSecondaryBrush" />
+                  <StaticResource x:Key="FilledButtonForegroundPressed" ResourceKey="OnSecondaryBrush" />
+                  <StaticResource x:Key="FilledButtonIconForeground" ResourceKey="OnSecondaryBrush" />
+                  <StaticResource x:Key="FilledButtonIconForegroundPointerOver" ResourceKey="OnSecondaryBrush" />
+                  <StaticResource x:Key="FilledButtonIconForegroundPressed" ResourceKey="OnSecondaryBrush" />
+                  <StaticResource x:Key="FilledButtonStateLayerBackgroundPointerOver" ResourceKey="OnSecondaryHoverBrush" />
+                  <StaticResource x:Key="FilledButtonStateLayerBackgroundPressed" ResourceKey="OnSecondaryPressedBrush" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Default">
+                  <StaticResource x:Key="FilledButtonBackground" ResourceKey="SecondaryBrush" />
+                  <StaticResource x:Key="FilledButtonBackgroundPointerOver" ResourceKey="SecondaryBrush" />
+                  <StaticResource x:Key="FilledButtonBackgroundPressed" ResourceKey="SecondaryBrush" />
+                  <StaticResource x:Key="FilledButtonForeground" ResourceKey="OnSecondaryBrush" />
+                  <StaticResource x:Key="FilledButtonForegroundPointerOver" ResourceKey="OnSecondaryBrush" />
+                  <StaticResource x:Key="FilledButtonForegroundPressed" ResourceKey="OnSecondaryBrush" />
+                  <StaticResource x:Key="FilledButtonIconForeground" ResourceKey="OnSecondaryBrush" />
+                  <StaticResource x:Key="FilledButtonIconForegroundPointerOver" ResourceKey="OnSecondaryBrush" />
+                  <StaticResource x:Key="FilledButtonIconForegroundPressed" ResourceKey="OnSecondaryBrush" />
+                  <StaticResource x:Key="FilledButtonStateLayerBackgroundPointerOver" ResourceKey="OnSecondaryHoverBrush" />
+                  <StaticResource x:Key="FilledButtonStateLayerBackgroundPressed" ResourceKey="OnSecondaryPressedBrush" />
+                </ResourceDictionary>
+              </ResourceDictionary.ThemeDictionaries>
+            </ResourceDictionary>
           </Setter.Value>
         </Setter>
       </Style>
@@ -280,7 +281,10 @@
         <Setter Property="Padding" Value="0" />
       </Style>
 
-      <!-- Side Nav TabBarItem Style (horizontal icon + label) -->
+      <!--
+        Side Nav TabBarItem Style (horizontal icon + label, which the Toolkit's vertical tab bar does not lay out). Its
+        states are the Primary role's: the hover and pressed state layers, and the PrimaryContainer pair when selected.
+      -->
       <Style x:Key="SideNavTabBarItemStyle" TargetType="utu:TabBarItem">
         <Setter Property="Height" Value="{StaticResource RailItemHeight}" />
         <Setter Property="MinWidth" Value="0" />
@@ -302,7 +306,7 @@
                       <Storyboard>
                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootBorder"
                                                        Storyboard.TargetProperty="Background">
-                          <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource NavRailHoverBrush}" />
+                          <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource PrimaryHoverBrush}" />
                         </ObjectAnimationUsingKeyFrames>
                       </Storyboard>
                     </VisualState>
@@ -310,7 +314,7 @@
                       <Storyboard>
                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootBorder"
                                                        Storyboard.TargetProperty="Background">
-                          <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource NavRailSelectionBrush}" />
+                          <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource PrimaryPressedBrush}" />
                         </ObjectAnimationUsingKeyFrames>
                       </Storyboard>
                     </VisualState>
@@ -326,15 +330,15 @@
                       <Storyboard>
                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootBorder"
                                                        Storyboard.TargetProperty="Background">
-                          <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource NavRailSelectionBrush}" />
+                          <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource PrimaryContainerBrush}" />
                         </ObjectAnimationUsingKeyFrames>
                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="IconHost"
                                                        Storyboard.TargetProperty="Foreground">
-                          <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource PrimaryBrush}" />
+                          <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource OnPrimaryContainerBrush}" />
                         </ObjectAnimationUsingKeyFrames>
                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="LabelText"
                                                        Storyboard.TargetProperty="Foreground">
-                          <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource PrimaryBrush}" />
+                          <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource OnPrimaryContainerBrush}" />
                         </ObjectAnimationUsingKeyFrames>
                       </Storyboard>
                     </VisualState>

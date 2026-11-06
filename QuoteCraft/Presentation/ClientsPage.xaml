@@ -91,8 +91,8 @@
                 AutomationProperties.Name="Add new client"
                 Style="{StaticResource AccentButtonStyle}">
           <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-            <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource OnAccentFixedBrush}" />
-            <TextBlock Text="Add Client" Foreground="{StaticResource OnAccentFixedBrush}" Style="{StaticResource LabelLargeSemiBold}" />
+            <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" />
+            <TextBlock Text="Add Client" Style="{StaticResource LabelLargeSemiBold}" />
           </StackPanel>
         </Button>
       </Grid>
@@ -293,8 +293,8 @@
                             HorizontalAlignment="Center" Margin="{StaticResource GapTop8}"
                             AutomationProperties.Name="Add client">
                       <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-                        <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource OnAccentFixedBrush}" />
-                        <TextBlock Text="Add Client" Foreground="{StaticResource OnAccentFixedBrush}" Style="{StaticResource LabelLargeSemiBold}" />
+                        <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" />
+                        <TextBlock Text="Add Client" Style="{StaticResource LabelLargeSemiBold}" />
                       </StackPanel>
                     </Button>
                   </StackPanel>
@@ -319,7 +319,7 @@
                                HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
                     <Button Content="Retry"
                             Command="{Binding DataContext.RefreshList, ElementName=ClientsRoot}"
-                            Style="{StaticResource MaterialOutlinedButtonStyle}"
+                            Style="{StaticResource OutlinedButtonStyle}"
                             HorizontalAlignment="Center"
                             AutomationProperties.Name="Retry loading clients" />
                   </StackPanel>
@@ -342,7 +342,7 @@
               <!-- Back to the list (one-pane layouts) -->
               <Button Command="{Binding DataContext.BackToList, ElementName=ClientsRoot}"
                       Visibility="{utu:Responsive Narrow=Visible, Widest=Collapsed}"
-                      Style="{StaticResource MaterialTextButtonStyle}"
+                      Style="{StaticResource TextButtonStyle}"
                       MinHeight="{StaticResource TouchTarget}"
                       Margin="{StaticResource LeadingIconNudge}"
                       AutomationProperties.Name="Back to clients">
@@ -374,7 +374,7 @@
                   <Button Command="{Binding DataContext.EditClient, ElementName=ClientsRoot}"
                           AutomationProperties.Name="Edit client"
                           ToolTipService.ToolTip="Edit client"
-                          Style="{StaticResource MaterialOutlinedButtonStyle}"
+                          Style="{StaticResource OutlinedButtonStyle}"
                           MinHeight="{StaticResource TouchTarget}" MinWidth="{StaticResource TouchTarget}"
                           CornerRadius="{StaticResource RadiusMd}">
                     <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
@@ -386,7 +386,7 @@
                   <Button Command="{Binding DataContext.DeleteClient, ElementName=ClientsRoot}"
                           AutomationProperties.Name="Delete client"
                           ToolTipService.ToolTip="Delete client"
-                          Style="{StaticResource MaterialOutlinedButtonStyle}"
+                          Style="{StaticResource OutlinedButtonStyle}"
                           BorderBrush="{ThemeResource ErrorBrush}"
                           MinHeight="{StaticResource TouchTarget}" MinWidth="{StaticResource TouchTarget}"
                           CornerRadius="{StaticResource RadiusMd}">
@@ -402,8 +402,8 @@
                           AutomationProperties.Name="Create new quote for client"
                           Style="{StaticResource AccentButtonStyle}">
                     <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-                      <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource OnAccentFixedBrush}" />
-                      <TextBlock Text="New Quote" Foreground="{StaticResource OnAccentFixedBrush}" Style="{StaticResource LabelLargeSemiBold}" />
+                      <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" />
+                      <TextBlock Text="New Quote" Style="{StaticResource LabelLargeSemiBold}" />
                     </StackPanel>
                   </Button>
                 </StackPanel>
@@ -461,7 +461,7 @@
                           <Button Command="{Binding DataContext.OpenQuote, ElementName=ClientsRoot}"
                                   CommandParameter="{Binding}"
                                   AutomationProperties.Name="{Binding Title}"
-                                  Style="{StaticResource MaterialTextButtonStyle}"
+                                  Style="{StaticResource TextButtonStyle}"
                                   Foreground="{ThemeResource OnSurfaceBrush}"
                                   BorderBrush="{ThemeResource OutlineVariantBrush}"
                                   BorderThickness="0,0,0,1"
@@ -580,11 +580,11 @@
               <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}" HorizontalAlignment="Center">
                 <Button Content="Back"
                         Command="{Binding DataContext.BackToList, ElementName=ClientsRoot}"
-                        Style="{StaticResource MaterialTextButtonStyle}"
+                        Style="{StaticResource TextButtonStyle}"
                         AutomationProperties.Name="Back to clients" />
                 <Button Content="Retry"
                         Command="{Binding DataContext.RefreshList, ElementName=ClientsRoot}"
-                        Style="{StaticResource MaterialOutlinedButtonStyle}"
+                        Style="{StaticResource OutlinedButtonStyle}"
                         AutomationProperties.Name="Retry loading the client" />
               </StackPanel>
             </StackPanel>

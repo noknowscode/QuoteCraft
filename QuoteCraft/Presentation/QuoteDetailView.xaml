@@ -24,7 +24,7 @@
 
     <!-- Banners: a plan limit stopped Duplicate (only where plans exist), or what the last action could not do -->
     <StackPanel>
-      <Border Background="{StaticResource AppBarBackgroundFixedBrush}"
+      <Border Background="{ThemeResource PrimaryBrush}" RequestedTheme="Light"
               Padding="{StaticResource Inset16x12}"
               Visibility="{Binding UpgradeMessage, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert, FallbackValue=Collapsed}">
         <Grid ColumnSpacing="{StaticResource Space8}">
@@ -34,10 +34,10 @@
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="Auto" />
           </Grid.ColumnDefinitions>
-          <FontIcon Glyph="&#xE7BA;" FontSize="{StaticResource IconSizeXl}" Foreground="{StaticResource AppBarForegroundFixedBrush}"
+          <FontIcon Glyph="&#xE7BA;" FontSize="{StaticResource IconSizeXl}" Foreground="{ThemeResource OnPrimaryBrush}"
                     VerticalAlignment="Center" />
           <TextBlock Grid.Column="1" Text="{Binding UpgradeMessage}"
-                     Style="{StaticResource BodyMedium}" Foreground="{StaticResource AppBarForegroundFixedBrush}"
+                     Style="{StaticResource BodyMedium}" Foreground="{ThemeResource OnPrimaryBrush}"
                      VerticalAlignment="Center" TextWrapping="Wrap"
                      AutomationProperties.LiveSetting="Polite" />
           <Button Grid.Column="2"
@@ -45,15 +45,15 @@
                   AutomationProperties.Name="Upgrade in Settings"
                   Style="{StaticResource AccentButtonStyle}"
                   Padding="{StaticResource ButtonInsetCompact}">
-            <TextBlock Text="Upgrade" Style="{StaticResource LabelLargeSemiBold}" Foreground="{StaticResource OnAccentFixedBrush}" />
+            <TextBlock Text="Upgrade" Style="{StaticResource LabelLargeSemiBold}" />
           </Button>
           <Button Grid.Column="3"
                   Command="{Binding DismissUpgrade}"
                   AutomationProperties.Name="Dismiss"
                   ToolTipService.ToolTip="Dismiss"
-                  Style="{StaticResource MaterialTextButtonStyle}"
+                  Style="{StaticResource TextButtonStyle}"
                   MinWidth="{StaticResource TouchTarget}" MinHeight="{StaticResource TouchTarget}">
-            <FontIcon Glyph="&#xE711;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource AppBarForegroundFixedBrush}" />
+            <FontIcon Glyph="&#xE711;" FontSize="{StaticResource IconSizeSm}" Foreground="{ThemeResource OnPrimaryBrush}" />
           </Button>
         </Grid>
       </Border>
@@ -77,7 +77,7 @@
                   Command="{Binding DismissError}"
                   AutomationProperties.Name="Dismiss"
                   ToolTipService.ToolTip="Dismiss"
-                  Style="{StaticResource MaterialTextButtonStyle}"
+                  Style="{StaticResource TextButtonStyle}"
                   MinWidth="{StaticResource TouchTarget}" MinHeight="{StaticResource TouchTarget}">
             <FontIcon Glyph="&#xE711;" FontSize="{StaticResource IconSizeSm}" Foreground="{ThemeResource OnErrorContainerBrush}" />
           </Button>
@@ -98,7 +98,7 @@
               <!-- Back to the list (one-pane layouts) -->
               <Button Command="{Binding DataContext.BackToList, ElementName=DetailRoot}"
                       Visibility="{utu:Responsive Narrow=Visible, Widest=Collapsed}"
-                      Style="{StaticResource MaterialTextButtonStyle}"
+                      Style="{StaticResource TextButtonStyle}"
                       MinHeight="{StaticResource TouchTarget}"
                       Margin="{StaticResource LeadingIconNudge}"
                       AutomationProperties.Name="Back to quotes">
@@ -138,7 +138,7 @@
                   <Button Command="{Binding DataContext.StartEdit, ElementName=DetailRoot}"
                           AutomationProperties.Name="Edit quote"
                           ToolTipService.ToolTip="Edit line items and notes"
-                          Style="{StaticResource MaterialOutlinedButtonStyle}"
+                          Style="{StaticResource OutlinedButtonStyle}"
                           CornerRadius="{StaticResource RadiusMd}"
                           MinHeight="{StaticResource TouchTarget}"
                           Visibility="{Binding DataContext.IsEditMode, ElementName=DetailRoot, Converter={StaticResource InverseBoolConverter}}">
@@ -152,7 +152,7 @@
                   <Button Command="{Binding DataContext.EditQuote, ElementName=DetailRoot}"
                           AutomationProperties.Name="Open quote in the full editor"
                           ToolTipService.ToolTip="Open in the full editor"
-                          Style="{StaticResource MaterialOutlinedButtonStyle}"
+                          Style="{StaticResource OutlinedButtonStyle}"
                           CornerRadius="{StaticResource RadiusMd}"
                           MinHeight="{StaticResource TouchTarget}"
                           Visibility="{Binding DataContext.IsEditMode, ElementName=DetailRoot, Converter={StaticResource InverseBoolConverter}}">
@@ -168,15 +168,15 @@
                           Style="{StaticResource AccentButtonStyle}"
                           Visibility="{Binding DataContext.IsEditMode, ElementName=DetailRoot, Converter={StaticResource BoolToVisibilityConverter}}">
                     <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-                      <FontIcon Glyph="&#xE73E;" FontSize="{StaticResource IconSizeMd}" Foreground="{StaticResource OnAccentFixedBrush}" />
-                      <TextBlock Text="Done" Foreground="{StaticResource OnAccentFixedBrush}" Style="{StaticResource LabelLargeSemiBold}" />
+                      <FontIcon Glyph="&#xE73E;" FontSize="{StaticResource IconSizeMd}" />
+                      <TextBlock Text="Done" Style="{StaticResource LabelLargeSemiBold}" />
                     </StackPanel>
                   </Button>
 
                   <Button Command="{Binding DataContext.PreviewQuote, ElementName=DetailRoot}"
                           AutomationProperties.Name="Preview quote"
                           ToolTipService.ToolTip="Preview"
-                          Style="{StaticResource MaterialOutlinedButtonStyle}"
+                          Style="{StaticResource OutlinedButtonStyle}"
                           BorderBrush="{ThemeResource PrimaryBrush}"
                           CornerRadius="{StaticResource RadiusMd}"
                           MinHeight="{StaticResource TouchTarget}"
@@ -194,8 +194,8 @@
                           Style="{StaticResource AccentButtonStyle}"
                           Visibility="{Binding DataContext.IsEditMode, ElementName=DetailRoot, Converter={StaticResource InverseBoolConverter}}">
                     <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-                      <TextBlock Text="Send" Foreground="{StaticResource OnAccentFixedBrush}" Style="{StaticResource LabelLargeSemiBold}" />
-                      <FontIcon Glyph="&#xE724;" FontSize="{StaticResource IconSizeSm}" Foreground="{StaticResource OnAccentFixedBrush}" />
+                      <TextBlock Text="Send" Style="{StaticResource LabelLargeSemiBold}" />
+                      <FontIcon Glyph="&#xE724;" FontSize="{StaticResource IconSizeSm}" />
                     </StackPanel>
                   </Button>
                 </StackPanel>
@@ -238,7 +238,7 @@
                              TextWrapping="Wrap" VerticalAlignment="Center" />
                   <Button Grid.Column="1" Content="Reopen"
                           Command="{Binding DataContext.ReopenQuote, ElementName=DetailRoot}"
-                          Style="{StaticResource MaterialOutlinedButtonStyle}"
+                          Style="{StaticResource OutlinedButtonStyle}"
                           MinHeight="{StaticResource TouchTarget}"
                           VerticalAlignment="Center"
                           AutomationProperties.Name="Reopen quote" />
@@ -299,7 +299,7 @@
                                   BorderBrush="{ThemeResource OutlineVariantBrush}"
                                   BorderThickness="0,0,0,1">
                               <!-- Every other row is striped -->
-                              <Border Background="{ThemeResource AlternateRowBrush}"
+                              <Border Background="{ThemeResource BackgroundBrush}"
                                       Visibility="{Binding IsAlternate, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}" />
                               <Grid Padding="{StaticResource TableCellInset}" RowSpacing="{StaticResource Space4}">
                                 <Grid.ColumnDefinitions>
@@ -343,7 +343,7 @@
                                      Stroke="{ThemeResource OutlineBrush}"
                                      StrokeThickness="1" Fill="Transparent" />
                           <Button Command="{Binding DataContext.AddLineItem, ElementName=DetailRoot}"
-                                  Style="{StaticResource MaterialTextButtonStyle}"
+                                  Style="{StaticResource TextButtonStyle}"
                                   MinHeight="{StaticResource TouchTarget}"
                                   CornerRadius="{StaticResource RadiusMd}" Padding="{StaticResource Inset12x4}"
                                   AutomationProperties.Name="Add line item">
@@ -355,8 +355,8 @@
                         </Grid>
                         <!-- From Catalog with orange border -->
                         <Button Command="{Binding DataContext.OpenCatalog, ElementName=DetailRoot}"
-                                Style="{StaticResource MaterialOutlinedButtonStyle}"
-                                BorderBrush="{StaticResource AppBarAccentInvariantBrush}"
+                                Style="{StaticResource OutlinedButtonStyle}"
+                                BorderBrush="{ThemeResource SecondaryBrush}"
                                 MinHeight="{StaticResource TouchTarget}"
                                 CornerRadius="{StaticResource RadiusMd}" Padding="{StaticResource Inset12x4}"
                                 AutomationProperties.Name="Add from catalog">
@@ -407,7 +407,7 @@
                     <Button Command="{Binding DataContext.DuplicateQuote, ElementName=DetailRoot}"
                             AutomationProperties.Name="Duplicate quote"
                             MinHeight="{StaticResource TouchTarget}"
-                            Style="{StaticResource MaterialTextButtonStyle}">
+                            Style="{StaticResource TextButtonStyle}">
                       <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
                         <FontIcon Glyph="&#xE8C8;" FontSize="{StaticResource IconSizeMd}"
                                   Foreground="{ThemeResource PrimaryBrush}" />
@@ -418,7 +418,7 @@
                     <Button Command="{Binding DataContext.DeleteQuote, ElementName=DetailRoot}"
                             AutomationProperties.Name="Delete quote"
                             MinHeight="{StaticResource TouchTarget}"
-                            Style="{StaticResource MaterialTextButtonStyle}">
+                            Style="{StaticResource TextButtonStyle}">
                       <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
                         <FontIcon Glyph="&#xE74D;" FontSize="{StaticResource IconSizeMd}"
                                   Foreground="{ThemeResource ErrorBrush}" />
@@ -592,11 +592,11 @@
               <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}" HorizontalAlignment="Center">
                 <Button Content="Back"
                         Command="{Binding DataContext.BackToList, ElementName=DetailRoot}"
-                        Style="{StaticResource MaterialTextButtonStyle}"
+                        Style="{StaticResource TextButtonStyle}"
                         AutomationProperties.Name="Back to quotes" />
                 <Button Content="Retry"
                         Command="{Binding DataContext.Refresh, ElementName=DetailRoot}"
-                        Style="{StaticResource MaterialOutlinedButtonStyle}"
+                        Style="{StaticResource OutlinedButtonStyle}"
                         AutomationProperties.Name="Retry loading the quote" />
               </StackPanel>
             </StackPanel>
@@ -630,7 +630,7 @@
                 <Button Command="{Binding DataContext.BackToDetail, ElementName=DetailRoot}"
                         AutomationProperties.Name="Back to detail view"
                         ToolTipService.ToolTip="Back to detail view"
-                        Style="{StaticResource MaterialOutlinedButtonStyle}"
+                        Style="{StaticResource OutlinedButtonStyle}"
                         MinHeight="{StaticResource TouchTarget}" MinWidth="{StaticResource TouchTarget}"
                         CornerRadius="{StaticResource RadiusMd}">
                   <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
@@ -643,7 +643,7 @@
                         Command="{Binding DataContext.DownloadPdf, ElementName=DetailRoot}"
                         AutomationProperties.Name="Download PDF"
                         ToolTipService.ToolTip="Download PDF"
-                        Style="{StaticResource MaterialFilledButtonStyle}"
+                        Style="{StaticResource FilledButtonStyle}"
                         MinHeight="{StaticResource TouchTarget}" MinWidth="{StaticResource TouchTarget}"
                         CornerRadius="{StaticResource RadiusMd}">
                   <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
@@ -657,10 +657,8 @@
                         AutomationProperties.Name="Send quote to client"
                         Style="{StaticResource AccentButtonStyle}">
                   <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-                    <FontIcon Glyph="&#xE724;" FontSize="{StaticResource IconSizeMd}"
-                              Foreground="{StaticResource OnAccentFixedBrush}" />
-                    <TextBlock Text="Send Quote"
-                               Foreground="{StaticResource OnAccentFixedBrush}" Style="{StaticResource LabelLargeSemiBold}" />
+                    <FontIcon Glyph="&#xE724;" FontSize="{StaticResource IconSizeMd}" />
+                    <TextBlock Text="Send Quote" Style="{StaticResource LabelLargeSemiBold}" />
                   </StackPanel>
                 </Button>
               </Grid>
@@ -673,9 +671,9 @@
                                       MaxWidth="{StaticResource ReadingMaxWidth}" HorizontalAlignment="Center">
                 <StackPanel>
 
-                  <!-- Blue Header -->
-                  <utu:CardContentControl Style="{StaticResource StaticCardStyle}"
-                          Background="{StaticResource AppBarBackgroundFixedBrush}" BorderThickness="0"
+                  <!-- Brand header: the band, Primary under the Light theme in both modes -->
+                  <utu:CardContentControl Style="{StaticResource StaticCardStyle}" RequestedTheme="Light"
+                          Background="{ThemeResource PrimaryBrush}" BorderThickness="0"
                           CornerRadius="{StaticResource RadiusTopLg}"
                           Padding="{utu:Responsive Narrow={StaticResource DocumentInsetNarrow}, Normal={StaticResource DocumentInsetWide}}">
                     <StackPanel Spacing="{StaticResource Space20}">
@@ -690,10 +688,10 @@
                         <Grid Width="{StaticResource LogoSize}" Height="{StaticResource LogoSize}">
                           <utu:CardContentControl Style="{StaticResource StaticCardStyle}"
                                   CornerRadius="{StaticResource RadiusMd}" BorderThickness="0"
-                                  Background="{StaticResource AppBarButtonBackgroundFixedBrush}"
+                                  Background="{ThemeResource OnPrimaryDraggedBrush}"
                                   Visibility="{Binding Data.Profile.LogoPath, Converter={StaticResource EmptyToVisibleConverter}}">
                             <TextBlock Text="{Binding Data.Profile.BusinessName, Converter={StaticResource InitialsConverter}}"
-                                       Foreground="{StaticResource AppBarForegroundFixedBrush}"
+                                       Foreground="{ThemeResource OnPrimaryBrush}"
                                        Style="{StaticResource TitleMediumBold}"
                                        HorizontalAlignment="Center" VerticalAlignment="Center" />
                           </utu:CardContentControl>
@@ -706,15 +704,15 @@
                         <!-- Company info -->
                         <StackPanel Grid.Column="1" HorizontalAlignment="Right" Spacing="{StaticResource Space2}">
                           <TextBlock Text="{Binding Data.Profile.BusinessName}"
-                                     Foreground="{StaticResource AppBarForegroundFixedBrush}"
+                                     Foreground="{ThemeResource OnPrimaryBrush}"
                                      Style="{StaticResource TitleMediumBold}"
                                      TextWrapping="Wrap" TextAlignment="Right"
                                      HorizontalAlignment="Right" />
                           <TextBlock Text="{Binding Data.Profile.Phone}"
-                                     Foreground="{StaticResource UpgradeBannerSubtitleFixedBrush}" Style="{StaticResource BodySmall}"
+                                     Foreground="{ThemeResource OnPrimaryMediumBrush}" Style="{StaticResource BodySmall}"
                                      HorizontalAlignment="Right" />
                           <TextBlock Text="{Binding Data.Profile.Email}"
-                                     Foreground="{StaticResource UpgradeBannerSubtitleFixedBrush}" Style="{StaticResource BodySmall}"
+                                     Foreground="{ThemeResource OnPrimaryMediumBrush}" Style="{StaticResource BodySmall}"
                                      HorizontalAlignment="Right" TextTrimming="CharacterEllipsis" />
                         </StackPanel>
                       </Grid>
@@ -728,29 +726,29 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Spacing="{StaticResource Space2}">
-                          <TextBlock Text="Quote #" Foreground="{StaticResource UpgradeBannerSubtitleFixedBrush}"
+                          <TextBlock Text="Quote #" Foreground="{ThemeResource OnPrimaryMediumBrush}"
                                      Style="{StaticResource LabelSmall}" />
                           <TextBlock Text="{Binding Data.Quote.QuoteNumber}"
-                                     Foreground="{StaticResource AppBarForegroundFixedBrush}"
+                                     Foreground="{ThemeResource OnPrimaryBrush}"
                                      Style="{StaticResource BodySmallSemiBold}" TextWrapping="Wrap" />
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" HorizontalAlignment="Center" Spacing="{StaticResource Space2}">
-                          <TextBlock Text="Date" Foreground="{StaticResource UpgradeBannerSubtitleFixedBrush}"
+                          <TextBlock Text="Date" Foreground="{ThemeResource OnPrimaryMediumBrush}"
                                      Style="{StaticResource LabelSmall}"
                                      HorizontalAlignment="Center" />
                           <TextBlock Text="{Binding Data.Quote.CreatedAt, Converter={StaticResource ShortDateConverter}}"
-                                     Foreground="{StaticResource AppBarForegroundFixedBrush}"
+                                     Foreground="{ThemeResource OnPrimaryBrush}"
                                      Style="{StaticResource BodySmallSemiBold}"
                                      HorizontalAlignment="Center" />
                         </StackPanel>
 
                         <StackPanel Grid.Column="2" HorizontalAlignment="Right" Spacing="{StaticResource Space2}">
-                          <TextBlock Text="Valid Until" Foreground="{StaticResource UpgradeBannerSubtitleFixedBrush}"
+                          <TextBlock Text="Valid Until" Foreground="{ThemeResource OnPrimaryMediumBrush}"
                                      Style="{StaticResource LabelSmall}"
                                      HorizontalAlignment="Right" />
                           <TextBlock Text="{Binding Data.Quote.ValidUntil, Converter={StaticResource ShortDateConverter}}"
-                                     Foreground="{StaticResource AppBarForegroundFixedBrush}"
+                                     Foreground="{ThemeResource OnPrimaryBrush}"
                                      Style="{StaticResource BodySmallSemiBold}"
                                      HorizontalAlignment="Right" />
                         </StackPanel>
@@ -949,11 +947,11 @@
               <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}" HorizontalAlignment="Center">
                 <Button Content="Back to Detail"
                         Command="{Binding DataContext.BackToDetail, ElementName=DetailRoot}"
-                        Style="{StaticResource MaterialTextButtonStyle}"
+                        Style="{StaticResource TextButtonStyle}"
                         AutomationProperties.Name="Back to detail view" />
                 <Button Content="Retry"
                         Command="{Binding DataContext.Refresh, ElementName=DetailRoot}"
-                        Style="{StaticResource MaterialOutlinedButtonStyle}"
+                        Style="{StaticResource OutlinedButtonStyle}"
                         AutomationProperties.Name="Retry the preview" />
               </StackPanel>
             </StackPanel>

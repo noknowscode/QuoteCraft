@@ -9,7 +9,7 @@
                xmlns:utu="using:Uno.Toolkit.UI"
                xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
                xmlns:ctrl="using:QuoteCraft.Controls"
-               Style="{StaticResource MaterialContentDialogStyle}"
+               Style="{StaticResource ContentDialogStyle}"
                CloseButtonText="Done"
                DefaultButton="Close">
 
@@ -47,8 +47,8 @@
       <utu:ChipGroup ItemsSource="{Binding Categories}"
                      SelectedItem="{Binding SelectedCategory, Mode=TwoWay}"
                      SelectionMode="Single"
-                     Style="{StaticResource MaterialFilterChipGroupStyle}"
-                     ItemContainerStyle="{StaticResource MaterialChipStyle}"
+                     Style="{StaticResource FilterChipGroupStyle}"
+                     ItemContainerStyle="{StaticResource ChipStyle}"
                      AutomationProperties.Name="Category" />
     </ScrollViewer>
 
@@ -86,7 +86,7 @@
                             CommandParameter="{Binding}"
                             AutomationProperties.Name="Add to quote"
                             ToolTipService.ToolTip="Add to quote"
-                            Style="{StaticResource MaterialTextButtonStyle}"
+                            Style="{StaticResource TextButtonStyle}"
                             Padding="{StaticResource Inset8x4}" MinWidth="{StaticResource TouchTarget}" MinHeight="{StaticResource TouchTarget}">
                       <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeLg}" />
                     </Button>
@@ -121,7 +121,7 @@
             <Button Content="Retry"
                     Command="{Binding Refresh, ElementName=ItemsFeed}"
                     AutomationProperties.Name="Retry loading the catalog"
-                    Style="{StaticResource MaterialOutlinedButtonStyle}" />
+                    Style="{StaticResource OutlinedButtonStyle}" />
           </StackPanel>
         </DataTemplate>
       </mvux:FeedView.ErrorTemplate>

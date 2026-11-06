@@ -14,9 +14,9 @@
 
       <!-- Brand -->
       <StackPanel Spacing="{StaticResource Space8}" HorizontalAlignment="Center">
-        <utu:CardContentControl Style="{StaticResource StaticCardStyle}" BorderThickness="0" Background="{StaticResource AppBarBackgroundFixedBrush}"
+        <utu:CardContentControl Style="{StaticResource StaticCardStyle}" BorderThickness="0" Background="{ThemeResource PrimaryBrush}" RequestedTheme="Light"
                 Width="{StaticResource LogoSizeLarge}" Height="{StaticResource LogoSizeLarge}" CornerRadius="{StaticResource RadiusXl}">
-          <TextBlock Text="QC" Foreground="{StaticResource AppBarForegroundFixedBrush}"
+          <TextBlock Text="QC" Foreground="{ThemeResource OnPrimaryBrush}"
                      Style="{StaticResource HeadlineSmallBold}"
                      HorizontalAlignment="Center" VerticalAlignment="Center" />
         </utu:CardContentControl>
@@ -60,26 +60,26 @@
                PlaceholderText="Email address"
                InputScope="EmailSmtpAddress"
                AutomationProperties.Name="Email"
-               Style="{StaticResource MaterialOutlinedTextBoxStyle}" />
+               Style="{StaticResource OutlinedTextBoxStyle}" />
 
       <PasswordBox Password="{Binding Password, Mode=TwoWay}"
                    PlaceholderText="Password"
                    AutomationProperties.Name="Password"
-                   Style="{StaticResource MaterialOutlinedPasswordBoxStyle}" />
+                   Style="{StaticResource OutlinedPasswordBoxStyle}" />
 
       <!-- Primary action buttons -->
       <StackPanel Spacing="{StaticResource Space12}">
         <!-- Sign In, or Create Account in sign-up mode -->
         <Button Command="{Binding SignIn}"
                 HorizontalAlignment="Stretch"
-                Style="{StaticResource MaterialFilledButtonStyle}"
+                Style="{StaticResource FilledButtonStyle}"
                 AutomationProperties.Name="Sign in"
                 Visibility="{Binding IsSignUp, Converter={StaticResource InverseBoolConverter}, FallbackValue=Visible}">
           <TextBlock Text="Sign In" />
         </Button>
         <Button Command="{Binding SignUp}"
                 HorizontalAlignment="Stretch"
-                Style="{StaticResource MaterialFilledButtonStyle}"
+                Style="{StaticResource FilledButtonStyle}"
                 AutomationProperties.Name="Create account"
                 Visibility="{Binding IsSignUp, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
           <TextBlock Text="Create Account" />
@@ -87,7 +87,7 @@
 
         <Button Command="{Binding SendMagicLink}"
                 HorizontalAlignment="Stretch"
-                Style="{StaticResource MaterialOutlinedButtonStyle}"
+                Style="{StaticResource OutlinedButtonStyle}"
                 AutomationProperties.Name="Send magic link">
           <TextBlock Text="Send Magic Link" />
         </Button>
@@ -96,7 +96,7 @@
       <!-- Toggle sign up / sign in -->
       <Button Command="{Binding ToggleMode}"
               HorizontalAlignment="Center"
-              Style="{StaticResource MaterialTextButtonStyle}"
+              Style="{StaticResource TextButtonStyle}"
               AutomationProperties.Name="{Binding ModeToggleText}">
         <TextBlock Text="{Binding ModeToggleText}"
                    Style="{StaticResource BodySmall}"
@@ -106,7 +106,7 @@
       <!-- Skip (Free tier) -->
       <Button Command="{Binding SkipAuth}"
               HorizontalAlignment="Center"
-              Style="{StaticResource MaterialTextButtonStyle}"
+              Style="{StaticResource TextButtonStyle}"
               AutomationProperties.Name="Continue without account">
         <TextBlock Text="Continue without an account"
                    Style="{StaticResource BodySmall}"

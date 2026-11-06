@@ -18,9 +18,9 @@
       <StackPanel Spacing="{StaticResource Space24}" HorizontalAlignment="Center"
                   Visibility="{Binding CurrentStep, Converter={StaticResource StepVisibilityConverter}, ConverterParameter=1}">
         <utu:CardContentControl Style="{StaticResource ElevatedSurfaceCardStyle}" BorderThickness="0" Width="{StaticResource LogoSizeHero}" Height="{StaticResource LogoSizeHero}" CornerRadius="{StaticResource RadiusXl}"
-                Background="{StaticResource AppBarBackgroundFixedBrush}"
+                Background="{ThemeResource PrimaryBrush}" RequestedTheme="Light"
                 AutomationProperties.AccessibilityView="Raw">
-          <TextBlock Text="QC" Foreground="{StaticResource AppBarForegroundFixedBrush}"
+          <TextBlock Text="QC" Foreground="{ThemeResource OnPrimaryBrush}"
                      Style="{StaticResource HeadlineMediumBold}"
                      HorizontalAlignment="Center" VerticalAlignment="Center" />
         </utu:CardContentControl>
@@ -42,15 +42,13 @@
                 Padding="{StaticResource ButtonInsetWide}" Margin="{StaticResource GapTop8}"
                 AutomationProperties.Name="Get started">
           <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-            <TextBlock Text="Get Started" Style="{StaticResource LabelLargeSemiBold}"
-                       Foreground="{StaticResource OnAccentFixedBrush}" />
-            <FontIcon Glyph="&#xE72A;" FontSize="{StaticResource IconSizeMd}"
-                      Foreground="{StaticResource OnAccentFixedBrush}" />
+            <TextBlock Text="Get Started" Style="{StaticResource LabelLargeSemiBold}" />
+            <FontIcon Glyph="&#xE72A;" FontSize="{StaticResource IconSizeMd}" />
           </StackPanel>
         </Button>
 
         <Button Command="{Binding Skip}"
-                Style="{StaticResource MaterialTextButtonStyle}"
+                Style="{StaticResource TextButtonStyle}"
                 MinHeight="{StaticResource TouchTarget}"
                 HorizontalAlignment="Center"
                 Content="Skip for now"
@@ -82,7 +80,7 @@
         <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}" HorizontalAlignment="Center"
                     AutomationProperties.Name="Step 1 of 2">
           <Rectangle Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" RadiusX="{StaticResource RadiusXsValue}" RadiusY="{StaticResource RadiusXsValue}"
-                     Fill="{StaticResource AppBarAccentInvariantBrush}" />
+                     Fill="{ThemeResource SecondaryBrush}" />
           <Rectangle Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" RadiusX="{StaticResource RadiusXsValue}" RadiusY="{StaticResource RadiusXsValue}"
                      Fill="{ThemeResource OutlineVariantBrush}" />
         </StackPanel>
@@ -120,7 +118,7 @@
             <ColumnDefinition Width="Auto" />
           </Grid.ColumnDefinitions>
           <Button Command="{Binding PreviousStep}"
-                  Style="{StaticResource MaterialOutlinedButtonStyle}"
+                  Style="{StaticResource OutlinedButtonStyle}"
                   MinHeight="{StaticResource TouchTarget}"
                   CornerRadius="{StaticResource RadiusMd}" Content="Back"
                   AutomationProperties.Name="Back to welcome" />
@@ -128,10 +126,8 @@
                   Style="{StaticResource AccentButtonStyle}"
                   AutomationProperties.Name="Next: quote settings">
             <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-              <TextBlock Text="Next" Style="{StaticResource LabelLargeSemiBold}"
-                         Foreground="{StaticResource OnAccentFixedBrush}" />
-              <FontIcon Glyph="&#xE72A;" FontSize="{StaticResource IconSizeMd}"
-                        Foreground="{StaticResource OnAccentFixedBrush}" />
+              <TextBlock Text="Next" Style="{StaticResource LabelLargeSemiBold}" />
+              <FontIcon Glyph="&#xE72A;" FontSize="{StaticResource IconSizeMd}" />
             </StackPanel>
           </Button>
         </Grid>
@@ -154,9 +150,9 @@
         <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}" HorizontalAlignment="Center"
                     AutomationProperties.Name="Step 2 of 2">
           <Rectangle Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" RadiusX="{StaticResource RadiusXsValue}" RadiusY="{StaticResource RadiusXsValue}"
-                     Fill="{StaticResource AppBarAccentInvariantBrush}" />
+                     Fill="{ThemeResource SecondaryBrush}" />
           <Rectangle Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" RadiusX="{StaticResource RadiusXsValue}" RadiusY="{StaticResource RadiusXsValue}"
-                     Fill="{StaticResource AppBarAccentInvariantBrush}" />
+                     Fill="{ThemeResource SecondaryBrush}" />
         </StackPanel>
 
         <!-- The two number fields stack on Narrow -->
@@ -224,7 +220,7 @@
             <ColumnDefinition Width="Auto" />
           </Grid.ColumnDefinitions>
           <Button Command="{Binding PreviousStep}"
-                  Style="{StaticResource MaterialOutlinedButtonStyle}"
+                  Style="{StaticResource OutlinedButtonStyle}"
                   MinHeight="{StaticResource TouchTarget}"
                   CornerRadius="{StaticResource RadiusMd}" Content="Back"
                   AutomationProperties.Name="Back to your business" />
@@ -232,10 +228,8 @@
                   Style="{StaticResource AccentButtonStyle}"
                   AutomationProperties.Name="Create first quote">
             <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-              <TextBlock Text="Create First Quote" Style="{StaticResource LabelLargeSemiBold}"
-                         Foreground="{StaticResource OnAccentFixedBrush}" />
-              <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeMd}"
-                        Foreground="{StaticResource OnAccentFixedBrush}" />
+              <TextBlock Text="Create First Quote" Style="{StaticResource LabelLargeSemiBold}" />
+              <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeMd}" />
             </StackPanel>
           </Button>
         </Grid>
