@@ -17,8 +17,12 @@
           brand's colours live: Uno Platform Studio's Themes tab edits it, and every role brush, control and page follows.
           The design's typeface is DM Sans: DefaultFontFamily sets the theme's root font and every type-scale family
           (BodyMedium, TitleLarge...); weights resolve through Assets/Fonts/DMSans-Regular.ttf.manifest.
+          The design's bases are the theme's own: an 8 px spacing unit (Space100 = 8, Space200 = 16...) and a 4 px corner
+          unit (Radius100 = 4, Radius200 = 8...). Pages take those tokens, so a change here or in Studio respaces them.
         -->
-        <utum:MaterialToolkitTheme DefaultFontFamily="ms-appx:///Assets/Fonts/DMSans-Regular.ttf#DM Sans">
+        <utum:MaterialToolkitTheme DefaultFontFamily="ms-appx:///Assets/Fonts/DMSans-Regular.ttf#DM Sans"
+                                   DefaultSpacing="8"
+                                   DefaultCornerRadius="4">
           <utum:MaterialToolkitTheme.Colors>
             <ut:ThemeColors OverrideSource="ms-appx:///Styles/ColorPaletteOverride.xaml" />
           </utum:MaterialToolkitTheme.Colors>
@@ -126,8 +130,8 @@
         Secondary one value in both. Content inherits OnSecondary; hover and pressed are the theme's state layers.
       -->
       <Style x:Key="AccentButtonStyle" TargetType="Button" BasedOn="{StaticResource FilledButtonStyle}">
-        <Setter Property="CornerRadius" Value="{StaticResource RadiusMd}" />
-        <Setter Property="MinHeight" Value="{StaticResource TouchTarget}" />
+        <Setter Property="CornerRadius" Value="{StaticResource Radius200CornerRadius}" />
+        <Setter Property="MinHeight" Value="{StaticResource ControlHeightMediumLarge}" />
         <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="utu:ResourceExtensions.Resources">
@@ -208,7 +212,7 @@
                       BorderBrush="{TemplateBinding BorderBrush}"
                       BorderThickness="{TemplateBinding BorderThickness}"
                       Padding="{TemplateBinding Padding}"
-                      CornerRadius="{StaticResource RadiusSm}">
+                      CornerRadius="{StaticResource Radius100CornerRadius}">
                 <VisualStateManager.VisualStateGroups>
                   <VisualStateGroup x:Name="CommonStates">
                     <VisualState x:Name="Normal" />
@@ -279,7 +283,7 @@
         states are the Primary role's: the hover and pressed state layers, and the PrimaryContainer pair when selected.
       -->
       <Style x:Key="SideNavTabBarItemStyle" TargetType="utu:TabBarItem">
-        <Setter Property="Height" Value="{StaticResource RailItemHeight}" />
+        <Setter Property="Height" Value="{StaticResource ControlHeightMediumLarge}" />
         <Setter Property="MinWidth" Value="0" />
         <Setter Property="MinHeight" Value="0" />
         <Setter Property="Padding" Value="0" />
@@ -289,7 +293,7 @@
             <ControlTemplate TargetType="utu:TabBarItem">
               <Border x:Name="RootBorder"
                       Background="Transparent"
-                      CornerRadius="{StaticResource RadiusMd}"
+                      CornerRadius="{StaticResource Radius200CornerRadius}"
                       Padding="{StaticResource RailItemInset}"
                       Margin="{StaticResource RailItemMargin}">
                 <VisualStateManager.VisualStateGroups>
@@ -337,7 +341,7 @@
                     </VisualState>
                   </VisualStateGroup>
                 </VisualStateManager.VisualStateGroups>
-                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space12}">
+                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space150}">
                   <ContentControl x:Name="IconHost"
                                   Content="{TemplateBinding Icon}"
                                   Foreground="{ThemeResource OnSurfaceVariantBrush}"

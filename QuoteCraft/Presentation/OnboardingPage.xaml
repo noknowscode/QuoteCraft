@@ -12,12 +12,12 @@
   <ScrollViewer utu:SafeArea.Insets="Top,Bottom" HorizontalScrollBarVisibility="Disabled">
     <Grid HorizontalAlignment="Center" VerticalAlignment="Center"
           MaxWidth="{StaticResource WelcomeMaxWidth}"
-          Padding="{utu:Responsive Narrow={StaticResource Inset16}, Normal={StaticResource Inset32}}">
+          Padding="{utu:Responsive Narrow={StaticResource Space200Thickness}, Normal={StaticResource Space400Thickness}}">
 
       <!-- Step 1: Welcome -->
-      <StackPanel Spacing="{StaticResource Space24}" HorizontalAlignment="Center"
+      <StackPanel Spacing="{StaticResource Space300}" HorizontalAlignment="Center"
                   Visibility="{Binding CurrentStep, Converter={StaticResource StepVisibilityConverter}, ConverterParameter=1}">
-        <utu:CardContentControl Style="{StaticResource ElevatedSurfaceCardStyle}" BorderThickness="0" Width="{StaticResource LogoSizeHero}" Height="{StaticResource LogoSizeHero}" CornerRadius="{StaticResource RadiusXl}"
+        <utu:CardContentControl Style="{StaticResource ElevatedSurfaceCardStyle}" BorderThickness="0" Width="{StaticResource LogoSizeHero}" Height="{StaticResource LogoSizeHero}" CornerRadius="{StaticResource Radius400CornerRadius}"
                 Background="{ThemeResource PrimaryBrush}" RequestedTheme="Light"
                 AutomationProperties.AccessibilityView="Raw">
           <TextBlock Text="QC" Foreground="{ThemeResource OnPrimaryBrush}"
@@ -39,17 +39,17 @@
         <Button Command="{Binding NextStep}"
                 Style="{StaticResource AccentButtonStyle}"
                 HorizontalAlignment="Center"
-                Padding="{StaticResource ButtonInsetWide}" Margin="{StaticResource GapTop8}"
+                Padding="{StaticResource ButtonInsetWide}" Margin="{StaticResource Space100TopThickness}"
                 AutomationProperties.Name="Get started">
-          <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
+          <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space100}">
             <TextBlock Text="Get Started" Style="{StaticResource LabelLargeSemiBold}" />
-            <FontIcon Glyph="&#xE72A;" FontSize="{StaticResource IconSizeMd}" />
+            <FontIcon Glyph="&#xE72A;" FontSize="{StaticResource BodyMediumFontSize}" />
           </StackPanel>
         </Button>
 
         <Button Command="{Binding Skip}"
                 Style="{StaticResource TextButtonStyle}"
-                MinHeight="{StaticResource TouchTarget}"
+                MinHeight="{StaticResource ControlHeightMediumLarge}"
                 HorizontalAlignment="Center"
                 Content="Skip for now"
                 AutomationProperties.Name="Skip for now" />
@@ -64,9 +64,9 @@
       </StackPanel>
 
       <!-- Step 2: Business Info -->
-      <StackPanel Spacing="{StaticResource Space20}"
+      <StackPanel Spacing="{StaticResource Space250}"
                   Visibility="{Binding CurrentStep, Converter={StaticResource StepVisibilityConverter}, ConverterParameter=2}">
-        <StackPanel Spacing="{StaticResource Space4}">
+        <StackPanel Spacing="{StaticResource Space050}">
           <TextBlock Text="Your Business"
                      Style="{StaticResource TitleLargeBold}"
                      AutomationProperties.HeadingLevel="Level1" />
@@ -77,11 +77,11 @@
         </StackPanel>
 
         <!-- Progress: step 1 of 2, one bar per step (bars and a name, so it isn't colour alone) -->
-        <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}" HorizontalAlignment="Center"
+        <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space100}" HorizontalAlignment="Center"
                     AutomationProperties.Name="Step 1 of 2">
-          <Rectangle Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" RadiusX="{StaticResource RadiusXsValue}" RadiusY="{StaticResource RadiusXsValue}"
+          <Rectangle Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" RadiusX="{StaticResource Radius050}" RadiusY="{StaticResource Radius050}"
                      Fill="{ThemeResource SecondaryBrush}" />
-          <Rectangle Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" RadiusX="{StaticResource RadiusXsValue}" RadiusY="{StaticResource RadiusXsValue}"
+          <Rectangle Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" RadiusX="{StaticResource Radius050}" RadiusY="{StaticResource Radius050}"
                      Fill="{ThemeResource OutlineVariantBrush}" />
         </StackPanel>
 
@@ -112,31 +112,31 @@
                    AutomationProperties.LiveSetting="Assertive"
                    Visibility="{Binding ValidationError, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert, FallbackValue=Collapsed}" />
 
-        <Grid ColumnSpacing="{StaticResource Space12}">
+        <Grid ColumnSpacing="{StaticResource Space150}">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
           </Grid.ColumnDefinitions>
           <Button Command="{Binding PreviousStep}"
                   Style="{StaticResource OutlinedButtonStyle}"
-                  MinHeight="{StaticResource TouchTarget}"
-                  CornerRadius="{StaticResource RadiusMd}" Content="Back"
+                  MinHeight="{StaticResource ControlHeightMediumLarge}"
+                  CornerRadius="{StaticResource Radius200CornerRadius}" Content="Back"
                   AutomationProperties.Name="Back to welcome" />
           <Button Grid.Column="1" Command="{Binding NextStep}"
                   Style="{StaticResource AccentButtonStyle}"
                   AutomationProperties.Name="Next: quote settings">
-            <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
+            <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space100}">
               <TextBlock Text="Next" Style="{StaticResource LabelLargeSemiBold}" />
-              <FontIcon Glyph="&#xE72A;" FontSize="{StaticResource IconSizeMd}" />
+              <FontIcon Glyph="&#xE72A;" FontSize="{StaticResource BodyMediumFontSize}" />
             </StackPanel>
           </Button>
         </Grid>
       </StackPanel>
 
       <!-- Step 3: Quote Settings -->
-      <StackPanel Spacing="{StaticResource Space20}"
+      <StackPanel Spacing="{StaticResource Space250}"
                   Visibility="{Binding CurrentStep, Converter={StaticResource StepVisibilityConverter}, ConverterParameter=3}">
-        <StackPanel Spacing="{StaticResource Space4}">
+        <StackPanel Spacing="{StaticResource Space050}">
           <TextBlock Text="Quote Settings"
                      Style="{StaticResource TitleLargeBold}"
                      AutomationProperties.HeadingLevel="Level1" />
@@ -147,17 +147,17 @@
         </StackPanel>
 
         <!-- Progress: step 2 of 2 -->
-        <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}" HorizontalAlignment="Center"
+        <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space100}" HorizontalAlignment="Center"
                     AutomationProperties.Name="Step 2 of 2">
-          <Rectangle Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" RadiusX="{StaticResource RadiusXsValue}" RadiusY="{StaticResource RadiusXsValue}"
+          <Rectangle Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" RadiusX="{StaticResource Radius050}" RadiusY="{StaticResource Radius050}"
                      Fill="{ThemeResource SecondaryBrush}" />
-          <Rectangle Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" RadiusX="{StaticResource RadiusXsValue}" RadiusY="{StaticResource RadiusXsValue}"
+          <Rectangle Width="{StaticResource StepBarWidth}" Height="{StaticResource StepBarHeight}" RadiusX="{StaticResource Radius050}" RadiusY="{StaticResource Radius050}"
                      Fill="{ThemeResource SecondaryBrush}" />
         </StackPanel>
 
         <!-- The two number fields stack on Narrow -->
-        <Grid ColumnSpacing="{utu:Responsive Narrow=0, Normal={StaticResource Space16}}"
-              RowSpacing="{utu:Responsive Narrow={StaticResource Space20}, Normal=0}">
+        <Grid ColumnSpacing="{utu:Responsive Narrow=0, Normal={StaticResource Space200}}"
+              RowSpacing="{utu:Responsive Narrow={StaticResource Space250}, Normal=0}">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="*" />
@@ -187,15 +187,15 @@
 
         <!-- Catalog note (a Grid, so the text wraps: a horizontal StackPanel gives it unlimited width) -->
         <utu:CardContentControl Style="{StaticResource TonalCardStyle}" Padding="{StaticResource Inset16x12}">
-          <Grid ColumnSpacing="{StaticResource Space12}">
+          <Grid ColumnSpacing="{StaticResource Space150}">
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="Auto" />
               <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <FontIcon Glyph="&#xE82D;" FontSize="{StaticResource IconSizeXl}"
+            <FontIcon Glyph="&#xE82D;" FontSize="{StaticResource IconSizeSmall}"
                       Foreground="{ThemeResource PrimaryBrush}"
                       VerticalAlignment="Top" />
-            <StackPanel Grid.Column="1" Spacing="{StaticResource Space4}">
+            <StackPanel Grid.Column="1" Spacing="{StaticResource Space050}">
               <TextBlock Text="Pre-loaded catalog"
                          Style="{StaticResource BodyMediumSemiBold}" />
               <TextBlock Text="We've loaded a starter catalog (plumbing, electrical, HVAC, painting, general contracting, materials and labor) with suggested prices. Review and adjust them in the Catalog tab to match your market rates."
@@ -214,22 +214,22 @@
                    AutomationProperties.LiveSetting="Assertive"
                    Visibility="{Binding ValidationError, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert, FallbackValue=Collapsed}" />
 
-        <Grid ColumnSpacing="{StaticResource Space12}">
+        <Grid ColumnSpacing="{StaticResource Space150}">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
           </Grid.ColumnDefinitions>
           <Button Command="{Binding PreviousStep}"
                   Style="{StaticResource OutlinedButtonStyle}"
-                  MinHeight="{StaticResource TouchTarget}"
-                  CornerRadius="{StaticResource RadiusMd}" Content="Back"
+                  MinHeight="{StaticResource ControlHeightMediumLarge}"
+                  CornerRadius="{StaticResource Radius200CornerRadius}" Content="Back"
                   AutomationProperties.Name="Back to your business" />
           <Button Grid.Column="1" Command="{Binding Complete}"
                   Style="{StaticResource AccentButtonStyle}"
                   AutomationProperties.Name="Create first quote">
-            <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
+            <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space100}">
               <TextBlock Text="Create First Quote" Style="{StaticResource LabelLargeSemiBold}" />
-              <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeMd}" />
+              <FontIcon Glyph="&#xE710;" FontSize="{StaticResource BodyMediumFontSize}" />
             </StackPanel>
           </Button>
         </Grid>

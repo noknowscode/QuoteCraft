@@ -27,14 +27,14 @@
       <Border Background="{ThemeResource PrimaryBrush}" RequestedTheme="Light"
               Padding="{StaticResource Inset16x12}"
               Visibility="{Binding UpgradeMessage, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert, FallbackValue=Collapsed}">
-        <Grid ColumnSpacing="{StaticResource Space8}">
+        <Grid ColumnSpacing="{StaticResource Space100}">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="Auto" />
           </Grid.ColumnDefinitions>
-          <FontIcon Glyph="&#xE7BA;" FontSize="{StaticResource IconSizeXl}" Foreground="{ThemeResource OnPrimaryBrush}"
+          <FontIcon Glyph="&#xE7BA;" FontSize="{StaticResource IconSizeSmall}" Foreground="{ThemeResource OnPrimaryBrush}"
                     VerticalAlignment="Center" />
           <TextBlock Grid.Column="1" Text="{Binding UpgradeMessage}"
                      Style="{StaticResource BodyMedium}" Foreground="{ThemeResource OnPrimaryBrush}"
@@ -52,8 +52,8 @@
                   AutomationProperties.Name="Dismiss"
                   ToolTipService.ToolTip="Dismiss"
                   Style="{StaticResource TextButtonStyle}"
-                  MinWidth="{StaticResource TouchTarget}" MinHeight="{StaticResource TouchTarget}">
-            <FontIcon Glyph="&#xE711;" FontSize="{StaticResource IconSizeSm}" Foreground="{ThemeResource OnPrimaryBrush}" />
+                  MinWidth="{StaticResource ControlHeightMediumLarge}" MinHeight="{StaticResource ControlHeightMediumLarge}">
+            <FontIcon Glyph="&#xE711;" FontSize="{StaticResource BodySmallFontSize}" Foreground="{ThemeResource OnPrimaryBrush}" />
           </Button>
         </Grid>
       </Border>
@@ -61,13 +61,13 @@
       <Border Background="{ThemeResource ErrorContainerBrush}"
               Padding="{StaticResource Inset16x12}"
               Visibility="{Binding ActionError, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert, FallbackValue=Collapsed}">
-        <Grid ColumnSpacing="{StaticResource Space8}">
+        <Grid ColumnSpacing="{StaticResource Space100}">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
           </Grid.ColumnDefinitions>
-          <FontIcon Glyph="&#xE783;" FontSize="{StaticResource IconSizeXl}" Foreground="{ThemeResource OnErrorContainerBrush}"
+          <FontIcon Glyph="&#xE783;" FontSize="{StaticResource IconSizeSmall}" Foreground="{ThemeResource OnErrorContainerBrush}"
                     VerticalAlignment="Center" />
           <TextBlock Grid.Column="1" Text="{Binding ActionError}"
                      Style="{StaticResource BodyMedium}" Foreground="{ThemeResource OnErrorContainerBrush}"
@@ -78,8 +78,8 @@
                   AutomationProperties.Name="Dismiss"
                   ToolTipService.ToolTip="Dismiss"
                   Style="{StaticResource TextButtonStyle}"
-                  MinWidth="{StaticResource TouchTarget}" MinHeight="{StaticResource TouchTarget}">
-            <FontIcon Glyph="&#xE711;" FontSize="{StaticResource IconSizeSm}" Foreground="{ThemeResource OnErrorContainerBrush}" />
+                  MinWidth="{StaticResource ControlHeightMediumLarge}" MinHeight="{StaticResource ControlHeightMediumLarge}">
+            <FontIcon Glyph="&#xE711;" FontSize="{StaticResource BodySmallFontSize}" Foreground="{ThemeResource OnErrorContainerBrush}" />
           </Button>
         </Grid>
       </Border>
@@ -93,24 +93,24 @@
         <DataTemplate>
           <ScrollViewer Background="{ThemeResource BackgroundBrush}"
                         Padding="{utu:Responsive Narrow={StaticResource PaneInsetNarrow}, Normal={StaticResource PaneInsetNormal}, Wide={StaticResource PaneInsetWide}, Widest={StaticResource PaneInsetWidest}}">
-            <StackPanel Spacing="{StaticResource Space20}" HorizontalAlignment="Stretch">
+            <StackPanel Spacing="{StaticResource Space250}" HorizontalAlignment="Stretch">
 
               <!-- Back to the list (one-pane layouts) -->
               <Button Command="{Binding DataContext.BackToList, ElementName=DetailRoot}"
                       Visibility="{utu:Responsive Narrow=Visible, Widest=Collapsed}"
                       Style="{StaticResource TextButtonStyle}"
-                      MinHeight="{StaticResource TouchTarget}"
+                      MinHeight="{StaticResource ControlHeightMediumLarge}"
                       Margin="{StaticResource LeadingIconNudge}"
                       AutomationProperties.Name="Back to quotes">
-                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-                  <FontIcon Glyph="&#xE72B;" FontSize="{StaticResource IconSizeMd}" />
+                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space100}">
+                  <FontIcon Glyph="&#xE72B;" FontSize="{StaticResource BodyMediumFontSize}" />
                   <TextBlock Text="Quotes" />
                 </StackPanel>
               </Button>
 
               <!-- Title + Actions (actions under the title until the detail is wide) -->
-              <Grid ColumnSpacing="{StaticResource Space16}"
-                    RowSpacing="{utu:Responsive Narrowest={StaticResource Space12}, Widest=0, Layout={StaticResource SplitLayout}}">
+              <Grid ColumnSpacing="{StaticResource Space200}"
+                    RowSpacing="{utu:Responsive Narrowest={StaticResource Space150}, Widest=0, Layout={StaticResource SplitLayout}}">
                 <!-- Two rows below 1400 (title, then actions); the actions move beside the title from 1400 -->
                 <Grid.RowDefinitions>
                   <RowDefinition Height="Auto" />
@@ -130,7 +130,7 @@
 
                 <StackPanel Grid.Row="{utu:Responsive Narrowest=1, Widest=0, Layout={StaticResource SplitLayout}}"
                             Grid.Column="{utu:Responsive Narrowest=0, Widest=1, Layout={StaticResource SplitLayout}}"
-                            Orientation="Horizontal" Spacing="{StaticResource Space8}"
+                            Orientation="Horizontal" Spacing="{StaticResource Space100}"
                             VerticalAlignment="Center">
                   <!-- Edit and Full editor drop their labels (tooltips stay) where the detail is narrow: below 600, and
                        from 800 to 1400, where the list sits beside it -->
@@ -139,11 +139,11 @@
                           AutomationProperties.Name="Edit quote"
                           ToolTipService.ToolTip="Edit line items and notes"
                           Style="{StaticResource OutlinedButtonStyle}"
-                          CornerRadius="{StaticResource RadiusMd}"
-                          MinHeight="{StaticResource TouchTarget}"
+                          CornerRadius="{StaticResource Radius200CornerRadius}"
+                          MinHeight="{StaticResource ControlHeightMediumLarge}"
                           Visibility="{Binding DataContext.IsEditMode, ElementName=DetailRoot, Converter={StaticResource InverseBoolConverter}}">
-                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-                      <FontIcon Glyph="&#xE70F;" FontSize="{StaticResource IconSizeMd}" />
+                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space100}">
+                      <FontIcon Glyph="&#xE70F;" FontSize="{StaticResource BodyMediumFontSize}" />
                       <TextBlock Text="Edit" Visibility="{utu:Responsive Narrowest=Collapsed, Normal=Visible, Wide=Collapsed, Widest=Visible, Layout={StaticResource SplitLayout}}" />
                     </StackPanel>
                   </Button>
@@ -153,11 +153,11 @@
                           AutomationProperties.Name="Open quote in the full editor"
                           ToolTipService.ToolTip="Open in the full editor"
                           Style="{StaticResource OutlinedButtonStyle}"
-                          CornerRadius="{StaticResource RadiusMd}"
-                          MinHeight="{StaticResource TouchTarget}"
+                          CornerRadius="{StaticResource Radius200CornerRadius}"
+                          MinHeight="{StaticResource ControlHeightMediumLarge}"
                           Visibility="{Binding DataContext.IsEditMode, ElementName=DetailRoot, Converter={StaticResource InverseBoolConverter}}">
-                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-                      <FontIcon Glyph="&#xE8A7;" FontSize="{StaticResource IconSizeMd}" />
+                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space100}">
+                      <FontIcon Glyph="&#xE8A7;" FontSize="{StaticResource BodyMediumFontSize}" />
                       <TextBlock Text="Full editor" Visibility="{utu:Responsive Narrowest=Collapsed, Normal=Visible, Wide=Collapsed, Widest=Visible, Layout={StaticResource SplitLayout}}" />
                     </StackPanel>
                   </Button>
@@ -167,8 +167,8 @@
                           AutomationProperties.Name="Done editing"
                           Style="{StaticResource AccentButtonStyle}"
                           Visibility="{Binding DataContext.IsEditMode, ElementName=DetailRoot, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-                      <FontIcon Glyph="&#xE73E;" FontSize="{StaticResource IconSizeMd}" />
+                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space100}">
+                      <FontIcon Glyph="&#xE73E;" FontSize="{StaticResource BodyMediumFontSize}" />
                       <TextBlock Text="Done" Style="{StaticResource LabelLargeSemiBold}" />
                     </StackPanel>
                   </Button>
@@ -178,11 +178,11 @@
                           ToolTipService.ToolTip="Preview"
                           Style="{StaticResource OutlinedButtonStyle}"
                           BorderBrush="{ThemeResource PrimaryBrush}"
-                          CornerRadius="{StaticResource RadiusMd}"
-                          MinHeight="{StaticResource TouchTarget}"
+                          CornerRadius="{StaticResource Radius200CornerRadius}"
+                          MinHeight="{StaticResource ControlHeightMediumLarge}"
                           Visibility="{Binding DataContext.IsEditMode, ElementName=DetailRoot, Converter={StaticResource InverseBoolConverter}}">
-                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-                      <FontIcon Glyph="&#xE8FF;" FontSize="{StaticResource IconSizeMd}"
+                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space100}">
+                      <FontIcon Glyph="&#xE8FF;" FontSize="{StaticResource BodyMediumFontSize}"
                                 Foreground="{ThemeResource PrimaryBrush}" />
                       <TextBlock Text="Preview" Visibility="{utu:Responsive Narrow=Collapsed, Normal=Visible}"
                                  Foreground="{ThemeResource PrimaryBrush}" Style="{StaticResource LabelLargeSemiBold}" />
@@ -193,9 +193,9 @@
                           AutomationProperties.Name="Send quote"
                           Style="{StaticResource AccentButtonStyle}"
                           Visibility="{Binding DataContext.IsEditMode, ElementName=DetailRoot, Converter={StaticResource InverseBoolConverter}}">
-                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
+                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space100}">
                       <TextBlock Text="Send" Style="{StaticResource LabelLargeSemiBold}" />
-                      <FontIcon Glyph="&#xE724;" FontSize="{StaticResource IconSizeSm}" />
+                      <FontIcon Glyph="&#xE724;" FontSize="{StaticResource BodySmallFontSize}" />
                     </StackPanel>
                   </Button>
                 </StackPanel>
@@ -203,19 +203,19 @@
 
               <!-- Metadata line (stacked until the detail is wide) -->
               <StackPanel Orientation="{utu:Responsive Narrowest=Vertical, Widest=Horizontal, Layout={StaticResource SplitLayout}}"
-                          Spacing="{utu:Responsive Narrowest={StaticResource Space8}, Widest={StaticResource Space16}, Layout={StaticResource SplitLayout}}">
-                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space4}">
-                  <FontIcon Glyph="&#xE77B;" FontSize="{StaticResource IconSizeSm}" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                          Spacing="{utu:Responsive Narrowest={StaticResource Space100}, Widest={StaticResource Space200}, Layout={StaticResource SplitLayout}}">
+                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space050}">
+                  <FontIcon Glyph="&#xE77B;" FontSize="{StaticResource BodySmallFontSize}" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
                   <TextBlock Text="{Binding Data.Quote.ClientName}" Style="{StaticResource BodySmall}"
                              Foreground="{ThemeResource OnSurfaceVariantBrush}" TextTrimming="CharacterEllipsis" />
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space4}">
-                  <FontIcon Glyph="&#xE1D0;" FontSize="{StaticResource IconSizeSm}" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space050}">
+                  <FontIcon Glyph="&#xE1D0;" FontSize="{StaticResource BodySmallFontSize}" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
                   <TextBlock Text="{Binding Data.Quote.QuoteNumber}" Style="{StaticResource BodySmall}"
                              Foreground="{ThemeResource OnSurfaceVariantBrush}" />
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space4}">
-                  <FontIcon Glyph="&#xE787;" FontSize="{StaticResource IconSizeSm}" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
+                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space050}">
+                  <FontIcon Glyph="&#xE787;" FontSize="{StaticResource BodySmallFontSize}" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
                   <TextBlock Style="{StaticResource BodySmall}"
                              Foreground="{ThemeResource OnSurfaceVariantBrush}">
                     <Run Text="Valid until " /><Run Text="{Binding Data.Quote.ValidUntil, Converter={StaticResource ShortDateConverter}}" />
@@ -227,7 +227,7 @@
               <!-- Expired: Reopen makes it a Draft again, valid again, to edit and send (PRD F17.3) -->
               <utu:CardContentControl Style="{StaticResource TonalCardStyle}" Padding="{StaticResource Inset12x8}"
                       Visibility="{Binding Data.IsExpired, Converter={StaticResource BoolToVisibilityConverter}}">
-                <Grid ColumnSpacing="{StaticResource Space12}">
+                <Grid ColumnSpacing="{StaticResource Space150}">
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
@@ -239,7 +239,7 @@
                   <Button Grid.Column="1" Content="Reopen"
                           Command="{Binding DataContext.ReopenQuote, ElementName=DetailRoot}"
                           Style="{StaticResource OutlinedButtonStyle}"
-                          MinHeight="{StaticResource TouchTarget}"
+                          MinHeight="{StaticResource ControlHeightMediumLarge}"
                           VerticalAlignment="Center"
                           AutomationProperties.Name="Reopen quote" />
                 </Grid>
@@ -258,15 +258,15 @@
                   <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Spacing="{StaticResource Space16}"
+                <StackPanel Spacing="{StaticResource Space200}"
                             Grid.ColumnSpan="{utu:Responsive Narrowest=2, Widest=1, Layout={StaticResource SplitLayout}}"
-                            Margin="{utu:Responsive Narrowest='0', Widest={StaticResource GapEnd24}, Layout={StaticResource SplitLayout}}">
+                            Margin="{utu:Responsive Narrowest='0', Widest={StaticResource Space300RightThickness}, Layout={StaticResource SplitLayout}}">
                   <utu:CardContentControl Style="{StaticResource ElevatedSurfaceCardStyle}">
                     <StackPanel>
                       <TextBlock Text="LINE ITEMS" Style="{StaticResource LabelSmall}"
                                  Foreground="{ThemeResource OnSurfaceVariantBrush}"
                                  FontWeight="SemiBold" Margin="{StaticResource SectionLabelInset}" />
-                      <Grid Padding="{StaticResource TableHeaderInset}" Background="{ThemeResource SurfaceVariantBrush}">
+                      <Grid Padding="{StaticResource Inset16x8}" Background="{ThemeResource SurfaceVariantBrush}">
                         <Grid.ColumnDefinitions>
                           <ColumnDefinition Width="*" />
                           <ColumnDefinition Width="{StaticResource TableQtyWidth}" />
@@ -295,13 +295,13 @@
                         </muxc:ItemsRepeater.Layout>
                         <muxc:ItemsRepeater.ItemTemplate>
                           <DataTemplate>
-                            <Grid MinHeight="{StaticResource TouchTargetComfortable}"
+                            <Grid MinHeight="{StaticResource TouchTargetMinSize}"
                                   BorderBrush="{ThemeResource OutlineVariantBrush}"
                                   BorderThickness="0,0,0,1">
                               <!-- Every other row is striped -->
                               <Border Background="{ThemeResource BackgroundBrush}"
                                       Visibility="{Binding IsAlternate, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}" />
-                              <Grid Padding="{StaticResource TableCellInset}" RowSpacing="{StaticResource Space4}">
+                              <Grid Padding="{StaticResource Inset16x12}" RowSpacing="{StaticResource Space050}">
                                 <Grid.ColumnDefinitions>
                                   <ColumnDefinition Width="*" />
                                   <ColumnDefinition Width="{StaticResource TableQtyWidth}" />
@@ -333,22 +333,22 @@
                       </muxc:ItemsRepeater>
 
                       <!-- Inline Edit Buttons (visible when editing) -->
-                      <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}"
-                                  Padding="{StaticResource CardInset}"
+                      <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space100}"
+                                  Padding="{StaticResource Inset16x12}"
                                   Visibility="{Binding DataContext.IsEditMode, ElementName=DetailRoot, Converter={StaticResource BoolToVisibilityConverter}}">
                         <!-- Add Line Item with dashed border -->
                         <Grid>
-                          <Rectangle RadiusX="{StaticResource RadiusMdValue}" RadiusY="{StaticResource RadiusMdValue}"
+                          <Rectangle RadiusX="{StaticResource Radius200}" RadiusY="{StaticResource Radius200}"
                                      StrokeDashArray="4,3"
                                      Stroke="{ThemeResource OutlineBrush}"
                                      StrokeThickness="1" Fill="Transparent" />
                           <Button Command="{Binding DataContext.AddLineItem, ElementName=DetailRoot}"
                                   Style="{StaticResource TextButtonStyle}"
-                                  MinHeight="{StaticResource TouchTarget}"
-                                  CornerRadius="{StaticResource RadiusMd}" Padding="{StaticResource Inset12x4}"
+                                  MinHeight="{StaticResource ControlHeightMediumLarge}"
+                                  CornerRadius="{StaticResource Radius200CornerRadius}" Padding="{StaticResource Inset12x4}"
                                   AutomationProperties.Name="Add line item">
-                            <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-                              <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" />
+                            <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space100}">
+                              <FontIcon Glyph="&#xE710;" FontSize="{StaticResource BodySmallFontSize}" />
                               <TextBlock Text="Add Line Item" />
                             </StackPanel>
                           </Button>
@@ -357,11 +357,11 @@
                         <Button Command="{Binding DataContext.OpenCatalog, ElementName=DetailRoot}"
                                 Style="{StaticResource OutlinedButtonStyle}"
                                 BorderBrush="{ThemeResource SecondaryBrush}"
-                                MinHeight="{StaticResource TouchTarget}"
-                                CornerRadius="{StaticResource RadiusMd}" Padding="{StaticResource Inset12x4}"
+                                MinHeight="{StaticResource ControlHeightMediumLarge}"
+                                CornerRadius="{StaticResource Radius200CornerRadius}" Padding="{StaticResource Inset12x4}"
                                 AutomationProperties.Name="Add from catalog">
-                          <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-                            <FontIcon Glyph="&#xE8F1;" FontSize="{StaticResource IconSizeSm}" />
+                          <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space100}">
+                            <FontIcon Glyph="&#xE8F1;" FontSize="{StaticResource BodySmallFontSize}" />
                             <TextBlock Text="From Catalog" />
                           </StackPanel>
                         </Button>
@@ -373,10 +373,10 @@
                     <StackPanel>
                       <TextBlock Text="NOTES" Style="{StaticResource LabelSmall}"
                                  Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold"
-                                 Margin="{StaticResource CardInset}" />
+                                 Margin="{StaticResource Inset16x12}" />
                       <Border Height="{StaticResource HairlineThickness}" Background="{ThemeResource OutlineVariantBrush}" />
                       <!-- Notes (when not editing), or a hint when there are none -->
-                      <Grid Margin="{StaticResource Inset16}"
+                      <Grid Margin="{StaticResource Space200Thickness}"
                             Visibility="{Binding DataContext.IsEditMode, ElementName=DetailRoot, Converter={StaticResource InverseBoolConverter}}">
                         <TextBlock Text="{Binding Data.Quote.Notes}"
                                    Style="{StaticResource BodyMedium}"
@@ -396,20 +396,20 @@
                                TextWrapping="Wrap"
                                AcceptsReturn="True"
                                MinHeight="{StaticResource NotesMinHeight}"
-                               Margin="{StaticResource Inset16}"
+                               Margin="{StaticResource Space200Thickness}"
                                Visibility="{Binding DataContext.IsEditMode, ElementName=DetailRoot, Converter={StaticResource BoolToVisibilityConverter}}"
                                AutomationProperties.Name="Notes for the client" />
                     </StackPanel>
                   </utu:CardContentControl>
 
                   <!-- Secondary actions -->
-                  <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space12}" Margin="{StaticResource GapTop8}">
+                  <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space150}" Margin="{StaticResource Space100TopThickness}">
                     <Button Command="{Binding DataContext.DuplicateQuote, ElementName=DetailRoot}"
                             AutomationProperties.Name="Duplicate quote"
-                            MinHeight="{StaticResource TouchTarget}"
+                            MinHeight="{StaticResource ControlHeightMediumLarge}"
                             Style="{StaticResource TextButtonStyle}">
-                      <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-                        <FontIcon Glyph="&#xE8C8;" FontSize="{StaticResource IconSizeMd}"
+                      <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space100}">
+                        <FontIcon Glyph="&#xE8C8;" FontSize="{StaticResource BodyMediumFontSize}"
                                   Foreground="{ThemeResource PrimaryBrush}" />
                         <TextBlock Text="Duplicate"
                                    Foreground="{ThemeResource PrimaryBrush}" />
@@ -417,10 +417,10 @@
                     </Button>
                     <Button Command="{Binding DataContext.DeleteQuote, ElementName=DetailRoot}"
                             AutomationProperties.Name="Delete quote"
-                            MinHeight="{StaticResource TouchTarget}"
+                            MinHeight="{StaticResource ControlHeightMediumLarge}"
                             Style="{StaticResource TextButtonStyle}">
-                      <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-                        <FontIcon Glyph="&#xE74D;" FontSize="{StaticResource IconSizeMd}"
+                      <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space100}">
+                        <FontIcon Glyph="&#xE74D;" FontSize="{StaticResource BodyMediumFontSize}"
                                   Foreground="{ThemeResource ErrorBrush}" />
                         <TextBlock Text="Delete"
                                    Foreground="{ThemeResource ErrorBrush}" />
@@ -433,26 +433,26 @@
                 <StackPanel Grid.Row="{utu:Responsive Narrowest=1, Widest=0, Layout={StaticResource SplitLayout}}"
                             Grid.Column="{utu:Responsive Narrowest=0, Widest=1, Layout={StaticResource SplitLayout}}"
                             Grid.ColumnSpan="{utu:Responsive Narrowest=2, Widest=1, Layout={StaticResource SplitLayout}}"
-                            Margin="{utu:Responsive Narrowest={StaticResource GapTop24}, Widest={StaticResource SideColumnMargin}, Layout={StaticResource SplitLayout}}"
+                            Margin="{utu:Responsive Narrowest={StaticResource Space300TopThickness}, Widest={StaticResource SideColumnMargin}, Layout={StaticResource SplitLayout}}"
                             Width="{utu:Responsive Narrowest=NaN, Widest={StaticResource DetailSideColumnWidth}, Layout={StaticResource SplitLayout}}"
-                            Spacing="{StaticResource Space24}">
-                  <StackPanel Spacing="{StaticResource Space8}" Padding="{StaticResource InsetY4}">
+                            Spacing="{StaticResource Space300}">
+                  <StackPanel Spacing="{StaticResource Space100}" Padding="{StaticResource Space050VerticalThickness}">
                     <TextBlock Text="CLIENT" Style="{StaticResource LabelSmall}"
                                Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold" />
-                    <Grid ColumnSpacing="{StaticResource Space12}">
+                    <Grid ColumnSpacing="{StaticResource Space150}">
                       <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                       </Grid.ColumnDefinitions>
                       <utu:CardContentControl Style="{StaticResource AvatarCardStyle}"
                                               Width="{StaticResource AvatarSizeSm}" Height="{StaticResource AvatarSizeSm}"
-                                              CornerRadius="{StaticResource RadiusCircle36}" AutomationProperties.AccessibilityView="Raw">
+                                              CornerRadius="{StaticResource RadiusFullCornerRadius}" AutomationProperties.AccessibilityView="Raw">
                         <TextBlock Text="{Binding Data.Quote.ClientName, Converter={StaticResource InitialsConverter}}"
                                    Style="{StaticResource LabelMedium}"
                                    Foreground="{ThemeResource OnPrimaryContainerBrush}"
                                    HorizontalAlignment="Center" VerticalAlignment="Center" />
                       </utu:CardContentControl>
-                      <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="{StaticResource Space2}">
+                      <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="{StaticResource Space025}">
                         <TextBlock Text="{Binding Data.Quote.ClientName}" Style="{StaticResource BodyMediumWeightMedium}"
                                    TextWrapping="Wrap" />
                         <TextBlock Text="{Binding Data.Client.Email}" Style="{StaticResource BodySmall}"
@@ -466,9 +466,9 @@
                   <StackPanel>
                     <TextBlock Text="QUOTE DETAILS" Style="{StaticResource LabelSmall}"
                                Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold"
-                               Margin="{StaticResource GapBottom8}" />
+                               Margin="{StaticResource Space100BottomThickness}" />
                     <Border Height="{StaticResource HairlineThickness}" Background="{ThemeResource OutlineVariantBrush}" />
-                    <Grid Padding="{StaticResource InsetY12}">
+                    <Grid Padding="{StaticResource Space150VerticalThickness}">
                       <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
@@ -479,7 +479,7 @@
                                  Style="{StaticResource BodyMediumWeightMedium}" />
                     </Grid>
                     <Border Height="{StaticResource HairlineThickness}" Background="{ThemeResource OutlineVariantBrush}" />
-                    <Grid Padding="{StaticResource InsetY12}">
+                    <Grid Padding="{StaticResource Space150VerticalThickness}">
                       <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
@@ -491,7 +491,7 @@
                                  Style="{StaticResource BodyMediumWeightMedium}" />
                     </Grid>
                     <Border Height="{StaticResource HairlineThickness}" Background="{ThemeResource OutlineVariantBrush}" />
-                    <Grid Padding="{StaticResource InsetY12}">
+                    <Grid Padding="{StaticResource Space150VerticalThickness}">
                       <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
@@ -503,7 +503,7 @@
                                  Style="{StaticResource BodyMediumWeightMedium}" />
                     </Grid>
                     <Border Height="{StaticResource HairlineThickness}" Background="{ThemeResource OutlineVariantBrush}" />
-                    <Grid Padding="{StaticResource InsetY12}">
+                    <Grid Padding="{StaticResource Space150VerticalThickness}">
                       <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
@@ -517,9 +517,9 @@
                   <StackPanel>
                     <TextBlock Text="TOTALS" Style="{StaticResource LabelSmall}"
                                Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold"
-                               Margin="{StaticResource GapBottom8}" />
+                               Margin="{StaticResource Space100BottomThickness}" />
                     <Border Height="{StaticResource HairlineThickness}" Background="{ThemeResource OutlineVariantBrush}" />
-                    <StackPanel Spacing="{StaticResource Space8}" Margin="{StaticResource InsetY12}">
+                    <StackPanel Spacing="{StaticResource Space100}" Margin="{StaticResource Space150VerticalThickness}">
                       <Grid>
                         <Grid.ColumnDefinitions>
                           <ColumnDefinition Width="*" />
@@ -544,7 +544,7 @@
                                    Text="{Binding Data.Quote.TaxAmount, Converter={StaticResource CurrencyFormatConverter}}"
                                    FontFamily="{StaticResource MonospaceFontFamily}" Style="{StaticResource BodyMedium}" />
                       </Grid>
-                      <Border Height="{StaticResource HairlineThickness}" Background="{ThemeResource PrimaryBrush}" Margin="{StaticResource InsetY4}" />
+                      <Border Height="{StaticResource HairlineThickness}" Background="{ThemeResource PrimaryBrush}" Margin="{StaticResource Space050VerticalThickness}" />
                       <Grid>
                         <Grid.ColumnDefinitions>
                           <ColumnDefinition Width="*" />
@@ -583,13 +583,13 @@
           <DataTemplate>
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
                         Background="{ThemeResource BackgroundBrush}"
-                        Spacing="{StaticResource Space12}" Padding="{StaticResource Inset32}"
+                        Spacing="{StaticResource Space150}" Padding="{StaticResource Space400Thickness}"
                         AutomationProperties.LiveSetting="Polite">
-              <FontIcon Glyph="&#xE783;" FontSize="{StaticResource IconSizeHero}"
+              <FontIcon Glyph="&#xE783;" FontSize="{StaticResource HeroIconSize}"
                         Foreground="{ThemeResource ErrorBrush}" HorizontalAlignment="Center" />
               <TextBlock Text="This quote could not be loaded." Style="{StaticResource TitleSmall}"
                          HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
-              <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}" HorizontalAlignment="Center">
+              <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space100}" HorizontalAlignment="Center">
                 <Button Content="Back"
                         Command="{Binding DataContext.BackToList, ElementName=DetailRoot}"
                         Style="{StaticResource TextButtonStyle}"
@@ -619,7 +619,7 @@
                     BorderBrush="{ThemeResource OutlineVariantBrush}"
                     BorderThickness="0,0,0,1"
                     Padding="{utu:Responsive Narrow={StaticResource Inset12x8}, Normal={StaticResource Inset24x12}}">
-              <Grid ColumnSpacing="{StaticResource Space8}">
+              <Grid ColumnSpacing="{StaticResource Space100}">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="Auto" />
                   <ColumnDefinition Width="*" />
@@ -631,10 +631,10 @@
                         AutomationProperties.Name="Back to detail view"
                         ToolTipService.ToolTip="Back to detail view"
                         Style="{StaticResource OutlinedButtonStyle}"
-                        MinHeight="{StaticResource TouchTarget}" MinWidth="{StaticResource TouchTarget}"
-                        CornerRadius="{StaticResource RadiusMd}">
-                  <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-                    <FontIcon Glyph="&#xE72B;" FontSize="{StaticResource IconSizeMd}" />
+                        MinHeight="{StaticResource ControlHeightMediumLarge}" MinWidth="{StaticResource ControlHeightMediumLarge}"
+                        CornerRadius="{StaticResource Radius200CornerRadius}">
+                  <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space100}">
+                    <FontIcon Glyph="&#xE72B;" FontSize="{StaticResource BodyMediumFontSize}" />
                     <TextBlock Text="Back to Detail" Visibility="{utu:Responsive Narrow=Collapsed, Normal=Visible}" />
                   </StackPanel>
                 </Button>
@@ -644,10 +644,10 @@
                         AutomationProperties.Name="Download PDF"
                         ToolTipService.ToolTip="Download PDF"
                         Style="{StaticResource FilledButtonStyle}"
-                        MinHeight="{StaticResource TouchTarget}" MinWidth="{StaticResource TouchTarget}"
-                        CornerRadius="{StaticResource RadiusMd}">
-                  <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-                    <FontIcon Glyph="&#xE896;" FontSize="{StaticResource IconSizeMd}" />
+                        MinHeight="{StaticResource ControlHeightMediumLarge}" MinWidth="{StaticResource ControlHeightMediumLarge}"
+                        CornerRadius="{StaticResource Radius200CornerRadius}">
+                  <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space100}">
+                    <FontIcon Glyph="&#xE896;" FontSize="{StaticResource BodyMediumFontSize}" />
                     <TextBlock Text="Download PDF" Visibility="{utu:Responsive Narrow=Collapsed, Normal=Visible}" />
                   </StackPanel>
                 </Button>
@@ -656,8 +656,8 @@
                         Command="{Binding DataContext.SendQuote, ElementName=DetailRoot}"
                         AutomationProperties.Name="Send quote to client"
                         Style="{StaticResource AccentButtonStyle}">
-                  <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-                    <FontIcon Glyph="&#xE724;" FontSize="{StaticResource IconSizeMd}" />
+                  <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space100}">
+                    <FontIcon Glyph="&#xE724;" FontSize="{StaticResource BodyMediumFontSize}" />
                     <TextBlock Text="Send Quote" Style="{StaticResource LabelLargeSemiBold}" />
                   </StackPanel>
                 </Button>
@@ -675,10 +675,10 @@
                   <utu:CardContentControl Style="{StaticResource StaticCardStyle}" RequestedTheme="Light"
                           Background="{ThemeResource PrimaryBrush}" BorderThickness="0"
                           CornerRadius="{StaticResource RadiusTopLg}"
-                          Padding="{utu:Responsive Narrow={StaticResource DocumentInsetNarrow}, Normal={StaticResource DocumentInsetWide}}">
-                    <StackPanel Spacing="{StaticResource Space20}">
+                          Padding="{utu:Responsive Narrow={StaticResource Space200Thickness}, Normal={StaticResource DocumentInsetWide}}">
+                    <StackPanel Spacing="{StaticResource Space250}">
                       <!-- Company Row -->
-                      <Grid ColumnSpacing="{StaticResource Space12}">
+                      <Grid ColumnSpacing="{StaticResource Space150}">
                         <Grid.ColumnDefinitions>
                           <ColumnDefinition Width="Auto" />
                           <ColumnDefinition Width="*" />
@@ -687,7 +687,7 @@
                         <!-- Logo or Initials badge -->
                         <Grid Width="{StaticResource LogoSize}" Height="{StaticResource LogoSize}">
                           <utu:CardContentControl Style="{StaticResource StaticCardStyle}"
-                                  CornerRadius="{StaticResource RadiusMd}" BorderThickness="0"
+                                  CornerRadius="{StaticResource Radius200CornerRadius}" BorderThickness="0"
                                   Background="{ThemeResource OnPrimaryDraggedBrush}"
                                   Visibility="{Binding Data.Profile.LogoPath, Converter={StaticResource EmptyToVisibleConverter}}">
                             <TextBlock Text="{Binding Data.Profile.BusinessName, Converter={StaticResource InitialsConverter}}"
@@ -702,7 +702,7 @@
                         </Grid>
 
                         <!-- Company info -->
-                        <StackPanel Grid.Column="1" HorizontalAlignment="Right" Spacing="{StaticResource Space2}">
+                        <StackPanel Grid.Column="1" HorizontalAlignment="Right" Spacing="{StaticResource Space025}">
                           <TextBlock Text="{Binding Data.Profile.BusinessName}"
                                      Foreground="{ThemeResource OnPrimaryBrush}"
                                      Style="{StaticResource TitleMediumBold}"
@@ -718,14 +718,14 @@
                       </Grid>
 
                       <!-- Quote meta row -->
-                      <Grid ColumnSpacing="{StaticResource Space8}">
+                      <Grid ColumnSpacing="{StaticResource Space100}">
                         <Grid.ColumnDefinitions>
                           <ColumnDefinition Width="*" />
                           <ColumnDefinition Width="*" />
                           <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <StackPanel Spacing="{StaticResource Space2}">
+                        <StackPanel Spacing="{StaticResource Space025}">
                           <TextBlock Text="Quote #" Foreground="{ThemeResource OnPrimaryMediumBrush}"
                                      Style="{StaticResource LabelSmall}" />
                           <TextBlock Text="{Binding Data.Quote.QuoteNumber}"
@@ -733,7 +733,7 @@
                                      Style="{StaticResource BodySmallSemiBold}" TextWrapping="Wrap" />
                         </StackPanel>
 
-                        <StackPanel Grid.Column="1" HorizontalAlignment="Center" Spacing="{StaticResource Space2}">
+                        <StackPanel Grid.Column="1" HorizontalAlignment="Center" Spacing="{StaticResource Space025}">
                           <TextBlock Text="Date" Foreground="{ThemeResource OnPrimaryMediumBrush}"
                                      Style="{StaticResource LabelSmall}"
                                      HorizontalAlignment="Center" />
@@ -743,7 +743,7 @@
                                      HorizontalAlignment="Center" />
                         </StackPanel>
 
-                        <StackPanel Grid.Column="2" HorizontalAlignment="Right" Spacing="{StaticResource Space2}">
+                        <StackPanel Grid.Column="2" HorizontalAlignment="Right" Spacing="{StaticResource Space025}">
                           <TextBlock Text="Valid Until" Foreground="{ThemeResource OnPrimaryMediumBrush}"
                                      Style="{StaticResource LabelSmall}"
                                      HorizontalAlignment="Right" />
@@ -757,10 +757,10 @@
                   </utu:CardContentControl>
 
                   <!-- Content Area -->
-                  <StackPanel Padding="{utu:Responsive Narrow={StaticResource DocumentInsetNarrow}, Normal={StaticResource DocumentInsetWide}}" Spacing="{StaticResource Space24}">
+                  <StackPanel Padding="{utu:Responsive Narrow={StaticResource Space200Thickness}, Normal={StaticResource DocumentInsetWide}}" Spacing="{StaticResource Space300}">
 
                     <!-- Prepared For -->
-                    <StackPanel Spacing="{StaticResource Space4}">
+                    <StackPanel Spacing="{StaticResource Space050}">
                       <TextBlock Text="PREPARED FOR" Style="{StaticResource LabelSmall}"
                                  Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold" />
                       <TextBlock Text="{Binding Data.Quote.ClientName}"
@@ -775,10 +775,10 @@
                                Style="{StaticResource TitleLargeBold}" TextWrapping="Wrap" />
 
                     <!-- Line Items Table -->
-                    <utu:CardContentControl Style="{StaticResource StaticCardStyle}" CornerRadius="{StaticResource RadiusMd}">
+                    <utu:CardContentControl Style="{StaticResource StaticCardStyle}" CornerRadius="{StaticResource Radius200CornerRadius}">
                       <StackPanel>
                         <!-- Table Header -->
-                        <Grid Padding="{StaticResource TableHeaderInset}"
+                        <Grid Padding="{StaticResource Inset16x8}"
                               Background="{ThemeResource SurfaceVariantBrush}"
                               CornerRadius="{StaticResource RadiusTopMd}">
                           <Grid.ColumnDefinitions>
@@ -808,7 +808,7 @@
                           </muxc:ItemsRepeater.Layout>
                           <muxc:ItemsRepeater.ItemTemplate>
                             <DataTemplate>
-                              <Grid Padding="{StaticResource TableCellInset}" RowSpacing="{StaticResource Space4}"
+                              <Grid Padding="{StaticResource Inset16x12}" RowSpacing="{StaticResource Space050}"
                                     BorderBrush="{ThemeResource OutlineVariantBrush}"
                                     BorderThickness="0,0,0,1">
                                 <Grid.ColumnDefinitions>
@@ -846,7 +846,7 @@
                     </utu:CardContentControl>
 
                     <!-- Totals -->
-                    <StackPanel HorizontalAlignment="Right" Spacing="{StaticResource Space4}">
+                    <StackPanel HorizontalAlignment="Right" Spacing="{StaticResource Space050}">
                       <Grid>
                         <Grid.ColumnDefinitions>
                           <ColumnDefinition Width="*" />
@@ -854,7 +854,7 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="Subtotal" Style="{StaticResource BodyMedium}"
                                    Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                                   HorizontalAlignment="Right" Margin="{StaticResource GapEnd16}" />
+                                   HorizontalAlignment="Right" Margin="{StaticResource Space200RightThickness}" />
                         <TextBlock Grid.Column="1"
                                    Text="{Binding Data.Quote.Subtotal, Converter={StaticResource CurrencyFormatConverter}}"
                                    FontFamily="{StaticResource MonospaceFontFamily}"
@@ -868,7 +868,7 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Style="{StaticResource BodyMedium}"
                                    Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                                   HorizontalAlignment="Right" Margin="{StaticResource GapEnd16}">
+                                   HorizontalAlignment="Right" Margin="{StaticResource Space200RightThickness}">
                           <Run Text="Tax (" /><Run Text="{Binding Data.Quote.TaxRate, Converter={StaticResource RateFormatConverter}}" /><Run Text="%)" />
                         </TextBlock>
                         <TextBlock Grid.Column="1"
@@ -877,14 +877,14 @@
                                    Style="{StaticResource BodyMedium}"
                                    HorizontalAlignment="Right" />
                       </Grid>
-                      <Border Height="{StaticResource RuleThickness}" Background="{ThemeResource PrimaryBrush}" Margin="{StaticResource InsetY4}" />
+                      <Border Height="{StaticResource RuleThickness}" Background="{ThemeResource PrimaryBrush}" Margin="{StaticResource Space050VerticalThickness}" />
                       <Grid>
                         <Grid.ColumnDefinitions>
                           <ColumnDefinition Width="*" />
                           <ColumnDefinition Width="{StaticResource TotalsValueWidth}" />
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="Total" Style="{StaticResource TitleMediumBold}"
-                                   HorizontalAlignment="Right" Margin="{StaticResource GapEnd16}" />
+                                   HorizontalAlignment="Right" Margin="{StaticResource Space200RightThickness}" />
                         <TextBlock Grid.Column="1"
                                    Text="{Binding Data.Quote.Total, Converter={StaticResource CurrencyFormatConverter}}"
                                    FontFamily="{StaticResource MonospaceFontFamily}"
@@ -898,7 +898,7 @@
                     <utu:CardContentControl Style="{StaticResource TonalCardStyle}" Padding="{StaticResource BannerInset}"
                             BorderBrush="{ThemeResource OutlineVariantBrush}"
                             BorderThickness="0,3,0,0">
-                      <StackPanel Spacing="{StaticResource Space8}">
+                      <StackPanel Spacing="{StaticResource Space100}">
                         <TextBlock Text="NOTES" Style="{StaticResource LabelSmall}"
                                    FontWeight="Bold" />
                         <TextBlock Text="{Binding Data.Quote.Notes}"
@@ -927,7 +927,7 @@
 
         <mvux:FeedView.NoneTemplate>
           <DataTemplate>
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="{StaticResource Space12}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="{StaticResource Space150}">
               <ProgressRing IsActive="True" AutomationProperties.Name="Generating preview" />
               <TextBlock Text="Generating preview..." Style="{StaticResource BodyMedium}"
                          Foreground="{ThemeResource OnSurfaceVariantBrush}" />
@@ -938,13 +938,13 @@
         <mvux:FeedView.ErrorTemplate>
           <DataTemplate>
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
-                        Spacing="{StaticResource Space12}" Padding="{StaticResource Inset32}"
+                        Spacing="{StaticResource Space150}" Padding="{StaticResource Space400Thickness}"
                         AutomationProperties.LiveSetting="Polite">
-              <FontIcon Glyph="&#xE783;" FontSize="{StaticResource IconSizeHero}"
+              <FontIcon Glyph="&#xE783;" FontSize="{StaticResource HeroIconSize}"
                         Foreground="{ThemeResource ErrorBrush}" HorizontalAlignment="Center" />
               <TextBlock Text="The preview could not be made." Style="{StaticResource TitleSmall}"
                          HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
-              <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}" HorizontalAlignment="Center">
+              <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space100}" HorizontalAlignment="Center">
                 <Button Content="Back to Detail"
                         Command="{Binding DataContext.BackToDetail, ElementName=DetailRoot}"
                         Style="{StaticResource TextButtonStyle}"

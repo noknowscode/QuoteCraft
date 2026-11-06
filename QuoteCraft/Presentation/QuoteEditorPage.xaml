@@ -69,12 +69,12 @@
             Background="{ThemeResource ErrorContainerBrush}"
             Padding="{StaticResource Inset16x12}"
             Visibility="{Binding ValidationError, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert, FallbackValue=Collapsed}">
-      <Grid ColumnSpacing="{StaticResource Space8}" MaxWidth="{StaticResource ReadingMaxWidth}">
+      <Grid ColumnSpacing="{StaticResource Space100}" MaxWidth="{StaticResource ReadingMaxWidth}">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="Auto" />
           <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <FontIcon Glyph="&#xE783;" FontSize="{StaticResource IconSizeMd}" Foreground="{ThemeResource OnErrorContainerBrush}"
+        <FontIcon Glyph="&#xE783;" FontSize="{StaticResource BodyMediumFontSize}" Foreground="{ThemeResource OnErrorContainerBrush}"
                   VerticalAlignment="Center" />
         <TextBlock Grid.Column="1"
                    Text="{Binding ValidationError}"
@@ -88,7 +88,7 @@
 
     <ScrollViewer Grid.Row="3">
       <utu:AutoLayout Padding="{utu:Responsive Narrow={StaticResource PaneInsetNarrow}, Normal={StaticResource PaneInsetNormal}}"
-                      Spacing="{StaticResource Space16}"
+                      Spacing="{StaticResource Space200}"
                       Orientation="Vertical"
                       MaxWidth="{StaticResource ReadingMaxWidth}"
                       HorizontalAlignment="Stretch">
@@ -122,7 +122,7 @@
 
         <!-- Line Items Section (the actions go under the heading on Narrow) -->
         <Grid utu:AutoLayout.PrimaryAlignment="Stretch"
-              MinHeight="{StaticResource TouchTarget}">
+              MinHeight="{StaticResource ControlHeightMediumLarge}">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
@@ -138,22 +138,22 @@
                      VerticalAlignment="Center" />
           <StackPanel Grid.Row="{utu:Responsive Narrow=1, Normal=0}"
                       Grid.Column="{utu:Responsive Narrow=0, Normal=1}"
-                      Orientation="Horizontal" Spacing="{StaticResource Space4}">
+                      Orientation="Horizontal" Spacing="{StaticResource Space050}">
             <Button Command="{Binding OpenCatalog}"
                     Style="{StaticResource TextButtonStyle}"
-                    MinHeight="{StaticResource TouchTarget}"
+                    MinHeight="{StaticResource ControlHeightMediumLarge}"
                     AutomationProperties.Name="Add from catalog">
-              <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space4}">
-                <FontIcon Glyph="&#xE82D;" FontSize="{StaticResource IconSizeMd}" />
+              <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space050}">
+                <FontIcon Glyph="&#xE82D;" FontSize="{StaticResource BodyMediumFontSize}" />
                 <TextBlock Text="From Catalog" />
               </StackPanel>
             </Button>
             <Button Command="{Binding AddLineItem}"
                     Style="{StaticResource TextButtonStyle}"
-                    MinHeight="{StaticResource TouchTarget}"
+                    MinHeight="{StaticResource ControlHeightMediumLarge}"
                     AutomationProperties.Name="Add line item">
-              <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space4}">
-                <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeMd}" />
+              <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space050}">
+                <FontIcon Glyph="&#xE710;" FontSize="{StaticResource BodyMediumFontSize}" />
                 <TextBlock Text="Add Item" />
               </StackPanel>
             </Button>
@@ -167,9 +167,9 @@
               <ItemsControl.ItemTemplate>
                 <DataTemplate>
                   <!-- The item is a button (tap, Enter or Space opens it); Move up and down sit beside it in the card -->
-                  <utu:CardContentControl Margin="{StaticResource InsetY4}"
+                  <utu:CardContentControl Margin="{StaticResource Space050VerticalThickness}"
                                           Style="{StaticResource StaticCardStyle}"
-                                          CornerRadius="{StaticResource RadiusMd}">
+                                          CornerRadius="{StaticResource Radius200CornerRadius}">
                     <Grid>
                       <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -180,16 +180,16 @@
                               AutomationProperties.Name="{Binding Description}"
                               Style="{StaticResource TextButtonStyle}"
                               Foreground="{ThemeResource OnSurfaceBrush}"
-                              CornerRadius="{StaticResource RadiusMd}"
-                              Padding="{StaticResource Inset16}"
+                              CornerRadius="{StaticResource Radius200CornerRadius}"
+                              Padding="{StaticResource Space200Thickness}"
                               HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
-                        <utu:AutoLayout Spacing="{StaticResource Space8}"
+                        <utu:AutoLayout Spacing="{StaticResource Space100}"
                                         Orientation="Vertical"
                                         HorizontalAlignment="Stretch">
                           <TextBlock Text="{Binding Description}"
                                      Style="{StaticResource BodyLarge}"
                                      TextWrapping="Wrap" />
-                          <Grid ColumnSpacing="{StaticResource Space8}" utu:AutoLayout.CounterAlignment="Stretch">
+                          <Grid ColumnSpacing="{StaticResource Space100}" utu:AutoLayout.CounterAlignment="Stretch">
                             <Grid.ColumnDefinitions>
                               <ColumnDefinition Width="*" />
                               <ColumnDefinition Width="Auto" />
@@ -211,26 +211,26 @@
                         </utu:AutoLayout>
                       </Button>
                       <StackPanel Grid.Column="1" VerticalAlignment="Center"
-                                  Spacing="{StaticResource Space2}" Margin="{StaticResource GapEnd8}">
+                                  Spacing="{StaticResource Space025}" Margin="{StaticResource Space100RightThickness}">
                         <Button Command="{Binding DataContext.MoveLineItemUp, ElementName=EditorRoot}"
                                 CommandParameter="{Binding}"
                                 AutomationProperties.Name="Move line item up"
                                 ToolTipService.ToolTip="Move up"
                                 Style="{StaticResource TextButtonStyle}"
-                                MinWidth="{StaticResource TouchTargetComfortable}" MinHeight="{StaticResource TouchTargetComfortable}"
-                                Padding="{StaticResource Inset8}"
+                                MinWidth="{StaticResource TouchTargetMinSize}" MinHeight="{StaticResource TouchTargetMinSize}"
+                                Padding="{StaticResource Space100Thickness}"
                                 VerticalAlignment="Center">
-                          <FontIcon Glyph="&#xE70E;" FontSize="{StaticResource IconSizeSm}" />
+                          <FontIcon Glyph="&#xE70E;" FontSize="{StaticResource BodySmallFontSize}" />
                         </Button>
                         <Button Command="{Binding DataContext.MoveLineItemDown, ElementName=EditorRoot}"
                                 CommandParameter="{Binding}"
                                 AutomationProperties.Name="Move line item down"
                                 ToolTipService.ToolTip="Move down"
                                 Style="{StaticResource TextButtonStyle}"
-                                MinWidth="{StaticResource TouchTargetComfortable}" MinHeight="{StaticResource TouchTargetComfortable}"
-                                Padding="{StaticResource Inset8}"
+                                MinWidth="{StaticResource TouchTargetMinSize}" MinHeight="{StaticResource TouchTargetMinSize}"
+                                Padding="{StaticResource Space100Thickness}"
                                 VerticalAlignment="Center">
-                          <FontIcon Glyph="&#xE70D;" FontSize="{StaticResource IconSizeSm}" />
+                          <FontIcon Glyph="&#xE70D;" FontSize="{StaticResource BodySmallFontSize}" />
                         </Button>
                       </StackPanel>
                     </Grid>
@@ -242,8 +242,8 @@
 
           <mvux:FeedView.NoneTemplate>
             <DataTemplate>
-              <StackPanel HorizontalAlignment="Center" Spacing="{StaticResource Space8}" Margin="{StaticResource InsetY24}">
-                <FontIcon Glyph="&#xE70F;" FontSize="{StaticResource IconSizeEmpty}"
+              <StackPanel HorizontalAlignment="Center" Spacing="{StaticResource Space100}" Margin="{StaticResource Space300VerticalThickness}">
+                <FontIcon Glyph="&#xE70F;" FontSize="{StaticResource IconSizeLarge}"
                           Foreground="{ThemeResource OnSurfaceVariantBrush}"
                           HorizontalAlignment="Center" />
                 <TextBlock Text="No line items yet"
@@ -260,14 +260,14 @@
 
           <mvux:FeedView.ProgressTemplate>
             <DataTemplate>
-              <ProgressRing IsActive="True" HorizontalAlignment="Center" Margin="{StaticResource InsetY24}"
+              <ProgressRing IsActive="True" HorizontalAlignment="Center" Margin="{StaticResource Space300VerticalThickness}"
                             AutomationProperties.Name="Loading line items" />
             </DataTemplate>
           </mvux:FeedView.ProgressTemplate>
 
           <mvux:FeedView.ErrorTemplate>
             <DataTemplate>
-              <StackPanel HorizontalAlignment="Center" Spacing="{StaticResource Space8}" Margin="{StaticResource InsetY24}"
+              <StackPanel HorizontalAlignment="Center" Spacing="{StaticResource Space100}" Margin="{StaticResource Space300VerticalThickness}"
                           AutomationProperties.LiveSetting="Polite">
                 <TextBlock Text="Line items could not be loaded." Style="{StaticResource BodyLarge}"
                            HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
@@ -286,8 +286,8 @@
                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
           <DataTemplate>
             <utu:CardContentControl Style="{StaticResource TonalCardStyle}"
-                                    CornerRadius="{StaticResource RadiusLg}" Padding="{StaticResource Inset16}">
-              <Grid RowSpacing="{StaticResource Space8}" ColumnSpacing="{StaticResource Space16}">
+                                    CornerRadius="{StaticResource Radius300CornerRadius}" Padding="{StaticResource Space200Thickness}">
+              <Grid RowSpacing="{StaticResource Space100}" ColumnSpacing="{StaticResource Space200}">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="*" />
                   <ColumnDefinition Width="Auto" />
@@ -323,7 +323,7 @@
 
         <!-- Photos Section -->
         <Grid utu:AutoLayout.PrimaryAlignment="Stretch"
-              MinHeight="{StaticResource TouchTarget}">
+              MinHeight="{StaticResource ControlHeightMediumLarge}">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
@@ -335,11 +335,11 @@
           <Button Grid.Column="1"
                   Command="{Binding AddPhoto}"
                   Style="{StaticResource FilledTonalButtonStyle}"
-                  MinHeight="{StaticResource TouchTarget}"
+                  MinHeight="{StaticResource ControlHeightMediumLarge}"
                   VerticalAlignment="Center"
                   AutomationProperties.Name="Add photo">
-            <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-              <FontIcon Glyph="&#xE722;" FontSize="{StaticResource IconSizeMd}" />
+            <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space100}">
+              <FontIcon Glyph="&#xE722;" FontSize="{StaticResource BodyMediumFontSize}" />
               <TextBlock Text="Add Photo" />
             </StackPanel>
           </Button>
@@ -351,7 +351,7 @@
             <muxc:ItemsRepeater ItemsSource="{Binding Data}">
               <muxc:ItemsRepeater.Layout>
                 <muxc:UniformGridLayout MinItemWidth="{StaticResource ThumbnailSize}" MinItemHeight="{StaticResource ThumbnailSize}"
-                                        MinColumnSpacing="{StaticResource Space8}" MinRowSpacing="{StaticResource Space8}" />
+                                        MinColumnSpacing="{StaticResource Space100}" MinRowSpacing="{StaticResource Space100}" />
               </muxc:ItemsRepeater.Layout>
               <muxc:ItemsRepeater.ItemTemplate>
                 <DataTemplate>
@@ -364,7 +364,7 @@
                             Style="{StaticResource ListCardButtonStyle}"
                             Padding="0">
                       <!-- xaml-lint: allow card - clips the photo to rounded corners with a hairline stroke -->
-                      <Border CornerRadius="{StaticResource RadiusMd}" BorderBrush="{ThemeResource OutlineVariantBrush}"
+                      <Border CornerRadius="{StaticResource Radius200CornerRadius}" BorderBrush="{ThemeResource OutlineVariantBrush}"
                               BorderThickness="1">
                         <Image Stretch="UniformToFill" AutomationProperties.Name="Job photo">
                           <Image.Source>
@@ -379,9 +379,9 @@
                             AutomationProperties.Name="Delete photo"
                             ToolTipService.ToolTip="Delete photo"
                             Background="{ThemeResource SurfaceInverseMediumBrush}"
-                            MinWidth="{StaticResource TouchTarget}" MinHeight="{StaticResource TouchTarget}"
-                            Padding="0" CornerRadius="{StaticResource RadiusMd}">
-                      <FontIcon Glyph="&#xE711;" FontSize="{StaticResource IconSizeSm}" Foreground="{ThemeResource OnSurfaceInverseBrush}" />
+                            MinWidth="{StaticResource ControlHeightMediumLarge}" MinHeight="{StaticResource ControlHeightMediumLarge}"
+                            Padding="0" CornerRadius="{StaticResource Radius200CornerRadius}">
+                      <FontIcon Glyph="&#xE711;" FontSize="{StaticResource BodySmallFontSize}" Foreground="{ThemeResource OnSurfaceInverseBrush}" />
                     </Button>
                   </Grid>
                 </DataTemplate>
@@ -391,8 +391,8 @@
 
           <mvux:FeedView.NoneTemplate>
             <DataTemplate>
-              <StackPanel HorizontalAlignment="Center" Spacing="{StaticResource Space8}" Margin="{StaticResource InsetY16}">
-                <FontIcon Glyph="&#xE722;" FontSize="{StaticResource IconSizeEmpty}"
+              <StackPanel HorizontalAlignment="Center" Spacing="{StaticResource Space100}" Margin="{StaticResource Space200VerticalThickness}">
+                <FontIcon Glyph="&#xE722;" FontSize="{StaticResource IconSizeLarge}"
                           Foreground="{ThemeResource OnSurfaceVariantBrush}"
                           HorizontalAlignment="Center" />
                 <TextBlock Text="No photos attached"
@@ -409,7 +409,7 @@
 
           <mvux:FeedView.ErrorTemplate>
             <DataTemplate>
-              <StackPanel HorizontalAlignment="Center" Spacing="{StaticResource Space8}" Margin="{StaticResource InsetY16}"
+              <StackPanel HorizontalAlignment="Center" Spacing="{StaticResource Space100}" Margin="{StaticResource Space200VerticalThickness}"
                           AutomationProperties.LiveSetting="Polite">
                 <TextBlock Text="Photos could not be loaded." Style="{StaticResource BodyLarge}"
                            HorizontalAlignment="Center" />
@@ -434,35 +434,35 @@
         <Button Content="Export PDF"
                 Command="{Binding ExportPdf}"
                 HorizontalAlignment="Stretch"
-                MinHeight="{StaticResource TouchTarget}"
+                MinHeight="{StaticResource ControlHeightMediumLarge}"
                 Style="{StaticResource FilledTonalButtonStyle}"
-                Margin="{StaticResource GapTop8}"
+                Margin="{StaticResource Space100TopThickness}"
                 AutomationProperties.Name="Export PDF" />
 
         <!-- Status Actions (stacked full width on Narrow) -->
         <TextBlock Text="Status Actions"
                    Style="{StaticResource TitleMedium}"
                    AutomationProperties.HeadingLevel="Level2"
-                   Margin="{StaticResource GapTop8}" />
+                   Margin="{StaticResource Space100TopThickness}" />
 
-        <StackPanel Spacing="{StaticResource Space8}"
+        <StackPanel Spacing="{StaticResource Space100}"
                     Orientation="{utu:Responsive Narrow=Vertical, Normal=Horizontal}">
           <Button Content="Mark Sent"
                   Command="{Binding MarkSent}"
                   HorizontalAlignment="{utu:Responsive Narrow=Stretch, Normal=Left}"
-                  MinHeight="{StaticResource TouchTarget}"
+                  MinHeight="{StaticResource ControlHeightMediumLarge}"
                   Style="{StaticResource OutlinedButtonStyle}"
                   AutomationProperties.Name="Mark as sent" />
           <Button Content="Accepted"
                   Command="{Binding MarkAccepted}"
                   HorizontalAlignment="{utu:Responsive Narrow=Stretch, Normal=Left}"
-                  MinHeight="{StaticResource TouchTarget}"
+                  MinHeight="{StaticResource ControlHeightMediumLarge}"
                   Style="{StaticResource FilledButtonStyle}"
                   AutomationProperties.Name="Mark as accepted" />
           <Button Content="Declined"
                   Command="{Binding MarkDeclined}"
                   HorizontalAlignment="{utu:Responsive Narrow=Stretch, Normal=Left}"
-                  MinHeight="{StaticResource TouchTarget}"
+                  MinHeight="{StaticResource ControlHeightMediumLarge}"
                   Style="{StaticResource OutlinedButtonStyle}"
                   AutomationProperties.Name="Mark as declined" />
         </StackPanel>
@@ -471,14 +471,14 @@
         <TextBlock Text="History"
                    Style="{StaticResource TitleMedium}"
                    AutomationProperties.HeadingLevel="Level2"
-                   Margin="{StaticResource GapTop8}" />
+                   Margin="{StaticResource Space100TopThickness}" />
         <mvux:FeedView Source="{Binding StatusHistory}"
                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
           <DataTemplate>
             <ItemsControl ItemsSource="{Binding Data}" IsTabStop="False">
               <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                  <TextBlock Style="{StaticResource BodyMedium}" Margin="{StaticResource InsetY4}">
+                  <TextBlock Style="{StaticResource BodyMedium}" Margin="{StaticResource Space050VerticalThickness}">
                     <Run Text="{Binding Status}" FontWeight="SemiBold" /><Run Text=" · " /><Run Text="{Binding ChangedAt, Converter={StaticResource ShortDateConverter}}" Foreground="{ThemeResource OnSurfaceVariantBrush}" />
                   </TextBlock>
                 </DataTemplate>

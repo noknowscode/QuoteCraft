@@ -2,7 +2,8 @@
   A quote status: icon, name and colour together, so the status never rests on colour alone. Each status is a container
   and its On pair, through ThemeResource setters, so it follows a theme or palette change: Draft and Expired the
   SurfaceVariant roles, Viewed SecondaryContainer, Declined ErrorContainer; Accepted (Success) and Sent have no palette
-  role and are App.xaml's own Light and Default brushes.
+  role and are App.xaml's own Light and Default brushes. Radius200 (8) rounds the pill's ends fully at its height;
+  RadiusFull would draw an oval on Skia, which clamps each axis of a corner separately.
 -->
 <UserControl x:Class="QuoteCraft.Controls.StatusPill"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -11,9 +12,9 @@
              VerticalAlignment="Center"
              IsTabStop="False">
   <Grid x:Name="Pill"
-        CornerRadius="{StaticResource RadiusPill}"
+        CornerRadius="{StaticResource Radius200CornerRadius}"
         Padding="{StaticResource PillInset}"
-        ColumnSpacing="{StaticResource Space4}"
+        ColumnSpacing="{StaticResource Space050}"
         Background="{ThemeResource SurfaceVariantBrush}">
     <VisualStateManager.VisualStateGroups>
       <VisualStateGroup x:Name="StatusStates">
@@ -73,7 +74,7 @@
     </Grid.ColumnDefinitions>
     <FontIcon x:Name="Glyph"
               Glyph="&#xE70F;"
-              FontSize="{StaticResource IconSizeXs}"
+              FontSize="{StaticResource LabelSmallFontSize}"
               VerticalAlignment="Center"
               Foreground="{ThemeResource OnSurfaceVariantBrush}"
               AutomationProperties.AccessibilityView="Raw" />

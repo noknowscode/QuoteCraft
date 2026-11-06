@@ -8,14 +8,14 @@
 
   <Grid utu:SafeArea.Insets="All"
         HorizontalAlignment="Center" VerticalAlignment="Center"
-        MaxWidth="{StaticResource DialogMinWidth}" Padding="{utu:Responsive Narrow={StaticResource Inset16}, Normal={StaticResource Inset32}}">
+        MaxWidth="{StaticResource DialogMinWidth}" Padding="{utu:Responsive Narrow={StaticResource Space200Thickness}, Normal={StaticResource Space400Thickness}}">
 
-    <StackPanel Spacing="{StaticResource Space24}">
+    <StackPanel Spacing="{StaticResource Space300}">
 
       <!-- Brand -->
-      <StackPanel Spacing="{StaticResource Space8}" HorizontalAlignment="Center">
+      <StackPanel Spacing="{StaticResource Space100}" HorizontalAlignment="Center">
         <utu:CardContentControl Style="{StaticResource StaticCardStyle}" BorderThickness="0" Background="{ThemeResource PrimaryBrush}" RequestedTheme="Light"
-                Width="{StaticResource LogoSizeLarge}" Height="{StaticResource LogoSizeLarge}" CornerRadius="{StaticResource RadiusXl}">
+                Width="{StaticResource LogoSizeLarge}" Height="{StaticResource LogoSizeLarge}" CornerRadius="{StaticResource Radius400CornerRadius}">
           <TextBlock Text="QC" Foreground="{ThemeResource OnPrimaryBrush}"
                      Style="{StaticResource HeadlineSmallBold}"
                      HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -41,7 +41,7 @@
 
       <!-- Magic link sent confirmation -->
       <utu:CardContentControl Style="{StaticResource StaticCardStyle}" BorderThickness="0" Background="{ThemeResource TertiaryContainerBrush}"
-                              CornerRadius="{StaticResource RadiusMd}" Padding="{StaticResource Inset16}"
+                              CornerRadius="{StaticResource Radius200CornerRadius}" Padding="{StaticResource Space200Thickness}"
                               Visibility="{Binding MagicLinkSent, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
         <TextBlock Text="Check your email for a sign-in link."
                    Style="{StaticResource BodyMedium}"
@@ -68,7 +68,7 @@
                    Style="{StaticResource OutlinedPasswordBoxStyle}" />
 
       <!-- Primary action buttons -->
-      <StackPanel Spacing="{StaticResource Space12}">
+      <StackPanel Spacing="{StaticResource Space150}">
         <!-- Sign In, or Create Account in sign-up mode -->
         <Button Command="{Binding SignIn}"
                 HorizontalAlignment="Stretch"

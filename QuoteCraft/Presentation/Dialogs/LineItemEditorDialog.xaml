@@ -7,10 +7,10 @@
                xmlns:ctrl="using:QuoteCraft.Controls"
                Style="{StaticResource ContentDialogStyle}">
 
-  <StackPanel Spacing="{StaticResource Space16}" MinWidth="{utu:Responsive Narrow=0, Normal={StaticResource DialogMinWidth}}">
+  <StackPanel Spacing="{StaticResource Space200}" MinWidth="{utu:Responsive Narrow=0, Normal={StaticResource DialogMinWidth}}">
 
     <ctrl:DialogHeader Glyph="&#xE70F;" Title="Line Item" Subtitle="Add or edit a line item for this quote"
-                       Margin="{StaticResource GapBottom4}" />
+                       Margin="{StaticResource Space050BottomThickness}" />
 
     <TextBox Header="Description"
              Text="{Binding Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -25,7 +25,7 @@
              AutomationProperties.Name="Unit price" />
 
     <!-- Quantity with -/+ -->
-    <Grid ColumnSpacing="{StaticResource Space8}">
+    <Grid ColumnSpacing="{StaticResource Space100}">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="Auto" />
         <ColumnDefinition Width="*" />
@@ -35,7 +35,7 @@
               AutomationProperties.Name="Decrease quantity"
               Style="{StaticResource OutlinedButtonStyle}"
               VerticalAlignment="Bottom"
-              MinWidth="{StaticResource TouchTarget}" MinHeight="{StaticResource TouchTarget}" Padding="{StaticResource Inset8x4}" CornerRadius="{StaticResource RadiusMd}" />
+              MinWidth="{StaticResource ControlHeightMediumLarge}" MinHeight="{StaticResource ControlHeightMediumLarge}" Padding="{StaticResource Inset8x4}" CornerRadius="{StaticResource Radius200CornerRadius}" />
       <TextBox Grid.Column="1"
                Header="Quantity"
                Text="{Binding Quantity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -46,7 +46,7 @@
               AutomationProperties.Name="Increase quantity"
               Style="{StaticResource OutlinedButtonStyle}"
               VerticalAlignment="Bottom"
-              MinWidth="{StaticResource TouchTarget}" MinHeight="{StaticResource TouchTarget}" Padding="{StaticResource Inset8x4}" CornerRadius="{StaticResource RadiusMd}" />
+              MinWidth="{StaticResource ControlHeightMediumLarge}" MinHeight="{StaticResource ControlHeightMediumLarge}" Padding="{StaticResource Inset8x4}" CornerRadius="{StaticResource Radius200CornerRadius}" />
     </Grid>
 
     <!-- What Save found wrong -->
@@ -73,7 +73,7 @@
       </Grid>
     </utu:CardContentControl>
 
-    <Grid ColumnSpacing="{StaticResource Space8}">
+    <Grid ColumnSpacing="{StaticResource Space100}">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="Auto" />
         <ColumnDefinition Width="*" />

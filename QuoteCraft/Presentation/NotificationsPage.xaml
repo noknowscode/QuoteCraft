@@ -46,7 +46,7 @@
                Style="{StaticResource BodyMedium}"
                Foreground="{ThemeResource ErrorBrush}"
                TextWrapping="Wrap"
-               Margin="{StaticResource InsetX16}"
+               Margin="{StaticResource Space200HorizontalThickness}"
                AutomationProperties.LiveSetting="Assertive"
                Visibility="{Binding ActionError, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert, FallbackValue=Collapsed}" />
 
@@ -54,7 +54,7 @@
       <DataTemplate>
         <ListView ItemsSource="{Binding Data}"
                   SelectionMode="None"
-                  Padding="{StaticResource InsetY8}">
+                  Padding="{StaticResource Space100VerticalThickness}">
           <ListView.ItemTemplate>
             <DataTemplate>
               <Grid Padding="{StaticResource Inset20x16}" Margin="{StaticResource RowSeparatorGap}"
@@ -72,7 +72,7 @@
                          VerticalAlignment="Top" Margin="{StaticResource DotMargin}"
                          Visibility="{Binding IsRead, Converter={StaticResource InverseBoolConverter}}" />
 
-                <StackPanel Grid.Column="1" Spacing="{StaticResource Space4}">
+                <StackPanel Grid.Column="1" Spacing="{StaticResource Space050}">
                   <TextBlock Text="{Binding Title}"
                              Style="{StaticResource BodyMediumSemiBold}"
                              TextWrapping="Wrap" />
@@ -86,7 +86,7 @@
                            Text="{Binding CreatedAt, Converter={StaticResource RelativeDateConverter}}"
                            Style="{StaticResource LabelSmall}"
                            Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                           Margin="{StaticResource GapStart8}"
+                           Margin="{StaticResource Space100LeftThickness}"
                            VerticalAlignment="Top" />
               </Grid>
             </DataTemplate>
@@ -97,8 +97,8 @@
       <mvux:FeedView.NoneTemplate>
         <DataTemplate>
           <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
-                      Spacing="{StaticResource Space12}" Padding="{StaticResource Inset32}">
-            <FontIcon Glyph="&#xEA8F;" FontSize="{StaticResource IconSizeHero}"
+                      Spacing="{StaticResource Space150}" Padding="{StaticResource Space400Thickness}">
+            <FontIcon Glyph="&#xEA8F;" FontSize="{StaticResource HeroIconSize}"
                       Foreground="{ThemeResource OnSurfaceVariantBrush}"
                       HorizontalAlignment="Center" />
             <TextBlock Text="No notifications yet"
@@ -120,9 +120,9 @@
       <mvux:FeedView.ErrorTemplate>
         <DataTemplate>
           <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
-                      Spacing="{StaticResource Space12}" Padding="{StaticResource Inset32}"
+                      Spacing="{StaticResource Space150}" Padding="{StaticResource Space400Thickness}"
                       AutomationProperties.LiveSetting="Polite">
-            <FontIcon Glyph="&#xE783;" FontSize="{StaticResource IconSizeHero}"
+            <FontIcon Glyph="&#xE783;" FontSize="{StaticResource HeroIconSize}"
                       Foreground="{ThemeResource ErrorBrush}"
                       HorizontalAlignment="Center" />
             <TextBlock Text="Notifications could not be loaded."

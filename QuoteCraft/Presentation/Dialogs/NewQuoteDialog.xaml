@@ -9,7 +9,7 @@
                xmlns:utu="using:Uno.Toolkit.UI"
                xmlns:ctrl="using:QuoteCraft.Controls"
                Style="{StaticResource ContentDialogStyle}">
-  <StackPanel Spacing="{StaticResource Space16}"
+  <StackPanel Spacing="{StaticResource Space200}"
               MinWidth="{utu:Responsive Narrow=0, Normal={StaticResource DialogMinWidth}}">
     <ctrl:DialogHeader Glyph="&#xE1D0;" Title="New Quote" Subtitle="Create a new quote for a client" />
 
@@ -32,7 +32,7 @@
                AutomationProperties.LiveSetting="Assertive"
                Visibility="{Binding ValidationError, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert, FallbackValue=Collapsed}" />
 
-    <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}" HorizontalAlignment="Right">
+    <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space100}" HorizontalAlignment="Right">
       <!-- xaml-lint: allow backbar - a dialog Cancel that closes the dialog, not a page back bar -->
       <Button Content="Cancel" uen:Navigation.Request="-" Style="{StaticResource TextButtonStyle}" AutomationProperties.Name="Cancel" />
       <Button Content="Create" Command="{Binding Create}" Style="{StaticResource FilledButtonStyle}" AutomationProperties.Name="Create quote" />

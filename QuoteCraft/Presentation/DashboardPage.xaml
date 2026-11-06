@@ -35,7 +35,7 @@
             BorderThickness="0,0,0,1">
       <Grid MaxWidth="{StaticResource PageMaxWidth}"
             MinHeight="{StaticResource PageHeaderHeight}"
-            Padding="{utu:Responsive Narrow={StaticResource PageHeaderInsetNarrow}, Normal={StaticResource PageHeaderInsetNormal}, Wide={StaticResource PageHeaderInsetWide}}">
+            Padding="{utu:Responsive Narrow={StaticResource PageHeaderInsetNarrow}, Normal={StaticResource Space300HorizontalThickness}, Wide={StaticResource Space400HorizontalThickness}}">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="Auto" />
           <ColumnDefinition Width="Auto" />
@@ -57,7 +57,7 @@
                    Style="{StaticResource BodyMedium}"
                    Foreground="{ThemeResource OnSurfaceVariantBrush}"
                    VerticalAlignment="Center"
-                   Margin="{StaticResource GapStart8}">
+                   Margin="{StaticResource Space100LeftThickness}">
           <Run Text="{Binding TotalCount}" /><Run Text=" total" />
         </TextBlock>
 
@@ -66,21 +66,21 @@
                 Grid.Column="{utu:Responsive Narrow=0, Normal=2}"
                 Grid.ColumnSpan="{utu:Responsive Narrow=4, Normal=1}"
                 Style="{StaticResource TonalCardStyle}"
-                Padding="{StaticResource InsetX12}"
-                Height="{StaticResource SearchHeight}"
+                Padding="{StaticResource Space150HorizontalThickness}"
+                Height="{StaticResource ControlHeightMedium}"
                 MinWidth="{utu:Responsive Narrow=0, Normal={StaticResource SearchMinWidth}}"
                 MaxWidth="{utu:Responsive Narrow={StaticResource SearchMaxWidthNarrow}, Normal={StaticResource SearchMaxWidth}}"
                 HorizontalAlignment="{utu:Responsive Narrow=Stretch, Normal=Right}"
                 VerticalAlignment="Center"
-                Margin="{utu:Responsive Narrow={StaticResource InsetY8}, Normal={StaticResource InsetX16}}">
+                Margin="{utu:Responsive Narrow={StaticResource Space100VerticalThickness}, Normal={StaticResource Space200HorizontalThickness}}">
           <Grid>
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="Auto" />
               <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <FontIcon Glyph="&#xE721;" FontSize="{StaticResource IconSizeMd}"
+            <FontIcon Glyph="&#xE721;" FontSize="{StaticResource BodyMediumFontSize}"
                       Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                      VerticalAlignment="Center" Margin="{StaticResource GapEnd8}" />
+                      VerticalAlignment="Center" Margin="{StaticResource Space100RightThickness}" />
             <TextBox Grid.Column="1"
                      Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                      PlaceholderText="Search quotes..."
@@ -96,8 +96,8 @@
                 Command="{Binding CreateQuote}"
                 AutomationProperties.Name="Create new quote"
                 Style="{StaticResource AccentButtonStyle}">
-          <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-            <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" />
+          <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space100}">
+            <FontIcon Glyph="&#xE710;" FontSize="{StaticResource BodySmallFontSize}" />
             <TextBlock Text="New Quote" Style="{StaticResource LabelLargeSemiBold}" />
           </StackPanel>
         </Button>
@@ -109,13 +109,13 @@
             Background="{ThemeResource ErrorContainerBrush}"
             Padding="{StaticResource Inset16x12}"
             Visibility="{Binding ActionError, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert, FallbackValue=Collapsed}">
-      <Grid ColumnSpacing="{StaticResource Space8}">
+      <Grid ColumnSpacing="{StaticResource Space100}">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="Auto" />
           <ColumnDefinition Width="*" />
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
-        <FontIcon Glyph="&#xE783;" FontSize="{StaticResource IconSizeXl}" Foreground="{ThemeResource OnErrorContainerBrush}"
+        <FontIcon Glyph="&#xE783;" FontSize="{StaticResource IconSizeSmall}" Foreground="{ThemeResource OnErrorContainerBrush}"
                   VerticalAlignment="Center" />
         <TextBlock Grid.Column="1" Text="{Binding ActionError}"
                    Style="{StaticResource BodyMedium}" Foreground="{ThemeResource OnErrorContainerBrush}"
@@ -126,8 +126,8 @@
                 AutomationProperties.Name="Dismiss"
                 ToolTipService.ToolTip="Dismiss"
                 Style="{StaticResource TextButtonStyle}"
-                MinWidth="{StaticResource TouchTarget}" MinHeight="{StaticResource TouchTarget}">
-          <FontIcon Glyph="&#xE711;" FontSize="{StaticResource IconSizeSm}" Foreground="{ThemeResource OnErrorContainerBrush}" />
+                MinWidth="{StaticResource ControlHeightMediumLarge}" MinHeight="{StaticResource ControlHeightMediumLarge}">
+          <FontIcon Glyph="&#xE711;" FontSize="{StaticResource BodySmallFontSize}" Foreground="{ThemeResource OnErrorContainerBrush}" />
         </Button>
       </Grid>
     </Border>
@@ -136,7 +136,7 @@
     <mvux:FeedView Grid.Row="2" Source="{Binding Analytics}"
                    Visibility="{utu:Responsive Narrow=Collapsed, Wide=Visible}">
       <DataTemplate>
-        <Grid MaxWidth="{StaticResource PageMaxWidth}" Padding="{StaticResource BandInsetWide}" ColumnSpacing="{StaticResource Space16}">
+        <Grid MaxWidth="{StaticResource PageMaxWidth}" Padding="{StaticResource BandInsetWide}" ColumnSpacing="{StaticResource Space200}">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="*" />
@@ -144,12 +144,12 @@
           </Grid.ColumnDefinitions>
 
           <utu:CardContentControl Style="{StaticResource PaddedCardStyle}">
-            <Grid ColumnSpacing="{StaticResource Space12}">
+            <Grid ColumnSpacing="{StaticResource Space150}">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
               </Grid.ColumnDefinitions>
-              <StackPanel Spacing="{StaticResource Space4}" VerticalAlignment="Center">
+              <StackPanel Spacing="{StaticResource Space050}" VerticalAlignment="Center">
                 <TextBlock Text="QUOTED THIS MONTH" Style="{StaticResource LabelSmall}"
                            Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold" />
                 <TextBlock Text="{Binding Data.TotalQuotedThisMonth, Converter={StaticResource CurrencyFormatConverter}}"
@@ -164,20 +164,20 @@
           </utu:CardContentControl>
 
           <utu:CardContentControl Grid.Column="1" Style="{StaticResource PaddedCardStyle}">
-            <Grid ColumnSpacing="{StaticResource Space12}">
+            <Grid ColumnSpacing="{StaticResource Space150}">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
               </Grid.ColumnDefinitions>
-              <StackPanel Spacing="{StaticResource Space4}" VerticalAlignment="Center">
+              <StackPanel Spacing="{StaticResource Space050}" VerticalAlignment="Center">
                 <TextBlock Text="SENT THIS MONTH" Style="{StaticResource LabelSmall}"
                            Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold" />
-                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space4}">
+                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space050}">
                   <TextBlock Text="{Binding Data.QuotesSentThisMonth}"
                              Style="{StaticResource HeadlineSmallBold}" />
                   <TextBlock Text="quotes" Style="{StaticResource BodyMedium}"
                              Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                             VerticalAlignment="Bottom" Margin="{StaticResource BaselineNudge}" />
+                             VerticalAlignment="Bottom" Margin="{StaticResource Space025BottomThickness}" />
                 </StackPanel>
               </StackPanel>
               <ctrl:SparklineControl Grid.Column="1" Height="{StaticResource SparklineHeight}"
@@ -188,15 +188,15 @@
           </utu:CardContentControl>
 
           <utu:CardContentControl Grid.Column="2" Style="{StaticResource PaddedCardStyle}">
-            <Grid ColumnSpacing="{StaticResource Space12}">
+            <Grid ColumnSpacing="{StaticResource Space150}">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
               </Grid.ColumnDefinitions>
-              <StackPanel Spacing="{StaticResource Space4}" VerticalAlignment="Center">
+              <StackPanel Spacing="{StaticResource Space050}" VerticalAlignment="Center">
                 <TextBlock Text="ACCEPTANCE RATE" Style="{StaticResource LabelSmall}"
                            Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold" />
-                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space2}">
+                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space025}">
                   <TextBlock Text="{Binding Data.AcceptanceRate}"
                              Style="{StaticResource HeadlineSmallBold}" />
                   <TextBlock Text="%" Style="{StaticResource HeadlineSmallBold}"
@@ -250,7 +250,7 @@
                            Visibility="{utu:Responsive Narrow=Visible, Wide=Collapsed}">
               <DataTemplate>
                 <Grid Padding="{utu:Responsive Narrow={StaticResource BandInsetNarrow}, Normal={StaticResource BandInsetNormal}}"
-                      ColumnSpacing="{StaticResource Space8}" RowSpacing="{StaticResource Space8}">
+                      ColumnSpacing="{StaticResource Space100}" RowSpacing="{StaticResource Space100}">
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
@@ -260,7 +260,7 @@
                     <RowDefinition Height="Auto" />
                   </Grid.RowDefinitions>
                   <utu:CardContentControl Grid.ColumnSpan="2" Style="{StaticResource PaddedCardStyle}">
-                    <StackPanel Spacing="{StaticResource Space4}">
+                    <StackPanel Spacing="{StaticResource Space050}">
                       <TextBlock Text="QUOTED THIS MONTH" Style="{StaticResource LabelSmall}"
                                  Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold" />
                       <TextBlock Text="{Binding Data.TotalQuotedThisMonth, Converter={StaticResource CurrencyFormatConverter}}"
@@ -269,23 +269,23 @@
                     </StackPanel>
                   </utu:CardContentControl>
                   <utu:CardContentControl Grid.Row="1" Style="{StaticResource PaddedCardStyle}">
-                    <StackPanel Spacing="{StaticResource Space4}">
+                    <StackPanel Spacing="{StaticResource Space050}">
                       <TextBlock Text="SENT" Style="{StaticResource LabelSmall}"
                                  Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold" />
-                      <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space4}">
+                      <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space050}">
                         <TextBlock Text="{Binding Data.QuotesSentThisMonth}"
                                    Style="{StaticResource HeadlineSmallBold}" />
                         <TextBlock Text="quotes" Style="{StaticResource BodyMedium}"
                                    Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                                   VerticalAlignment="Bottom" Margin="{StaticResource BaselineNudge}" />
+                                   VerticalAlignment="Bottom" Margin="{StaticResource Space025BottomThickness}" />
                       </StackPanel>
                     </StackPanel>
                   </utu:CardContentControl>
                   <utu:CardContentControl Grid.Row="1" Grid.Column="1" Style="{StaticResource PaddedCardStyle}">
-                    <StackPanel Spacing="{StaticResource Space4}">
+                    <StackPanel Spacing="{StaticResource Space050}">
                       <TextBlock Text="ACCEPTANCE" Style="{StaticResource LabelSmall}"
                                  Foreground="{ThemeResource OnSurfaceVariantBrush}" FontWeight="SemiBold" />
-                      <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space2}">
+                      <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space025}">
                         <TextBlock Text="{Binding Data.AcceptanceRate}"
                                    Style="{StaticResource HeadlineSmallBold}" />
                         <TextBlock Text="%" Style="{StaticResource HeadlineSmallBold}"
@@ -308,7 +308,7 @@
             </mvux:FeedView>
 
             <!-- Status counts and filter chips -->
-            <StackPanel Grid.Row="1" Spacing="{StaticResource Space8}"
+            <StackPanel Grid.Row="1" Spacing="{StaticResource Space100}"
                         Padding="{utu:Responsive Narrow={StaticResource ChipBandInsetNarrow}, Normal={StaticResource ChipBandInsetNormal}, Widest={StaticResource ChipBandInsetNarrow}}">
               <mvux:FeedView Source="{Binding StatusCounts}">
                 <DataTemplate>
@@ -316,7 +316,7 @@
                                 VerticalScrollBarVisibility="Disabled"
                                 HorizontalScrollMode="Auto"
                                 VerticalScrollMode="Disabled">
-                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
+                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space100}">
                       <ctrl:StatusPill Status="Draft" Count="{Binding Data.Draft}" />
                       <ctrl:StatusPill Status="Sent" Count="{Binding Data.Sent}" />
                       <ctrl:StatusPill Status="Accepted" Count="{Binding Data.Accepted}" />
@@ -351,19 +351,19 @@
                 <ScrollViewer Padding="{utu:Responsive Narrow={StaticResource ListInsetNarrow}, Normal={StaticResource ListInsetNormal}, Widest={StaticResource ListInsetWidest}}">
                   <muxc:ItemsRepeater ItemsSource="{Binding Data}" TabFocusNavigation="Local">
                     <muxc:ItemsRepeater.Layout>
-                      <muxc:StackLayout Spacing="{StaticResource Space4}" />
+                      <muxc:StackLayout Spacing="{StaticResource Space050}" />
                     </muxc:ItemsRepeater.Layout>
                     <muxc:ItemsRepeater.ItemTemplate>
                       <DataTemplate>
                         <!-- The card is a button (tap, Enter or Space opens the quote); the open quote's card is tinted -->
                         <utu:CardContentControl Style="{StaticResource StaticCardStyle}"
-                                                CornerRadius="{StaticResource RadiusMd}">
+                                                CornerRadius="{StaticResource Radius200CornerRadius}">
                           <Grid>
                             <!-- xaml-lint: allow card - the open quote's tint inside its card (a fill under the button), not a card -->
                             <Border Background="{ThemeResource PrimaryContainerBrush}"
                                     BorderBrush="{ThemeResource PrimaryBrush}"
                                     BorderThickness="1"
-                                    CornerRadius="{StaticResource RadiusMd}"
+                                    CornerRadius="{StaticResource Radius200CornerRadius}"
                                     Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}" />
                             <Button Command="{Binding DataContext.OpenQuote, ElementName=DashboardRoot}"
                                     CommandParameter="{Binding}"
@@ -378,7 +378,7 @@
                                 </Grid.RowDefinitions>
 
                                 <!-- Title + Status -->
-                                <Grid ColumnSpacing="{StaticResource Space8}">
+                                <Grid ColumnSpacing="{StaticResource Space100}">
                                   <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
@@ -394,14 +394,14 @@
                                            Style="{StaticResource BodySmall}"
                                            Foreground="{ThemeResource OnSurfaceVariantBrush}"
                                            TextTrimming="CharacterEllipsis"
-                                           Margin="{StaticResource GapTop2}" />
+                                           Margin="{StaticResource Space025TopThickness}" />
 
                                 <Border Grid.Row="2" Height="{StaticResource HairlineThickness}"
                                         Background="{ThemeResource OutlineVariantBrush}"
-                                        Margin="{StaticResource GapTop8}" />
+                                        Margin="{StaticResource Space100TopThickness}" />
 
                                 <!-- Amount + Date -->
-                                <Grid Grid.Row="3" Margin="{StaticResource GapTop8}">
+                                <Grid Grid.Row="3" Margin="{StaticResource Space100TopThickness}">
                                   <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
@@ -428,8 +428,8 @@
               <mvux:FeedView.NoneTemplate>
                 <DataTemplate>
                   <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
-                              Spacing="{StaticResource Space12}" Padding="{StaticResource Inset24}">
-                    <FontIcon Glyph="&#xE1D0;" FontSize="{StaticResource IconSizeEmpty}"
+                              Spacing="{StaticResource Space150}" Padding="{StaticResource Space300Thickness}">
+                    <FontIcon Glyph="&#xE1D0;" FontSize="{StaticResource IconSizeLarge}"
                               Foreground="{ThemeResource OnSurfaceVariantBrush}"
                               HorizontalAlignment="Center" />
                     <TextBlock Text="No quotes here" Style="{StaticResource TitleSmall}"
@@ -441,10 +441,10 @@
                                Foreground="{ThemeResource OnSurfaceVariantBrush}" />
                     <Button Command="{Binding DataContext.CreateQuote, ElementName=DashboardRoot}"
                             Style="{StaticResource AccentButtonStyle}"
-                            HorizontalAlignment="Center" Margin="{StaticResource GapTop8}"
+                            HorizontalAlignment="Center" Margin="{StaticResource Space100TopThickness}"
                             AutomationProperties.Name="Create quote">
-                      <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-                        <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" />
+                      <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space100}">
+                        <FontIcon Glyph="&#xE710;" FontSize="{StaticResource BodySmallFontSize}" />
                         <TextBlock Text="Create Quote" Style="{StaticResource LabelLargeSemiBold}" />
                       </StackPanel>
                     </Button>
@@ -455,16 +455,16 @@
               <mvux:FeedView.ProgressTemplate>
                 <DataTemplate>
                   <ProgressRing IsActive="True" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                Margin="{StaticResource Inset24}" AutomationProperties.Name="Loading quotes" />
+                                Margin="{StaticResource Space300Thickness}" AutomationProperties.Name="Loading quotes" />
                 </DataTemplate>
               </mvux:FeedView.ProgressTemplate>
 
               <mvux:FeedView.ErrorTemplate>
                 <DataTemplate>
                   <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
-                              Spacing="{StaticResource Space12}" Padding="{StaticResource Inset24}"
+                              Spacing="{StaticResource Space150}" Padding="{StaticResource Space300Thickness}"
                               AutomationProperties.LiveSetting="Polite">
-                    <FontIcon Glyph="&#xE783;" FontSize="{StaticResource IconSizeEmpty}"
+                    <FontIcon Glyph="&#xE783;" FontSize="{StaticResource IconSizeLarge}"
                               Foreground="{ThemeResource ErrorBrush}" HorizontalAlignment="Center" />
                     <TextBlock Text="Quotes could not be loaded." Style="{StaticResource TitleSmall}"
                                HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
@@ -491,8 +491,8 @@
         <Grid Visibility="{utu:Responsive Narrow=Collapsed, Widest=Visible}">
           <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
                       Visibility="{Binding IsQuoteOpen, Converter={StaticResource InverseBoolConverter}, FallbackValue=Visible}"
-                      Spacing="{StaticResource Space12}" Padding="{StaticResource Inset32}">
-            <FontIcon Glyph="&#xE1D0;" FontSize="{StaticResource IconSizeHero}"
+                      Spacing="{StaticResource Space150}" Padding="{StaticResource Space400Thickness}">
+            <FontIcon Glyph="&#xE1D0;" FontSize="{StaticResource HeroIconSize}"
                       Foreground="{ThemeResource OnSurfaceVariantBrush}" HorizontalAlignment="Center" />
             <TextBlock Text="Select a quote" Style="{StaticResource TitleSmall}"
                        HorizontalAlignment="Center"

@@ -14,22 +14,22 @@
                DefaultButton="Close">
 
   <StackPanel x:Name="BrowserRoot"
-              Spacing="{StaticResource Space12}"
+              Spacing="{StaticResource Space150}"
               MinWidth="{utu:Responsive Narrow=0, Normal={StaticResource DialogMinWidth}}"
               MinHeight="{StaticResource BrowserMinHeight}">
 
     <ctrl:DialogHeader Glyph="&#xE82D;" Title="Add from Catalog" Subtitle="Browse your saved items and add to this quote"
-                       Margin="{StaticResource GapBottom4}" />
+                       Margin="{StaticResource Space050BottomThickness}" />
 
     <!-- Search -->
     <utu:CardContentControl Style="{StaticResource TonalCardStyle}"
-                            Padding="{StaticResource InsetX12}" Height="{StaticResource SearchHeight}">
-      <Grid ColumnSpacing="{StaticResource Space8}">
+                            Padding="{StaticResource Space150HorizontalThickness}" Height="{StaticResource ControlHeightMedium}">
+      <Grid ColumnSpacing="{StaticResource Space100}">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="Auto" />
           <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <FontIcon Glyph="&#xE721;" FontSize="{StaticResource IconSizeMd}"
+        <FontIcon Glyph="&#xE721;" FontSize="{StaticResource BodyMediumFontSize}"
                   Foreground="{ThemeResource OnSurfaceVariantBrush}" VerticalAlignment="Center" />
         <TextBox Grid.Column="1"
                  Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -58,20 +58,20 @@
         <ScrollViewer MaxHeight="{StaticResource BrowserListMaxHeight}">
           <muxc:ItemsRepeater ItemsSource="{Binding Data}">
             <muxc:ItemsRepeater.Layout>
-              <muxc:StackLayout Spacing="{StaticResource Space4}" />
+              <muxc:StackLayout Spacing="{StaticResource Space050}" />
             </muxc:ItemsRepeater.Layout>
             <muxc:ItemsRepeater.ItemTemplate>
               <DataTemplate>
                 <utu:CardContentControl Style="{StaticResource StaticCardStyle}"
-                                        CornerRadius="{StaticResource RadiusMd}"
+                                        CornerRadius="{StaticResource Radius200CornerRadius}"
                                         Padding="{StaticResource Inset12x8}">
-                  <Grid ColumnSpacing="{StaticResource Space8}">
+                  <Grid ColumnSpacing="{StaticResource Space100}">
                     <Grid.ColumnDefinitions>
                       <ColumnDefinition Width="*" />
                       <ColumnDefinition Width="Auto" />
                       <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <StackPanel VerticalAlignment="Center" Spacing="{StaticResource Space2}">
+                    <StackPanel VerticalAlignment="Center" Spacing="{StaticResource Space025}">
                       <TextBlock Text="{Binding Description}" Style="{StaticResource BodyMedium}" TextWrapping="Wrap" />
                       <TextBlock Text="{Binding Category}" Style="{StaticResource LabelSmall}"
                                  Foreground="{ThemeResource OnSurfaceVariantBrush}" />
@@ -87,8 +87,8 @@
                             AutomationProperties.Name="Add to quote"
                             ToolTipService.ToolTip="Add to quote"
                             Style="{StaticResource TextButtonStyle}"
-                            Padding="{StaticResource Inset8x4}" MinWidth="{StaticResource TouchTarget}" MinHeight="{StaticResource TouchTarget}">
-                      <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeLg}" />
+                            Padding="{StaticResource Inset8x4}" MinWidth="{StaticResource ControlHeightMediumLarge}" MinHeight="{StaticResource ControlHeightMediumLarge}">
+                      <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSmall}" />
                     </Button>
                   </Grid>
                 </utu:CardContentControl>
@@ -102,19 +102,19 @@
           <TextBlock Text="No catalog items match. Clear the search or pick another category."
                      Style="{StaticResource BodyMedium}"
                      Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                     TextWrapping="Wrap" Margin="{StaticResource InsetY12}" />
+                     TextWrapping="Wrap" Margin="{StaticResource Space150VerticalThickness}" />
         </DataTemplate>
       </mvux:FeedView.NoneTemplate>
       <mvux:FeedView.ProgressTemplate>
         <DataTemplate>
-          <ProgressRing IsActive="True" HorizontalAlignment="Center" Margin="{StaticResource InsetY12}"
+          <ProgressRing IsActive="True" HorizontalAlignment="Center" Margin="{StaticResource Space150VerticalThickness}"
                         AutomationProperties.Name="Loading the catalog" />
         </DataTemplate>
       </mvux:FeedView.ProgressTemplate>
       <!-- The template's DataContext is the exception: Retry reaches the FeedView by name. -->
       <mvux:FeedView.ErrorTemplate>
         <DataTemplate>
-          <StackPanel Spacing="{StaticResource Space8}" Margin="{StaticResource InsetY12}">
+          <StackPanel Spacing="{StaticResource Space100}" Margin="{StaticResource Space150VerticalThickness}">
             <TextBlock Text="The catalog could not be loaded."
                        Style="{StaticResource BodyMedium}"
                        Foreground="{ThemeResource OnSurfaceVariantBrush}" />

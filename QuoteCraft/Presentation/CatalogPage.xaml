@@ -29,7 +29,7 @@
             BorderThickness="0,0,0,1">
       <Grid MaxWidth="{StaticResource PageMaxWidth}"
             MinHeight="{StaticResource PageHeaderHeight}"
-            Padding="{utu:Responsive Narrow={StaticResource PageHeaderInsetNarrow}, Normal={StaticResource PageHeaderInsetNormal}, Wide={StaticResource PageHeaderInsetWide}}">
+            Padding="{utu:Responsive Narrow={StaticResource PageHeaderInsetNarrow}, Normal={StaticResource Space300HorizontalThickness}, Wide={StaticResource Space400HorizontalThickness}}">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="Auto" />
           <ColumnDefinition Width="Auto" />
@@ -50,7 +50,7 @@
         <TextBlock Grid.Column="1"
                    Style="{StaticResource BodyMedium}"
                    Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                   VerticalAlignment="Center" Margin="{StaticResource GapStart8}">
+                   VerticalAlignment="Center" Margin="{StaticResource Space100LeftThickness}">
           <Run Text="{Binding CatalogItemCount}" /><Run Text=" items" />
         </TextBlock>
 
@@ -58,21 +58,21 @@
         <utu:CardContentControl Style="{StaticResource TonalCardStyle}" Grid.Row="{utu:Responsive Narrow=1, Normal=0}"
                 Grid.Column="{utu:Responsive Narrow=0, Normal=2}"
                 Grid.ColumnSpan="{utu:Responsive Narrow=4, Normal=1}"
-                Padding="{StaticResource InsetX12}"
-                Height="{StaticResource SearchHeight}"
+                Padding="{StaticResource Space150HorizontalThickness}"
+                Height="{StaticResource ControlHeightMedium}"
                 MinWidth="{utu:Responsive Narrow=0, Normal={StaticResource SearchMinWidth}}"
                 MaxWidth="{utu:Responsive Narrow={StaticResource SearchMaxWidthNarrow}, Normal={StaticResource SearchMaxWidth}}"
                 HorizontalAlignment="{utu:Responsive Narrow=Stretch, Normal=Right}"
                 VerticalAlignment="Center"
-                Margin="{utu:Responsive Narrow={StaticResource InsetY8}, Normal={StaticResource InsetX16}}">
+                Margin="{utu:Responsive Narrow={StaticResource Space100VerticalThickness}, Normal={StaticResource Space200HorizontalThickness}}">
           <Grid>
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="Auto" />
               <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <FontIcon Glyph="&#xE721;" FontSize="{StaticResource IconSizeMd}"
+            <FontIcon Glyph="&#xE721;" FontSize="{StaticResource BodyMediumFontSize}"
                       Foreground="{ThemeResource OnSurfaceVariantBrush}"
-                      VerticalAlignment="Center" Margin="{StaticResource GapEnd8}" />
+                      VerticalAlignment="Center" Margin="{StaticResource Space100RightThickness}" />
             <TextBox Grid.Column="1"
                      Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                      PlaceholderText="Search catalog..."
@@ -88,8 +88,8 @@
                 Command="{Binding AddItem}"
                 AutomationProperties.Name="Add catalog item"
                 Style="{StaticResource AccentButtonStyle}">
-          <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-            <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" />
+          <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space100}">
+            <FontIcon Glyph="&#xE710;" FontSize="{StaticResource BodySmallFontSize}" />
             <TextBlock Text="Add Item" Style="{StaticResource LabelLargeSemiBold}" />
           </StackPanel>
         </Button>
@@ -125,7 +125,7 @@
               <muxc:ItemsRepeater ItemsSource="{Binding Data}" TabFocusNavigation="Local">
                 <muxc:ItemsRepeater.Layout>
                   <muxc:UniformGridLayout MinItemWidth="156" MinItemHeight="130"
-                                          MinColumnSpacing="{StaticResource Space8}" MinRowSpacing="{StaticResource Space8}"
+                                          MinColumnSpacing="{StaticResource Space100}" MinRowSpacing="{StaticResource Space100}"
                                           ItemsStretch="Fill" />
                 </muxc:ItemsRepeater.Layout>
                 <muxc:ItemsRepeater.ItemTemplate>
@@ -136,14 +136,14 @@
                               CommandParameter="{Binding}"
                               AutomationProperties.Name="{Binding Name}"
                               Style="{StaticResource ListCardButtonStyle}"
-                              CornerRadius="{StaticResource RadiusLg}"
-                              Padding="{StaticResource Inset16}"
+                              CornerRadius="{StaticResource Radius300CornerRadius}"
+                              Padding="{StaticResource Space200Thickness}"
                               HorizontalContentAlignment="Center"
                               VerticalContentAlignment="Center">
-                        <StackPanel Spacing="{StaticResource Space8}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                          <utu:CardContentControl Style="{StaticResource AvatarCardStyle}" Width="{StaticResource AvatarSize}" Height="{StaticResource AvatarSize}" CornerRadius="{StaticResource RadiusCircle40}">
+                        <StackPanel Spacing="{StaticResource Space100}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                          <utu:CardContentControl Style="{StaticResource AvatarCardStyle}" Width="{StaticResource AvatarSize}" Height="{StaticResource AvatarSize}" CornerRadius="{StaticResource RadiusFullCornerRadius}">
                             <FontIcon Glyph="{Binding IconGlyph}"
-                                      FontSize="{StaticResource IconSizeXl}"
+                                      FontSize="{StaticResource IconSizeSmall}"
                                       Foreground="{ThemeResource OnPrimaryContainerBrush}"
                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
                           </utu:CardContentControl>
@@ -170,8 +170,8 @@
           <mvux:FeedView.NoneTemplate>
             <DataTemplate>
               <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
-                          Spacing="{StaticResource Space12}" Padding="{StaticResource Inset24}">
-                <FontIcon Glyph="&#xE82D;" FontSize="{StaticResource IconSizeEmpty}"
+                          Spacing="{StaticResource Space150}" Padding="{StaticResource Space300Thickness}">
+                <FontIcon Glyph="&#xE82D;" FontSize="{StaticResource IconSizeLarge}"
                           Foreground="{ThemeResource OnSurfaceVariantBrush}" HorizontalAlignment="Center" />
                 <TextBlock Text="Nothing in the catalog here" Style="{StaticResource TitleSmall}"
                            HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"
@@ -183,10 +183,10 @@
                            TextAlignment="Center" TextWrapping="Wrap" MaxWidth="{StaticResource HintMaxWidth}" />
                 <Button Command="{Binding DataContext.AddItem, ElementName=CatalogRoot}"
                         Style="{StaticResource AccentButtonStyle}"
-                        HorizontalAlignment="Center" Margin="{StaticResource GapTop8}"
+                        HorizontalAlignment="Center" Margin="{StaticResource Space100TopThickness}"
                         AutomationProperties.Name="Add catalog item">
-                  <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-                    <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" />
+                  <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space100}">
+                    <FontIcon Glyph="&#xE710;" FontSize="{StaticResource BodySmallFontSize}" />
                     <TextBlock Text="Add Item" Style="{StaticResource LabelLargeSemiBold}" />
                   </StackPanel>
                 </Button>
@@ -204,9 +204,9 @@
           <mvux:FeedView.ErrorTemplate>
             <DataTemplate>
               <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
-                          Spacing="{StaticResource Space12}" Padding="{StaticResource Inset24}"
+                          Spacing="{StaticResource Space150}" Padding="{StaticResource Space300Thickness}"
                           AutomationProperties.LiveSetting="Polite">
-                <FontIcon Glyph="&#xE783;" FontSize="{StaticResource IconSizeEmpty}"
+                <FontIcon Glyph="&#xE783;" FontSize="{StaticResource IconSizeLarge}"
                           Foreground="{ThemeResource ErrorBrush}" HorizontalAlignment="Center" />
                 <TextBlock Text="The catalog could not be loaded." Style="{StaticResource TitleSmall}"
                            HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
@@ -228,35 +228,35 @@
         <DataTemplate>
           <ScrollViewer Background="{ThemeResource BackgroundBrush}"
                         Padding="{utu:Responsive Narrow={StaticResource PaneInsetNarrow}, Normal={StaticResource PaneInsetNormal}, Wide={StaticResource PaneInsetWide}, Widest={StaticResource PaneInsetWide}}">
-            <StackPanel Spacing="{StaticResource Space16}" HorizontalAlignment="Stretch">
+            <StackPanel Spacing="{StaticResource Space200}" HorizontalAlignment="Stretch">
 
               <!-- Back to the categories (one-pane layouts) -->
               <Button Command="{Binding DataContext.BackToList, ElementName=CatalogRoot}"
                       Visibility="{utu:Responsive Narrow=Visible, Widest=Collapsed}"
                       Style="{StaticResource TextButtonStyle}"
-                      MinHeight="{StaticResource TouchTarget}"
+                      MinHeight="{StaticResource ControlHeightMediumLarge}"
                       Margin="{StaticResource LeadingIconNudge}"
                       AutomationProperties.Name="Back to categories">
-                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-                  <FontIcon Glyph="&#xE72B;" FontSize="{StaticResource IconSizeMd}" />
+                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space100}">
+                  <FontIcon Glyph="&#xE72B;" FontSize="{StaticResource BodyMediumFontSize}" />
                   <TextBlock Text="Categories" />
                 </StackPanel>
               </Button>
 
               <!-- Category Detail Header -->
-              <Grid ColumnSpacing="{StaticResource Space16}">
+              <Grid ColumnSpacing="{StaticResource Space200}">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="Auto" />
                   <ColumnDefinition Width="*" />
                   <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <utu:CardContentControl Style="{StaticResource AvatarCardStyle}" Width="{StaticResource LogoSize}" Height="{StaticResource LogoSize}" CornerRadius="{StaticResource RadiusCircle48}">
-                  <FontIcon Glyph="{Binding Data.IconGlyph}" FontSize="{StaticResource IconSize2xl}"
+                <utu:CardContentControl Style="{StaticResource AvatarCardStyle}" Width="{StaticResource LogoSize}" Height="{StaticResource LogoSize}" CornerRadius="{StaticResource RadiusFullCornerRadius}">
+                  <FontIcon Glyph="{Binding Data.IconGlyph}" FontSize="{StaticResource IconSizeMedium}"
                             Foreground="{ThemeResource OnPrimaryContainerBrush}"
                             HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </utu:CardContentControl>
-                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="{StaticResource Space2}">
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="{StaticResource Space025}">
                   <TextBlock Text="{Binding Data.Name}"
                              Style="{StaticResource HeadlineMedium}"
                              AutomationProperties.HeadingLevel="Level2"
@@ -273,9 +273,9 @@
                         AutomationProperties.Name="Add item to category"
                         ToolTipService.ToolTip="Add item to category"
                         Style="{StaticResource AccentButtonStyle}"
-                        MinWidth="{StaticResource TouchTarget}">
-                  <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
-                    <FontIcon Glyph="&#xE710;" FontSize="{StaticResource IconSizeSm}" />
+                        MinWidth="{StaticResource ControlHeightMediumLarge}">
+                  <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space100}">
+                    <FontIcon Glyph="&#xE710;" FontSize="{StaticResource BodySmallFontSize}" />
                     <TextBlock Text="Add Item" Visibility="{utu:Responsive Narrow=Collapsed, Normal=Visible}" Style="{StaticResource LabelLargeSemiBold}" />
                   </StackPanel>
                 </Button>
@@ -283,23 +283,23 @@
 
               <!-- Items List -->
               <utu:CardContentControl Style="{StaticResource StaticCardStyle}"
-                      Padding="{utu:Responsive Narrow={StaticResource Inset8}, Normal={StaticResource Inset16}}">
+                      Padding="{utu:Responsive Narrow={StaticResource Space100Thickness}, Normal={StaticResource Space200Thickness}}">
                 <muxc:ItemsRepeater ItemsSource="{Binding Data.Items}" TabFocusNavigation="Local">
                   <muxc:ItemsRepeater.Layout>
-                    <muxc:StackLayout Spacing="{StaticResource Space4}" />
+                    <muxc:StackLayout Spacing="{StaticResource Space050}" />
                   </muxc:ItemsRepeater.Layout>
                   <muxc:ItemsRepeater.ItemTemplate>
                     <DataTemplate>
                       <!-- The row is a button: tap, Enter or Space opens the item -->
                       <utu:CardContentControl Style="{StaticResource StaticCardStyle}" Background="{ThemeResource BackgroundBrush}"
-                              CornerRadius="{StaticResource RadiusMd}">
+                              CornerRadius="{StaticResource Radius200CornerRadius}">
                         <Button Command="{Binding DataContext.EditItem, ElementName=CatalogRoot}"
                                 CommandParameter="{Binding}"
                                 AutomationProperties.Name="{Binding Description}"
                                 Style="{StaticResource ListCardButtonStyle}"
                                 Padding="{StaticResource Inset16x12}"
-                                MinHeight="{StaticResource TouchTargetComfortable}">
-                          <Grid ColumnSpacing="{StaticResource Space12}">
+                                MinHeight="{StaticResource TouchTargetMinSize}">
+                          <Grid ColumnSpacing="{StaticResource Space150}">
                             <Grid.ColumnDefinitions>
                               <ColumnDefinition Width="*" />
                               <ColumnDefinition Width="Auto" />
@@ -331,8 +331,8 @@
             <!-- Only beside the cards: in the one-pane layouts the cards show until a category is picked. -->
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
                         Visibility="{utu:Responsive Narrow=Collapsed, Widest=Visible}"
-                        Spacing="{StaticResource Space12}" Padding="{StaticResource Inset32}">
-              <FontIcon Glyph="&#xE82D;" FontSize="{StaticResource IconSizeHero}"
+                        Spacing="{StaticResource Space150}" Padding="{StaticResource Space400Thickness}">
+              <FontIcon Glyph="&#xE82D;" FontSize="{StaticResource HeroIconSize}"
                         Foreground="{ThemeResource OnSurfaceVariantBrush}" HorizontalAlignment="Center" />
               <TextBlock Text="Select a category" Style="{StaticResource TitleSmall}"
                          HorizontalAlignment="Center"
@@ -357,13 +357,13 @@
           <DataTemplate>
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
                         Background="{ThemeResource BackgroundBrush}"
-                        Spacing="{StaticResource Space12}" Padding="{StaticResource Inset32}"
+                        Spacing="{StaticResource Space150}" Padding="{StaticResource Space400Thickness}"
                         AutomationProperties.LiveSetting="Polite">
-              <FontIcon Glyph="&#xE783;" FontSize="{StaticResource IconSizeHero}"
+              <FontIcon Glyph="&#xE783;" FontSize="{StaticResource HeroIconSize}"
                         Foreground="{ThemeResource ErrorBrush}" HorizontalAlignment="Center" />
               <TextBlock Text="This category could not be loaded." Style="{StaticResource TitleSmall}"
                          HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
-              <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}" HorizontalAlignment="Center">
+              <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space100}" HorizontalAlignment="Center">
                 <Button Content="Back"
                         Command="{Binding DataContext.BackToList, ElementName=CatalogRoot}"
                         Style="{StaticResource TextButtonStyle}"

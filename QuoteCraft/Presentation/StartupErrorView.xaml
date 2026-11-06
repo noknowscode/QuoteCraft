@@ -9,8 +9,8 @@
              IsTabStop="False">
   <Grid Background="{ThemeResource BackgroundBrush}">
     <StackPanel MaxWidth="{StaticResource ReadingMaxWidth}"
-                Spacing="{StaticResource Space12}"
-                Padding="{StaticResource Inset24}"
+                Spacing="{StaticResource Space150}"
+                Padding="{StaticResource Space300Thickness}"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center">
       <TextBlock Text="QuoteCraft could not start"

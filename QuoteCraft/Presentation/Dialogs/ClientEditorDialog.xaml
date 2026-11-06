@@ -6,10 +6,10 @@
                xmlns:utu="using:Uno.Toolkit.UI"
                xmlns:ctrl="using:QuoteCraft.Controls"
                Style="{StaticResource ContentDialogStyle}">
-  <StackPanel Spacing="{StaticResource Space16}"
+  <StackPanel Spacing="{StaticResource Space200}"
               MinWidth="{utu:Responsive Narrow=0, Normal={StaticResource DialogMinWidth}}">
     <ctrl:DialogHeader Glyph="&#xE77B;" Title="{Binding Heading}" Subtitle="{Binding Subheading}"
-                       Margin="{StaticResource GapBottom4}" />
+                       Margin="{StaticResource Space050BottomThickness}" />
 
     <TextBox Header="Name"
              Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -40,7 +40,7 @@
                AutomationProperties.LiveSetting="Assertive"
                Visibility="{Binding ValidationError, Converter={StaticResource EmptyToVisibleConverter}, ConverterParameter=Invert, FallbackValue=Collapsed}" />
 
-    <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}" HorizontalAlignment="Right">
+    <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space100}" HorizontalAlignment="Right">
       <!-- xaml-lint: allow backbar - a dialog Cancel that closes the dialog, not a page back bar -->
       <Button Content="Cancel" uen:Navigation.Request="-" Style="{StaticResource TextButtonStyle}" AutomationProperties.Name="Cancel" />
       <Button Content="Save" Command="{Binding Save}" Style="{StaticResource FilledButtonStyle}" AutomationProperties.Name="Save client" />
