@@ -1,0 +1,43 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>stylized-mosaic</title>
+<link rel="stylesheet" href="frames.css">
+<style>
+  /* The app's pieces, each cut whole from a capture, set as a tilted wall of tiles, Light and Dark alternating: the
+     slate brand band and its amber rule, the stat cards with their sparklines, the status counts and filter chips,
+     quote cards (Accepted, Declined), the preview's band, line items, totals, the catalog tiles and New Quote. The
+     wall dissolves into the ground at the frame, so no tile meets the edge with a hard cut.
+     Blueprint ground: Primary #2B4C7E into PrimaryContainer (Dark) #1E3A5F into Background (Dark) #111827. */
+  .stage { background:
+      radial-gradient(55% 70% at 50% 50%, rgba(43,76,126,.85) 0%, rgba(43,76,126,0) 75%),
+      linear-gradient(160deg, #2B4C7E 0%, #1E3A5F 45%, #111827 100%); --grain: .06; }
+  .blueprint { --cell: 22px; --major: .10; --minor: .04; }
+  .wall { position: absolute; left: 50%; top: 50%; width: 0; height: 0; transform-style: preserve-3d;
+    transform: translate(-40px, 30px) perspective(2200px) rotateX(14deg) rotateZ(-9deg); }
+  .t { position: absolute; border-radius: 12px; overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(10,25,41,.35), 0 2px 4px rgba(10,25,41,.30), 0 18px 34px -10px rgba(10,25,41,.60); }
+  .t img { display: block; width: 100%; height: auto; }
+  .wallmask { position: absolute; inset: 0;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 13%, #000 87%, transparent 100%),
+                        linear-gradient(180deg, transparent 0%, #000 9%, #000 91%, transparent 100%);
+    -webkit-mask-composite: source-in; mask-composite: intersect; }
+  .fade { position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(80% 90% at 50% 50%, rgba(17,24,39,0) 60%, rgba(17,24,39,.45) 100%); }
+</style></head>
+<body><div class="stage grain">
+  <div class="blueprint"></div>
+  <div class="wallmask"><div class="wall">
+    <div class="t" style="left:-760px; top:-330px; width:412px"><img src="cap/m-stat-quoted@3x.png"></div>
+    <div class="t" style="left:-328px; top:-330px; width:412px"><img src="cap/m-stat-rate@3x.png"></div>
+    <div class="t" style="left:-760px; top:-181px; width:558px"><img src="cap/m-pills@3x.png"></div>
+    <div class="t" style="left:-182px; top:-190px; width:367px"><img src="cap/m-card-kitchen@3x.png"></div>
+    <div class="t" style="left:205px; top:-330px; width:686px"><img src="cap/m-docband@3x.png"></div>
+    <div class="t" style="left:-760px; top:-41px; width:370px"><img src="cap/m-tiles@3x.png"></div>
+    <div class="t" style="left:-370px; top:-41px; width:457px"><img src="cap/m-lines@3x.png"></div>
+    <div class="t" style="left:107px; top:-41px; width:234px"><img src="cap/m-totals@3x.png"></div>
+    <div class="t" style="left:107px; top:87px; width:367px"><img src="cap/m-card-water@3x.png"></div>
+    <div class="t" style="left:494px; top:-41px; width:156px"><img src="cap/m-rail@3x.png"></div>
+    <div class="t" style="left:107px; top:208px; width:428px"><img src="cap/m-newquote@3x.png"></div>
+    <div class="t" style="left:536px; top:-154px; width:412px"><img src="cap/m-stat-sent@3x.png"></div>
+  </div></div>
+  <div class="fade"></div>
+</div></body></html>

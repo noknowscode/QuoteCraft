@@ -1,0 +1,47 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>stylized-split</title>
+<link rel="stylesheet" href="frames.css">
+<style>
+  /* One Quotes page, one moment, both themes: the Light and the Dark capture of Kitchen Renovation (one session,
+     seconds apart) on the same turned plane, cut on one diagonal that runs through ground and screen alike. The cut is
+     the app's own amber rule (Secondary #F59E0B), the line under its slate band. Warm paper on the day side
+     (SecondaryContainer #FEF3C7, Background #F9FAFB), night on the other (PrimaryContainer (Dark) #1E3A5F, Background
+     (Dark) #111827). */
+  .layer { position: absolute; inset: 0; }
+  .day { background:
+      radial-gradient(60% 80% at 15% 20%, rgba(254,243,199,.95) 0%, rgba(254,243,199,0) 70%),
+      linear-gradient(180deg, #F9FAFB 0%, color-mix(in srgb, #D6E4F0 30%, #F9FAFB) 100%); }
+  .night { background:
+      radial-gradient(60% 80% at 85% 80%, rgba(43,76,126,.75) 0%, rgba(43,76,126,0) 70%),
+      linear-gradient(180deg, #1E3A5F 0%, #111827 100%);
+    clip-path: polygon(var(--x1) 0, 100% 0, 100% 100%, var(--x2) 100%); }
+  .stage { --x1: 700px; --x2: 520px; }
+  .graph { --cell: 22px; --major: .07; --minor: .03; }
+  .blueprint { --cell: 22px; --major: .10; --minor: .045; }
+  .plane { position: absolute; left: 96px; top: 58px; width: 960px; border-radius: 14px; overflow: hidden; transform-origin: 0 50%;
+    transform: perspective(2200px) rotateY(-14deg) rotateX(5deg);
+    box-shadow: 0 0 0 1px rgba(31,41,55,.10), 0 18px 36px -12px rgba(31,41,55,.28), 0 50px 90px -30px rgba(43,76,126,.40); }
+  .night .plane { box-shadow: 0 0 0 1px rgba(229,231,235,.08), 0 18px 36px -12px rgba(0,0,0,.5), 0 50px 90px -30px rgba(0,0,0,.65); }
+  .plane .view { height: 600px; overflow: hidden;
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 72%, transparent 96%); }
+  .plane img { width: 100%; }
+  .seam { position: absolute; inset: 0; pointer-events: none; }
+</style></head>
+<body><div class="stage">
+  <div class="layer day grain" style="--grain:.05">
+    <div class="graph"></div>
+    <div class="plane"><div class="view"><img src="cap/desk-quotes-light@2x.png"></div></div>
+  </div>
+  <div class="layer night grain" style="--grain:.05">
+    <div class="blueprint"></div>
+    <div class="plane"><div class="view"><img src="cap/desk-quotes-dark@2x.png"></div></div>
+  </div>
+  <svg class="seam" width="1200" height="630" viewBox="0 0 1200 630">
+    <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F59E0B" stop-opacity="0"/><stop offset=".12" stop-color="#F59E0B" stop-opacity="1"/>
+      <stop offset=".88" stop-color="#F59E0B" stop-opacity="1"/><stop offset="1" stop-color="#F59E0B" stop-opacity="0"/></linearGradient>
+      <filter id="b" x="-50%" y="-10%" width="200%" height="120%"><feGaussianBlur stdDeviation="5"/></filter></defs>
+    <line x1="700" y1="0" x2="520" y2="630" stroke="url(#g)" stroke-width="8" filter="url(#b)" opacity=".45"/>
+    <line x1="700" y1="0" x2="520" y2="630" stroke="url(#g)" stroke-width="2.5"/>
+  </svg>
+</div></body></html>

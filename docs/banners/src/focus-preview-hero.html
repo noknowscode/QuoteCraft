@@ -1,0 +1,33 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>focus-preview-hero</title>
+<link rel="stylesheet" href="frames.css">
+<style>
+  /* Hero (1920 x 1080) of focus-preview: the same composition on a 16:9 stage, scaled 1.6.
+     The on-screen quote preview (Light, Kitchen Renovation, QC-2026-0001): the document with its slate band, lifted
+     off a blueprint drafting table, and the preview's own action bar (Download PDF on Primary, Send Quote on the
+     amber Secondary) floating in front of it. Primary #2B4C7E into PrimaryContainer (Dark) #1E3A5F into Background
+     (Dark) #111827; blueprint lines in Primary (Dark) #93B5E1; the light falls on the paper in Primary (Dark). */
+  .stage { background:
+      radial-gradient(42% 60% at 64% 40%, rgba(147,181,225,.22) 0%, rgba(147,181,225,0) 72%),
+      radial-gradient(60% 80% at 62% 30%, rgba(43,76,126,.85) 0%, rgba(43,76,126,0) 75%),
+      linear-gradient(160deg, #2B4C7E 0%, #1E3A5F 46%, #111827 100%); --grain: .06; }
+  .blueprint { --cell: 22px; --gx: -6px; --gy: 4px;
+    -webkit-mask-image: radial-gradient(70% 90% at 55% 45%, #000 0%, rgba(0,0,0,.55) 55%, transparent 100%); }
+  .sheet { position: absolute; left: 548px; top: 48px; width: 508px; transform-origin: 50% 0;
+    transform: perspective(1800px) rotateX(10deg) rotateZ(-6deg); }
+  .sheet .paper { position: relative; border-radius: 10px; overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(17,24,39,.25), 0 2px 3px rgba(17,24,39,.25), 0 22px 40px -10px rgba(10,25,41,.55), 0 60px 90px -30px rgba(10,25,41,.75); }
+  .sheet img { width: 100%; height: auto; }
+  .bar { position: absolute; left: 92px; top: 438px; width: 432px; border-radius: 12px; overflow: hidden; transform: rotateZ(-6deg);
+    box-shadow: 0 0 0 1px rgba(17,24,39,.20), 0 3px 6px rgba(17,24,39,.25), 0 24px 44px -12px rgba(10,25,41,.65); }
+  .bar img { width: 100%; height: auto; }
+
+  html, body { width: 1920px; height: 1080px; }
+  .hero { position: absolute; left: 0; top: 0; width: 1200px; height: 675px; transform: scale(1.6); transform-origin: 0 0; }
+  .sheet { top: 64px; } .bar { top: 470px; }
+</style></head>
+<body><div class="hero"><div class="stage grain">
+  <div class="blueprint"></div>
+  <div class="sheet"><div class="paper"><img src="cap/doc-kitchen@3x.png"></div></div>
+  <div class="bar"><img src="cap/preview-bar@3x.png"></div>
+</div></div></body></html>

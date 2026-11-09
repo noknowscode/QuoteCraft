@@ -1,0 +1,102 @@
+/* Shared frame and backdrop pieces for the QuoteCraft banners. Every colour is from the app:
+   QuoteCraft/Styles/ColorPaletteOverride.xaml (Light and Dark) and the status brushes in QuoteCraft/App.xaml.
+   Tints are these values at reduced alpha, or mixes of two of them in a gradient. */
+:root {
+  /* Light theme */
+  --primary: #2B4C7E;          /* PrimaryColor (Light): slate blue, the brand band */
+  --on-primary: #FFFFFF;       /* OnPrimaryColor (Light) */
+  --pc: #D6E4F0;               /* PrimaryContainerColor (Light) */
+  --on-pc: #0A1929;            /* OnPrimaryContainerColor (Light) */
+  --amber: #F59E0B;            /* SecondaryColor, both themes: the call-to-action amber */
+  --on-amber: #1A365D;         /* OnSecondaryColor */
+  --amber-c: #FEF3C7;          /* SecondaryContainerColor (Light) */
+  --amber-deep: #92400E;       /* SecondaryContainerColor (Dark) */
+  --amber-ink: #78350F;        /* OnSecondaryContainerColor (Light) */
+  --teal: #0D9488;             /* TertiaryColor (Light) */
+  --paper: #F9FAFB;            /* BackgroundColor (Light) */
+  --surface: #FFFFFF;          /* SurfaceColor (Light) */
+  --sv: #F3F4F6;               /* SurfaceVariantColor (Light) */
+  --outline: #D1D5DB;          /* OutlineColor (Light) */
+  --outline-v: #E5E7EB;        /* OutlineVariantColor (Light) */
+  --ink: #1F2937;              /* OnSurfaceColor (Light), SurfaceColor (Dark) */
+  --ink-2: #5F6673;            /* OnSurfaceVariantColor (Light) */
+  /* Dark theme */
+  --primary-night: #93B5E1;    /* PrimaryColor (Dark), PrimaryInverseColor (Light) */
+  --pc-night: #1E3A5F;         /* PrimaryContainerColor (Dark) */
+  --night: #111827;            /* BackgroundColor (Dark) */
+  --night-surface: #1F2937;    /* SurfaceColor (Dark) */
+  --night-sv: #374151;         /* SurfaceVariantColor (Dark) */
+  --night-outline: #4B5563;    /* OutlineVariantColor (Dark) */
+  --night-ink: #E5E7EB;        /* OnSurfaceColor (Dark) */
+  /* App.xaml status brushes (no palette role) */
+  --success: #047857;          /* SuccessBrush (Light) */
+  --sent: #1D4ED8;             /* StatusSentBrush (Light) */
+}
+@font-face { font-family: 'DM Sans'; font-weight: 700; src: url('fonts/DMSans-Bold.ttf'); }
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: var(--paper); }
+.stage { position: absolute; inset: 0; overflow: hidden; }
+img { display: block; }
+
+/* Paper grain from an SVG turbulence, over the backdrop */
+.grain::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none; opacity: var(--grain, .05); mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 240px 240px;
+}
+
+/* Drafting grids drawn in CSS: a blueprint grid (Dark Primary lines on slate) and graph paper (slate on paper).
+   Size them with --cell; fade them with a mask on the element that uses them. */
+.blueprint { position: absolute; inset: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(147,181,225,var(--major,.16)) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(147,181,225,var(--major,.16)) 1px, transparent 1px),
+    linear-gradient(rgba(147,181,225,var(--minor,.07)) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(147,181,225,var(--minor,.07)) 1px, transparent 1px);
+  background-size: calc(var(--cell, 24px) * 5) calc(var(--cell, 24px) * 5), calc(var(--cell, 24px) * 5) calc(var(--cell, 24px) * 5),
+                   var(--cell, 24px) var(--cell, 24px), var(--cell, 24px) var(--cell, 24px);
+  background-position: var(--gx, 0) var(--gy, 0); }
+.graph { position: absolute; inset: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(43,76,126,var(--major,.10)) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(43,76,126,var(--major,.10)) 1px, transparent 1px),
+    linear-gradient(rgba(43,76,126,var(--minor,.045)) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(43,76,126,var(--minor,.045)) 1px, transparent 1px);
+  background-size: calc(var(--cell, 24px) * 5) calc(var(--cell, 24px) * 5), calc(var(--cell, 24px) * 5) calc(var(--cell, 24px) * 5),
+                   var(--cell, 24px) var(--cell, 24px), var(--cell, 24px) var(--cell, 24px);
+  background-position: var(--gx, 0) var(--gy, 0); }
+
+/* The app's own brand motif, as a backdrop element: a slate band over a thin amber rule (the rail header) */
+.band { position: absolute; left: 0; right: 0; background: var(--primary); }
+.band::after { content: ''; position: absolute; left: 0; right: 0; bottom: calc(-1 * var(--rule, 4px)); height: var(--rule, 4px); background: var(--amber); }
+
+/* Generic desktop window: a slim neutral title bar (SurfaceVariant), three plain dots, no brand marks */
+.win { position: absolute; border-radius: 12px; overflow: hidden; background: var(--surface);
+  box-shadow: 0 0 0 1px rgba(31,41,55,.10), 0 1px 2px rgba(31,41,55,.06), 0 10px 24px -6px rgba(31,41,55,.14), 0 34px 70px -18px rgba(31,41,55,.32); }
+.win .bar { height: var(--bar, 26px); display: flex; align-items: center; gap: 6px; padding: 0 12px; background: var(--sv);
+  border-bottom: 1px solid rgba(31,41,55,.08); }
+.win .bar i { width: 8px; height: 8px; border-radius: 50%; background: rgba(31,41,55,.18); }
+.win .bar b { margin: 0 auto; width: 28%; height: 12px; border-radius: 6px; background: rgba(31,41,55,.06); }
+.win.night { background: var(--night-surface);
+  box-shadow: 0 0 0 1px rgba(229,231,235,.08), 0 1px 2px rgba(0,0,0,.3), 0 12px 28px -6px rgba(0,0,0,.45), 0 40px 80px -20px rgba(0,0,0,.6); }
+.win.night .bar { background: var(--night-surface); border-bottom-color: rgba(229,231,235,.07); }
+.win.night .bar i { background: rgba(229,231,235,.20); }
+.win.night .bar b { background: rgba(229,231,235,.07); }
+.win img { width: 100%; height: auto; }
+
+/* Generic phone and tablet: a slate-graphite bezel (Dark Surface into Dark Background) with a soft edge highlight;
+   no notch, no camera, no buttons, no logo */
+.device { position: absolute; background: linear-gradient(150deg, #374151, #1F2937 45%, #111827); padding: var(--bezel, 9px);
+  border-radius: var(--r, 40px);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.10), inset 0 1px 0 rgba(255,255,255,.16), 0 0 0 1px rgba(17,24,39,.40),
+              0 2px 4px rgba(17,24,39,.10), 0 14px 30px -8px rgba(17,24,39,.28), 0 40px 70px -24px rgba(17,24,39,.42); }
+.device .screen { width: 100%; height: 100%; overflow: hidden; border-radius: calc(var(--r, 40px) - var(--bezel, 9px)); background: #000; }
+.device .screen img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+.on-night .device { box-shadow: inset 0 0 0 1px rgba(255,255,255,.12), inset 0 1px 0 rgba(255,255,255,.18), 0 0 0 1px rgba(0,0,0,.55),
+              0 2px 4px rgba(0,0,0,.3), 0 16px 34px -8px rgba(0,0,0,.55), 0 44px 80px -24px rgba(0,0,0,.7); }
+
+/* A captured element lifted off the page: card-like radius and a layered, slate-tinted shadow */
+.lift { position: absolute; border-radius: var(--lr, 12px); overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(31,41,55,.08), 0 2px 4px rgba(31,41,55,.06), 0 16px 32px -10px rgba(31,41,55,.20), 0 44px 80px -28px rgba(43,76,126,.38); }
+.lift img { width: 100%; height: auto; }
+.on-night .lift { box-shadow: 0 0 0 1px rgba(229,231,235,.08), 0 2px 4px rgba(0,0,0,.3), 0 18px 36px -10px rgba(0,0,0,.5), 0 48px 90px -28px rgba(0,0,0,.65); }

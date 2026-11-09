@@ -1,0 +1,136 @@
+{
+  "id": "quotecraft",
+  "displayName": "QuoteCraft",
+  "banners": [
+    {
+      "name": "showcase-desk",
+      "family": "showcase",
+      "title": "Desk and phones",
+      "description": "The Quotes page with Kitchen Renovation open in a desktop window, with the quote preview (Dark) and the catalog (Light) on phones, on warm paper.",
+      "pick": false,
+      "files": {
+        "1x": "finals/showcase-desk@1x.png",
+        "2x": "finals/showcase-desk@2x.png"
+      }
+    },
+    {
+      "name": "showcase-phones",
+      "family": "showcase",
+      "title": "Three phones",
+      "description": "The quotes list (Dark), the quote preview with its slate band and amber Send Quote (Light, raised) and the catalog (Dark) on a blueprint ground.",
+      "pick": false,
+      "files": {
+        "1x": "finals/showcase-phones@1x.png",
+        "2x": "finals/showcase-phones@2x.png"
+      }
+    },
+    {
+      "name": "showcase-daynight",
+      "family": "showcase",
+      "title": "Day and night",
+      "description": "Two tablets with Kitchen Renovation's preview in Light and in Dark, the ground turning from paper to night.",
+      "pick": false,
+      "files": {
+        "1x": "finals/showcase-daynight@1x.png",
+        "2x": "finals/showcase-daynight@2x.png"
+      }
+    },
+    {
+      "name": "focus-quotes",
+      "family": "focused",
+      "title": "Quotes and statuses",
+      "description": "The stat cards with their sparklines, the count for every status, the filter chips and the first quotes with their status pills, laid back on warm paper.",
+      "pick": false,
+      "files": {
+        "1x": "finals/focus-quotes@1x.png",
+        "2x": "finals/focus-quotes@2x.png"
+      }
+    },
+    {
+      "name": "focus-preview",
+      "family": "focused",
+      "title": "The quote preview",
+      "description": "The on-screen preview of QC-2026-0001 with its slate band, line items and total, and the preview's Download PDF and amber Send Quote bar.",
+      "pick": true,
+      "files": {
+        "1x": "finals/focus-preview@1x.png",
+        "2x": "finals/focus-preview@2x.png",
+        "hero": "finals/focus-preview-hero.png"
+      }
+    },
+    {
+      "name": "focus-editor",
+      "family": "focused",
+      "title": "Quote editor",
+      "description": "The editor in Dark: line items with From Catalog and Add Item, subtotal, tax and total, and Add Photo, as a night slab on blueprint.",
+      "pick": false,
+      "files": {
+        "1x": "finals/focus-editor@1x.png",
+        "2x": "finals/focus-editor@2x.png"
+      }
+    },
+    {
+      "name": "focus-catalog",
+      "family": "focused",
+      "title": "Catalog",
+      "description": "The seven category tiles in front of Electrical's twelve priced items, on cool paper.",
+      "pick": false,
+      "files": {
+        "1x": "finals/focus-catalog@1x.png",
+        "2x": "finals/focus-catalog@2x.png"
+      }
+    },
+    {
+      "name": "stylized-split",
+      "family": "stylized",
+      "title": "Light and Dark split",
+      "description": "One Quotes page in Light and Dark on a turned plane, cut by a single diagonal in the app's amber rule.",
+      "pick": true,
+      "files": {
+        "1x": "finals/stylized-split@1x.png",
+        "2x": "finals/stylized-split@2x.png",
+        "hero": "finals/stylized-split-hero.png"
+      }
+    },
+    {
+      "name": "stylized-sheets",
+      "family": "stylized",
+      "title": "Quote sheets",
+      "description": "Five of the seeded quotes as the app previews them, dealt across a blueprint table, Kitchen Renovation on top.",
+      "pick": false,
+      "files": {
+        "1x": "finals/stylized-sheets@1x.png",
+        "2x": "finals/stylized-sheets@2x.png"
+      }
+    },
+    {
+      "name": "stylized-mosaic",
+      "family": "stylized",
+      "title": "Element wall",
+      "description": "A tilted wall of whole elements, Light and Dark alternating: stat cards, status chips, quote cards, line items, totals, catalog tiles and New Quote.",
+      "pick": false,
+      "files": {
+        "1x": "finals/stylized-mosaic@1x.png",
+        "2x": "finals/stylized-mosaic@2x.png"
+      }
+    },
+    {
+      "name": "focus-preview-titled",
+      "family": "titled",
+      "title": "Preview, titled",
+      "description": "The quote preview banner with the QuoteCraft name in DM Sans Bold over an amber rule (optional).",
+      "pick": false,
+      "files": {
+        "1x": "finals/focus-preview-titled@1x.png",
+        "2x": "finals/focus-preview-titled@2x.png"
+      }
+    }
+  ],
+  "notes": [
+    "Release WebAssembly build with the app's own Debug sample-data hooks compiled in (src/tools/sample-hooks.targets); a plain Release build opens on empty onboarding.",
+    "One capture session: the Draft quote's age reads Just now, 1m ago or 8m ago depending on the banner; no banner shows two ages side by side.",
+    "The showcase banners show whole screens, so their UI text is under 10 px at 1x, as in the house-style banners.",
+    "Softened on purpose: the back sheets in stylized-sheets and the item list in focus-catalog.",
+    "At DPR 3 the app dropped the click after a list or tab selection in headless Chromium; cap.js checks each state and clicks again."
+  ]
+}

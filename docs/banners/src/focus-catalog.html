@@ -1,0 +1,27 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>focus-catalog</title>
+<link rel="stylesheet" href="frames.css">
+<style>
+  /* The catalog (Light): the seven category tiles (Electrical, General Contracting, HVAC, Labor, Materials, Painting,
+     Plumbing) with their icons and counts, in front; behind them, a little out of focus, Electrical open with its
+     twelve priced items in JetBrains Mono and the amber Add Item. Cool paper: PrimaryContainer #D6E4F0 into Background
+     #F9FAFB, graph lines in Primary #2B4C7E. */
+  .stage { background:
+      radial-gradient(55% 80% at 30% 40%, #F9FAFB 0%, rgba(249,250,251,0) 80%),
+      linear-gradient(150deg, color-mix(in srgb, #D6E4F0 45%, #F9FAFB) 0%, #D6E4F0 100%); --grain: .05; }
+  .graph { --cell: 22px; --major: .09; --minor: .04; -webkit-mask-image: radial-gradient(80% 90% at 40% 50%, #000, transparent 92%); }
+  .list { position: absolute; left: 452px; top: 26px; width: 648px; height: 575px; border-radius: 14px; overflow: hidden;
+    transform: perspective(1800px) rotateY(-10deg) rotateZ(2deg); transform-origin: 100% 50%;
+    box-shadow: 0 0 0 1px rgba(31,41,55,.07), 0 16px 34px -12px rgba(31,41,55,.20), 0 44px 80px -30px rgba(43,76,126,.35); }
+  .list img { width: 648px; filter: blur(.7px); }
+  .list::after { content: ''; position: absolute; inset: 0; background: rgba(214,228,240,.18); }
+  .tiles { position: absolute; left: 150px; top: 44px; width: 370px; height: 560px; border-radius: 16px; overflow: hidden;
+    transform: perspective(1600px) rotateY(9deg) rotateZ(-3deg); transform-origin: 0 50%;
+    box-shadow: 0 0 0 1px rgba(31,41,55,.08), 0 3px 6px rgba(31,41,55,.08), 0 22px 44px -12px rgba(31,41,55,.30), 0 60px 100px -30px rgba(43,76,126,.50); }
+  .tiles img { width: 370px; }
+</style></head>
+<body><div class="stage grain">
+  <div class="graph"></div>
+  <div class="list"><img src="cap/cat-list@3x.png"></div>
+  <div class="tiles"><img src="cap/cat-tiles@3x.png"></div>
+</div></body></html>
