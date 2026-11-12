@@ -34,7 +34,7 @@ Debug desktop build, sample data (`--qc-seed=sample`), Light theme, 1280 × 800 
 
 ## Tech Stack
 
-- **Framework:** [Uno Platform](https://platform.uno) 7.0 preview (`Uno.Sdk` 7.0.0-dev.115, Single Project)
+- **Framework:** [Uno Platform](https://platform.uno) 7.0 (`Uno.Sdk` 7.0.5, Single Project)
 - **Runtime:** .NET 10
 - **Renderer:** Skia
 - **UI:** WinUI / XAML with Uno Toolkit controls
