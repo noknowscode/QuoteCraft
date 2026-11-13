@@ -42,7 +42,7 @@ Debug desktop build, sample data (`--qc-seed=sample`), Light theme, 1280 × 800 
 - **Architecture:** MVUX (Model-View-Update-eXtended)
 - **Navigation:** Uno Navigation Extensions (region-based)
 - **Dependency Injection:** Microsoft.Extensions.Hosting
-- **Database:** SQLite, encrypted with SQLCipher (Microsoft.Data.Sqlite + SQLitePCLRaw), local-first; the key in the platform's vault (`PasswordVault`) on Android, iOS and Windows (WinAppSDK)
+- **Database:** SQLite, encrypted with SQLCipher (Microsoft.Data.Sqlite + SQLitePCLRaw), local-first; the key in the platform's vault (`PasswordVault`) on Android and iOS
 - **PDF:** SkiaSharp's PDF backend (`SKDocument`), set in the app's DM Sans; no extra package
 - **Cloud (optional):** Supabase sign-in and Stripe billing (cloud sync is off in this version); see [Local-first, with optional sign-in and billing](#local-first-with-optional-sign-in-and-billing)
 
@@ -116,20 +116,19 @@ Debug desktop build, sample data (`--qc-seed=sample`), Light theme, 1280 × 800 
 | Platform | Target Framework |
 |----------|-----------------|
 | Windows / macOS / Linux (Skia) | `net10.0-desktop` |
-| Windows (WinAppSDK, packaged) | `net10.0-windows10.0.19041` (x64 or ARM64) |
 | Android | `net10.0-android` |
 | iOS | `net10.0-ios` |
 | WebAssembly | `net10.0-browserwasm` |
 
-iOS builds on macOS and the WinAppSDK head on Windows; elsewhere the SDK skips them.
+iOS builds on macOS; elsewhere the SDK skips it.
 
 ### Platform notes
 
-| | Desktop | Windows (WinAppSDK) | Android | iOS | WebAssembly |
-|---|---|---|---|---|---|
-| Local database | SQLCipher, encrypted | SQLCipher, encrypted | SQLCipher, encrypted | SQLCipher, encrypted | SQLite in IndexedDB, not encrypted |
-| Database key and sign-in token | Files in the app's data folder | `PasswordVault` (Credential Locker) | `PasswordVault` (AndroidKeyStore) | `PasswordVault` (Keychain) | No key; token in a file in IndexedDB |
-| PDF export | Written to `exports/` and opened | Written to `exports/` and opened | Save dialog | Export sheet (Save to Files) | Browser download |
+| | Desktop | Android | iOS | WebAssembly |
+|---|---|---|---|---|
+| Local database | SQLCipher, encrypted | SQLCipher, encrypted | SQLCipher, encrypted | SQLite in IndexedDB, not encrypted |
+| Database key and sign-in token | Files in the app's data folder | `PasswordVault` (AndroidKeyStore) | `PasswordVault` (Keychain) | No key; token in a file in IndexedDB |
+| PDF export | Written to `exports/` and opened | Save dialog | Export sheet (Save to Files) | Browser download |
 
 An older install's `.dbkey` and `.auth_token` files move into the vault at the first start of this version. The
 reasons are in [docs/DECISIONS-production-readiness.md](docs/DECISIONS-production-readiness.md) (D1, D12, D13).

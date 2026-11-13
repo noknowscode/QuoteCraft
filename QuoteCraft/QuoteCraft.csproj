@@ -1,7 +1,7 @@
 <Project Sdk="Uno.Sdk">
   <PropertyGroup>
-    <!-- Uno.Sdk skips the heads the build OS can't build (iOS on Linux, Windows off Windows). -->
-    <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-windows10.0.19041;net10.0-browserwasm;net10.0-desktop</TargetFrameworks>
+    <!-- Uno.Sdk skips the heads the build OS can't build (iOS on Linux). -->
+    <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-browserwasm;net10.0-desktop</TargetFrameworks>
     <!-- One head at a time (CI, RID-specific publish): -p:QuoteCraftTargetFrameworks=net10.0-desktop. -->
     <TargetFrameworks Condition="'$(QuoteCraftTargetFrameworks)' != ''">$(QuoteCraftTargetFrameworks)</TargetFrameworks>
 
@@ -36,17 +36,6 @@
       Navigation;
       SkiaRenderer;
     </UnoFeatures>
-  </PropertyGroup>
-
-  <!--
-    WinAppSDK: build x64 or ARM64, never AnyCPU (SkiaSharp and SQLCipher ship per-architecture native libraries).
-    Uno 7's WinUI libraries are built against WinRT.Runtime 2.3.1; the SDK's default projection for 19041
-    (Microsoft.Windows.SDK.NET.Ref 10.0.19041.57) carries 2.2.0 and fails with CS1705, so pin a projection that matches.
-  -->
-  <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
-    <Platforms>x64;ARM64</Platforms>
-    <Platform Condition="'$(Platform)' == '' or '$(Platform)' == 'AnyCPU'">x64</Platform>
-    <WindowsSdkPackageVersion>10.0.19041.87</WindowsSdkPackageVersion>
   </PropertyGroup>
 
 
