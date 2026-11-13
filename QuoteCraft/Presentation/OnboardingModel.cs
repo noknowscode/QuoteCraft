@@ -5,21 +5,18 @@ public partial record OnboardingModel
     private readonly INavigator _navigator;
     private readonly IBusinessProfileRepository _profileRepo;
     private readonly IOnboardingService _onboardingService;
-    private readonly IQuoteRepository _quoteRepo;
-    private readonly QuoteNumberGenerator _quoteNumberGen;
+    private readonly QuoteCreationService _creation;
 
     public OnboardingModel(
         INavigator navigator,
         IBusinessProfileRepository profileRepo,
         IOnboardingService onboardingService,
-        IQuoteRepository quoteRepo,
-        QuoteNumberGenerator quoteNumberGen)
+        QuoteCreationService creation)
     {
         _navigator = navigator;
         _profileRepo = profileRepo;
         _onboardingService = onboardingService;
-        _quoteRepo = quoteRepo;
-        _quoteNumberGen = quoteNumberGen;
+        _creation = creation;
     }
 
     public IState<int> CurrentStep => State<int>.Value(this, () => 1);
@@ -31,7 +28,7 @@ public partial record OnboardingModel
     public IState<string> Address => State<string>.Value(this, () => string.Empty);
 
     // Step 3: Quote Settings
-    public IState<string> TaxRate => State<string>.Value(this, () => "8.5");
+    public IState<string> TaxRate => State<string>.Value(this, () => Money.FormatRate(8.5m));
     public IState<string> ValidDays => State<string>.Value(this, () => "14");
     public IState<string> QuotePrefix => State<string>.Value(this, () => "QC-");
 
@@ -43,14 +40,12 @@ public partial record OnboardingModel
 
         if (step == 1)
         {
-            // Welcome -> Business Info (no validation needed)
             await CurrentStep.UpdateAsync(_ => 2, ct);
         }
         else if (step == 2)
         {
-            // Validate business info before advancing
             var email = (await Email)?.Trim();
-            if (!string.IsNullOrEmpty(email) && (!email.Contains('@') || !email.Contains('.')))
+            if (!EmailAddress.IsValidOrEmpty(email))
             {
                 await ValidationError.UpdateAsync(_ => "Please enter a valid email address.", ct);
                 return;
@@ -82,16 +77,11 @@ public partial record OnboardingModel
         }
     }
 
-    public async ValueTask Skip(CancellationToken ct)
-    {
-        await CompleteOnboarding(createQuote: false, ct);
-    }
+    public ValueTask Skip(CancellationToken ct) => CompleteOnboarding(createQuote: false, ct);
 
     public async ValueTask Complete(CancellationToken ct)
     {
-        // Validate quote settings before completing
-        var taxStr = await TaxRate ?? "0";
-        if (!decimal.TryParse(taxStr, out var tax) || tax < 0 || tax > 100)
+        if (!Money.TryParseRate(await TaxRate, out var tax) || tax > 100)
         {
             await ValidationError.UpdateAsync(_ => "Tax rate must be between 0 and 100.", ct);
             return;
@@ -108,11 +98,15 @@ public partial record OnboardingModel
         await CompleteOnboarding(createQuote: true, ct);
     }
 
-    private async Task CompleteOnboarding(bool createQuote, CancellationToken ct)
+    /// <summary>
+    /// Saves what was entered and leaves onboarding: for the editor on a new Draft (Create First Quote), or for the quotes
+    /// list (Skip). A failure stays on the step and says so.
+    /// </summary>
+    private ValueTask CompleteOnboarding(bool createQuote, CancellationToken ct) => ValidationError.ReportFailureAsync(
+        "Your setup could not be finished.", async () =>
     {
         var profile = await _profileRepo.GetAsync();
 
-        // Save business info if provided
         var name = (await BusinessName)?.Trim();
         if (!string.IsNullOrEmpty(name))
             profile.BusinessName = name;
@@ -129,9 +123,7 @@ public partial record OnboardingModel
         if (!string.IsNullOrEmpty(address))
             profile.Address = address;
 
-        // Save quote settings
-        var taxStr = await TaxRate ?? "0";
-        if (decimal.TryParse(taxStr, out var taxRate))
+        if (Money.TryParseRate(await TaxRate, out var taxRate))
             profile.DefaultTaxRate = taxRate;
 
         var daysStr = await ValidDays ?? "14";
@@ -147,22 +139,16 @@ public partial record OnboardingModel
 
         if (createQuote)
         {
-            // Create a blank quote and navigate directly to the editor
-            var quoteNumber = await _quoteNumberGen.GenerateAsync();
-            var quote = new QuoteEntity
-            {
-                Title = "New Quote",
-                QuoteNumber = quoteNumber,
-                Status = QuoteStatus.Draft,
-                TaxRate = profile.DefaultTaxRate,
-                ValidUntil = DateTimeOffset.UtcNow.AddDays(profile.QuoteValidDays),
-            };
-            await _quoteRepo.SaveAsync(quote);
-            await _navigator.NavigateRouteAsync(this, "QuoteEditor", data: quote);
+            // A blank Draft with the defaults just saved, opened in the editor.
+            var quote = await _creation.CreateDraftAsync("New Quote");
+
+            // Onboarding is the first route on a first run: open the editor inside Main, as the other pages do.
+            await _navigator.NavigateRouteAsync(this, "Main/QuoteEditor", qualifier: Qualifiers.ClearBackStack, data: quote);
         }
         else
         {
-            await _navigator.NavigateBackAsync(this);
+            // Onboarding is the first route on a first run, so there is nothing to go back to.
+            await _navigator.NavigateRouteAsync(this, "Main", qualifier: Qualifiers.ClearBackStack);
         }
-    }
+    }, ct);
 }

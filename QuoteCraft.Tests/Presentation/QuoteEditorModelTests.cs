@@ -1,0 +1,407 @@
+using NSubstitute;
+using NSubstitute.ExceptionExtensions;
+using QuoteCraft.Data;
+using QuoteCraft.Models;
+using QuoteCraft.Presentation;
+using Xunit;
+using static QuoteCraft.Tests.Presentation.ModelHarness;
+
+namespace QuoteCraft.Tests.Presentation;
+
+/// <summary>The full editor: fields, totals as the rate is typed, line items, status changes and leaving.</summary>
+public class QuoteEditorModelTests
+{
+    private static readonly CancellationToken None = CancellationToken.None;
+
+    /// <summary>
+    /// The editor once its fields hold the quote. On the page the bindings read every state long before anyone types;
+    /// reading them here first does the same, so an update is never made before a state has its first value.
+    /// </summary>
+    internal static async Task<QuoteEditorModel> Create(ModelHarness h, QuoteEntity quote)
+    {
+        var model = new QuoteEditorModel(quote, h.Navigator, h.Db.Quotes, h.Db.Clients, h.Delivery, h.LineItemDialogs, h.Photos, h.Status, h.Dispatcher, h.Board);
+        _ = (await model.Title, await model.Notes, await model.TaxRate, await model.ClientName, await model.ValidUntil, await model.ValidationError);
+        return model;
+    }
+
+    [Fact]
+    public async Task Save_writes_the_fields_links_the_named_client_and_goes_back()
+    {
+        using var h = new ModelHarness();
+        var mike = await h.AddClientAsync("Mike Chen", "mike@example.com");
+        var quote = await h.AddQuoteAsync("Service call", taxRate: 13m);
+        var model = await Create(h, quote);
+
+        await model.Title.UpdateAsync(_ => "Service call - furnace", None);
+        await model.TaxRate.UpdateAsync(_ => "8.25", None);
+        await model.ClientName.UpdateAsync(_ => "Mike Chen", None);
+        await model.Notes.UpdateAsync(_ => "Gate code 4412.", None);
+        await model.Save(None);
+
+        var saved = (await h.Db.Quotes.GetByIdAsync(quote.Id))!;
+        Assert.Equal(("Service call - furnace", 8.25m, mike.Id, "Mike Chen", "Gate code 4412."),
+            (saved.Title, saved.TaxRate, saved.ClientId, saved.ClientName, saved.Notes));
+        Assert.Equal(["-"], h.Navigator.Routes);
+        Assert.Equal(string.Empty, await model.ValidationError);
+    }
+
+    [Theory]
+    [InlineData("  ", "13", "Quote title is required.")]
+    [InlineData("Service call", "abc", "Tax rate must be a number between 0 and 100.")]
+    [InlineData("Service call", "101", "Tax rate must be a number between 0 and 100.")]
+    public async Task Save_refuses_what_does_not_read_and_says_why(string title, string rate, string message)
+    {
+        using var h = new ModelHarness();
+        var quote = await h.AddQuoteAsync("Service call", taxRate: 13m);
+        var model = await Create(h, quote);
+
+        await model.Title.UpdateAsync(_ => title, None);
+        await model.TaxRate.UpdateAsync(_ => rate, None);
+        await model.Save(None);
+
+        Assert.Equal(message, await model.ValidationError);
+        Assert.Empty(h.Navigator.Requests);
+        Assert.Equal(("Service call", 13m), ((await h.Db.Quotes.GetByIdAsync(quote.Id))!.Title, (await h.Db.Quotes.GetByIdAsync(quote.Id))!.TaxRate));
+    }
+
+    [Fact]
+    public async Task Totals_follow_the_rate_as_it_is_typed()
+    {
+        using var h = new ModelHarness();
+        var quote = await h.AddQuoteAsync("Service call", taxRate: 13m, items: [("Panel", 1000m, 1), ("Labor", 455m, 2)]);
+        var model = await Create(h, quote);
+
+        var totals = (await model.Totals)!;
+        Assert.Equal((1910m, "Tax (13 %)", 248.30m, 2158.30m), (totals.Subtotal, totals.TaxLabel, totals.Tax, totals.Total));
+
+        await model.TaxRate.UpdateAsync(_ => "9.975", None);
+        totals = (await Settled(async () => await model.Totals, t => t?.TaxLabel == "Tax (9.975 %)"))!;
+        Assert.Equal(190.52m, totals.Tax);
+
+        await model.TaxRate.UpdateAsync(_ => "abc", None);
+        totals = (await Settled(async () => await model.Totals, t => t?.Tax == 0m))!;
+        Assert.Equal(("Tax (enter a rate from 0 to 100)", 1910m), (totals.TaxLabel, totals.Total));
+    }
+
+    [Fact]
+    public async Task Back_without_changes_leaves_at_once()
+    {
+        using var h = new ModelHarness();
+        var model = await Create(h, await h.AddQuoteAsync("Service call"));
+
+        await model.Back(None);
+
+        Assert.Equal(["-"], h.Navigator.Routes);
+    }
+
+    [Fact]
+    public async Task Back_with_unsaved_changes_asks_and_stay_keeps_the_editor_open()
+    {
+        using var h = new ModelHarness();
+        var quote = await h.AddQuoteAsync("Service call");
+        var model = await Create(h, quote);
+        await model.Title.UpdateAsync(_ => "Changed", None);
+
+        h.Navigator.Confirm(false);
+        await model.Back(None);
+        Assert.Equal(["!Confirm"], h.Navigator.Routes);
+
+        h.Navigator.Confirm(true);
+        await model.Back(None);
+        Assert.Equal(["!Confirm", "!Confirm", "-"], h.Navigator.Routes);
+        Assert.Equal("Service call", (await h.Db.Quotes.GetByIdAsync(quote.Id))!.Title);
+    }
+
+    [Theory]
+    [InlineData("Export PDF", "  ", "13", "Quote title is required.")]
+    [InlineData("Mark Sent", "  ", "13", "Quote title is required.")]
+    [InlineData("Mark Accepted", "Service call", "abc", "Tax rate must be a number between 0 and 100.")]
+    [InlineData("Mark Declined", "Service call", "101", "Tax rate must be a number between 0 and 100.")]
+    public async Task Export_and_the_status_buttons_check_the_edits_as_save_does(string action, string title, string rate, string message)
+    {
+        using var h = new ModelHarness();
+        var quote = await h.AddQuoteAsync("Service call", taxRate: 13m);
+        var model = await Create(h, quote);
+
+        await model.Title.UpdateAsync(_ => title, None);
+        await model.TaxRate.UpdateAsync(_ => rate, None);
+        await (action switch
+        {
+            "Export PDF" => model.ExportPdf(None),
+            "Mark Sent" => model.MarkSent(None),
+            "Mark Accepted" => model.MarkAccepted(None),
+            _ => model.MarkDeclined(None),
+        });
+
+        Assert.Equal(message, await model.ValidationError);
+        Assert.Empty(h.Navigator.Requests);
+        await h.Share.DidNotReceive().GenerateAndDownloadPdfAsync(Arg.Any<QuoteEntity>());
+        var stored = (await h.Db.Quotes.GetByIdAsync(quote.Id))!;
+        Assert.Equal(("Service call", 13m, QuoteStatus.Draft), (stored.Title, stored.TaxRate, stored.Status));
+        Assert.Empty(await h.Db.History.GetByQuoteIdAsync(quote.Id));
+    }
+
+    [Fact]
+    public async Task Mark_sent_keeps_the_edits_and_records_the_change()
+    {
+        using var h = new ModelHarness();
+        var quote = await h.AddQuoteAsync("Service call");
+        var model = await Create(h, quote);
+        await model.Title.UpdateAsync(_ => "Service call - furnace", None);
+
+        await model.MarkSent(None);
+
+        var saved = (await h.Db.Quotes.GetByIdAsync(quote.Id))!;
+        Assert.Equal(("Service call - furnace", QuoteStatus.Sent), (saved.Title, saved.Status));
+        Assert.Equal(["Sent"], (await h.Db.History.GetByQuoteIdAsync(quote.Id)).Select(e => e.Status));
+    }
+
+    [Fact]
+    public async Task Moving_an_item_swaps_it_with_its_neighbour()
+    {
+        using var h = new ModelHarness();
+        var quote = await h.AddQuoteAsync("Service call", items: [("A", 1m, 1), ("B", 1m, 1), ("C", 1m, 1)]);
+        var model = await Create(h, quote);
+        var items = await h.Db.Quotes.GetLineItemsAsync(quote.Id);
+
+        await model.MoveLineItemDown(items[0], None);
+        await model.MoveLineItemUp(items[2], None);
+        await model.MoveLineItemUp((await h.Db.Quotes.GetLineItemsAsync(quote.Id))[0], None);
+
+        Assert.Equal(["B", "C", "A"], (await h.Db.Quotes.GetLineItemsAsync(quote.Id)).Select(i => i.Description));
+    }
+
+    [Fact]
+    public async Task A_move_that_cannot_be_saved_says_so()
+    {
+        using var h = new ModelHarness();
+        var quote = await h.AddQuoteAsync("Service call", items: [("A", 1m, 1), ("B", 1m, 1)]);
+        var quotes = Substitute.For<IQuoteRepository>();
+        quotes.GetLineItemsAsync(quote.Id).Returns(quote.LineItems);
+        quotes.ReorderLineItemsAsync(quote.Id, Arg.Any<IReadOnlyList<string>>()).ThrowsAsync(new IOException("The disk is full."));
+        var model = new QuoteEditorModel(quote, h.Navigator, quotes, h.Db.Clients, h.Delivery, h.LineItemDialogs, h.Photos, h.Status, h.Dispatcher, h.Board);
+        _ = await model.ValidationError;
+
+        await model.MoveLineItemDown(quote.LineItems[0], None);
+
+        Assert.Equal("The line item could not be moved. Try again.", await model.ValidationError);
+    }
+
+    [Fact]
+    public async Task Deleting_a_photo_reads_the_photos_again_and_a_failure_says_so()
+    {
+        using var h = new ModelHarness();
+        var model = await Create(h, await h.AddQuoteAsync("Service call"));
+        var version = await model.PhotosVersion;
+
+        await model.DeletePhoto("/photos/a.jpg", None);
+        h.Photos.Received(1).DeletePhoto("/photos/a.jpg");
+        Assert.Equal(version + 1, await model.PhotosVersion);
+
+        h.Photos.When(p => p.DeletePhoto("/photos/b.jpg")).Do(_ => throw new UnauthorizedAccessException("Read-only."));
+        await model.DeletePhoto("/photos/b.jpg", None);
+
+        Assert.Equal("The photo could not be deleted. Try again.", await model.ValidationError);
+    }
+
+    [Fact]
+    public async Task Export_pdf_saves_the_edits_first_and_reports_a_failure()
+    {
+        using var h = new ModelHarness();
+        var quote = await h.AddQuoteAsync("Service call");
+        var model = await Create(h, quote);
+        await model.Notes.UpdateAsync(_ => "Bring the ladder.", None);
+
+        await model.ExportPdf(None);
+        await h.Share.Received(1).GenerateAndDownloadPdfAsync(Arg.Is<QuoteEntity>(q => q.Notes == "Bring the ladder."));
+
+        h.Share.GenerateAndDownloadPdfAsync(default!).ThrowsAsyncForAnyArgs(new IOException("disk full"));
+        await model.ExportPdf(None);
+        Assert.Equal("The PDF could not be created. Try again.", await model.ValidationError);
+    }
+
+    [Fact]
+    public async Task Client_suggestions_match_what_is_typed_and_leave_out_an_exact_match()
+    {
+        using var h = new ModelHarness();
+        await h.AddClientAsync("Mike Chen");
+        await h.AddClientAsync("Michelle Ortiz");
+        await h.AddClientAsync("Dana Reyes");
+        var model = await Create(h, await h.AddQuoteAsync("Service call"));
+
+        await model.ClientName.UpdateAsync(_ => "mi", None);
+        Assert.Equal(["Michelle Ortiz", "Mike Chen"], (await Settled(async () => await model.ClientSuggestions, l => l.Count == 2)).Order());
+
+        await model.ClientName.UpdateAsync(_ => "Mike Chen", None);
+        Assert.Empty(await Settled(async () => await ListOf(model.ClientSuggestions), l => l.Count == 0));
+    }
+
+    [Fact]
+    public async Task Catalog_items_added_in_the_browser_show_when_it_closes()
+    {
+        using var h = new ModelHarness();
+        var quote = await h.AddQuoteAsync("Service call");
+        var model = await Create(h, quote);
+        Assert.Empty(await ListOf(model.LineItems));
+        h.Navigator.Answer("CatalogBrowser", data =>
+        {
+            Assert.Equal(quote.Id, Assert.IsType<CatalogBrowserRequest>(data).QuoteId);
+            h.Db.Quotes.SaveLineItemAsync(new LineItemEntity { QuoteId = quote.Id, Description = "Sink Installation", UnitPrice = 350m }).Wait();
+            return null;
+        });
+
+        await model.OpenCatalog(None);
+
+        Assert.Equal(["Sink Installation"], (await Settled(async () => await model.LineItems, l => l.Count == 1)).Select(i => i.Description));
+    }
+
+    [Fact]
+    public async Task Back_after_export_pdf_saved_the_edits_does_not_ask()
+    {
+        using var h = new ModelHarness();
+        var quote = await h.AddQuoteAsync("Service call");
+        var model = await Create(h, quote);
+        await model.Notes.UpdateAsync(_ => "Bring the ladder.", None);
+
+        await model.ExportPdf(None);
+        await model.Back(None);
+
+        Assert.Equal(["-"], h.Navigator.Routes);
+        Assert.Equal("Bring the ladder.", (await h.Db.Quotes.GetByIdAsync(quote.Id))!.Notes);
+    }
+
+    [Fact]
+    public async Task When_no_app_opens_the_exported_pdf_the_message_says_where_it_is()
+    {
+        using var h = new ModelHarness();
+        var quote = await h.AddQuoteAsync("Service call");
+        h.Share.GenerateAndDownloadPdfAsync(default!).ReturnsForAnyArgs("QC-2026-0001.pdf is saved in /data/exports, but no app on this computer opened it.");
+        var model = await Create(h, quote);
+
+        await model.ExportPdf(None);
+
+        Assert.StartsWith("QC-2026-0001.pdf is saved in", await model.ValidationError);
+    }
+
+    /// <summary>A day in the picker as the control hands it back: midnight, local time.</summary>
+    private static DateTimeOffset Picked(DateTime day) => new(DateTime.SpecifyKind(day.Date, DateTimeKind.Unspecified));
+
+    [Fact]
+    public async Task A_new_quote_is_valid_for_the_settings_number_of_days()
+    {
+        using var h = new ModelHarness();
+        var profile = await h.Db.Profiles.GetAsync();
+        profile.QuoteValidDays = 30;
+        await h.Db.Profiles.SaveAsync(profile);
+        var quote = await h.Creation.CreateDraftAsync("Service call");
+
+        var model = await Create(h, quote);
+
+        Assert.Equal(DateTimeOffset.UtcNow.AddDays(30).UtcDateTime.Date, (await model.ValidUntil)!.Value.Date);
+    }
+
+    [Fact]
+    public async Task Save_stores_the_picked_valid_until_day_through_its_end()
+    {
+        using var h = new ModelHarness();
+        var quote = await h.AddQuoteAsync("Service call");
+        var model = await Create(h, quote);
+        var day = DateTime.UtcNow.Date.AddDays(45);
+
+        await model.ValidUntil.UpdateAsync(_ => Picked(day), None);
+        await model.Save(None);
+
+        Assert.Equal(new DateTimeOffset(day.AddDays(1).AddSeconds(-1), TimeSpan.Zero), (await h.Db.Quotes.GetByIdAsync(quote.Id))!.ValidUntil);
+        Assert.Equal(["-"], h.Navigator.Routes);
+    }
+
+    [Fact]
+    public async Task Save_keeps_an_untouched_valid_until_date_as_it_was()
+    {
+        using var h = new ModelHarness();
+        var stored = DateTimeOffset.UtcNow.AddDays(14);
+        var quote = await h.AddQuoteAsync("Service call", validUntil: stored);
+        var model = await Create(h, quote);
+
+        await model.Title.UpdateAsync(_ => "Service call - furnace", None);
+        await model.Save(None);
+
+        Assert.Equal(stored, (await h.Db.Quotes.GetByIdAsync(quote.Id))!.ValidUntil);
+    }
+
+    [Fact]
+    public async Task A_valid_until_day_in_the_past_is_refused_and_says_why()
+    {
+        using var h = new ModelHarness();
+        var stored = DateTimeOffset.UtcNow.AddDays(14);
+        var quote = await h.AddQuoteAsync("Service call", validUntil: stored);
+        var model = await Create(h, quote);
+
+        await model.ValidUntil.UpdateAsync(_ => Picked(DateTime.UtcNow.Date.AddDays(-2)), None);
+        await model.MarkSent(None);
+
+        Assert.Equal("The valid-until date cannot be in the past.", await model.ValidationError);
+        Assert.Empty(h.Navigator.Requests);
+        var saved = (await h.Db.Quotes.GetByIdAsync(quote.Id))!;
+        Assert.Equal((stored, QuoteStatus.Draft), (saved.ValidUntil, saved.Status));
+    }
+
+    [Fact]
+    public async Task An_answered_quote_past_its_date_still_saves_when_the_date_is_left_alone()
+    {
+        using var h = new ModelHarness();
+        var quote = await h.AddQuoteAsync("Service call", QuoteStatus.Accepted, validUntil: DateTimeOffset.UtcNow.AddDays(-40));
+        var model = await Create(h, quote);
+
+        await model.Notes.UpdateAsync(_ => "Paid in full.", None);
+        await model.Save(None);
+
+        Assert.Equal(string.Empty, await model.ValidationError);
+        Assert.Equal("Paid in full.", (await h.Db.Quotes.GetByIdAsync(quote.Id))!.Notes);
+    }
+
+    [Fact]
+    public async Task Back_after_changing_the_valid_until_day_asks()
+    {
+        using var h = new ModelHarness();
+        var model = await Create(h, await h.AddQuoteAsync("Service call"));
+
+        await model.ValidUntil.UpdateAsync(_ => Picked(DateTime.UtcNow.Date.AddDays(60)), None);
+        h.Navigator.Confirm(false);
+        await model.Back(None);
+
+        Assert.Equal(["!Confirm"], h.Navigator.Routes);
+    }
+
+    [Fact]
+    public async Task Mark_sent_keeps_the_picked_day_and_the_quote_expires_after_it()
+    {
+        using var h = new ModelHarness();
+        var quote = await h.AddQuoteAsync("Service call");
+        var model = await Create(h, quote);
+        var day = DateTime.UtcNow.Date.AddDays(5);
+
+        await model.ValidUntil.UpdateAsync(_ => Picked(day), None);
+        await model.MarkSent(None);
+
+        var end = new DateTimeOffset(day.AddDays(1).AddSeconds(-1), TimeSpan.Zero);
+        var sent = (await h.Db.Quotes.GetByIdAsync(quote.Id))!;
+        Assert.Equal((QuoteStatus.Sent, end), (sent.Status, sent.ValidUntil));
+
+        Assert.Empty(await h.Status.ExpireOverdueAsync(end.AddMinutes(-1)));
+        Assert.Single(await h.Status.ExpireOverdueAsync(end.AddMinutes(1)));
+    }
+
+    [Fact]
+    public async Task A_thumbnail_opens_its_photo_enlarged()
+    {
+        using var h = new ModelHarness();
+        var model = await Create(h, await h.AddQuoteAsync("Service call"));
+
+        await model.ViewPhoto("/data/photos/q1/a.jpg", None);
+
+        Assert.Equal(["!PhotoViewer"], h.Navigator.Routes);
+        Assert.Equal(new PhotoViewRequest("/data/photos/q1/a.jpg"), h.Navigator.DataFor("PhotoViewer"));
+        Assert.Equal(string.Empty, await model.ValidationError);
+    }
+}

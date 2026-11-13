@@ -5,21 +5,19 @@ namespace QuoteCraft.Services;
 public class NotificationService : INotificationService
 {
     private readonly AppDatabase _db;
-    private readonly ILogger<NotificationService> _logger;
     private int _unreadCount;
 
     public int UnreadCount => _unreadCount;
     public event Action<int>? UnreadCountChanged;
 
-    public NotificationService(AppDatabase db, ILogger<NotificationService> logger)
+    public NotificationService(AppDatabase db)
     {
         _db = db;
-        _logger = logger;
     }
 
     public async Task<List<NotificationEntity>> GetAllAsync()
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT * FROM notifications ORDER BY created_at DESC LIMIT 50";
@@ -35,7 +33,7 @@ public class NotificationService : INotificationService
 
     public async Task<int> GetUnreadCountAsync()
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT COUNT(*) FROM notifications WHERE is_read = 0";
@@ -52,7 +50,7 @@ public class NotificationService : INotificationService
 
     public async Task CreateAsync(NotificationType type, string title, string message, string? quoteId = null)
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = """
@@ -71,25 +69,23 @@ public class NotificationService : INotificationService
         UnreadCountChanged?.Invoke(_unreadCount);
     }
 
-    public async Task MarkAsReadAsync(string notificationId)
+    public async Task<bool> ExistsAsync(NotificationType type, string quoteId, DateTimeOffset since)
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         var cmd = conn.CreateCommand();
-        cmd.CommandText = "UPDATE notifications SET is_read = 1 WHERE id = @id AND is_read = 0";
-        cmd.Parameters.AddWithValue("@id", notificationId);
-        var affected = await cmd.ExecuteNonQueryAsync();
-
-        if (affected > 0)
-        {
-            _unreadCount = Math.Max(0, _unreadCount - 1);
-            UnreadCountChanged?.Invoke(_unreadCount);
-        }
+        cmd.CommandText = """
+            SELECT EXISTS (SELECT 1 FROM notifications WHERE type = @type AND quote_id = @quote_id AND created_at >= @since)
+            """;
+        cmd.Parameters.AddWithValue("@type", type.ToString());
+        cmd.Parameters.AddWithValue("@quote_id", quoteId);
+        cmd.Parameters.AddWithValue("@since", since.ToUniversalTime().ToString("O"));
+        return Convert.ToInt32(await cmd.ExecuteScalarAsync()) == 1;
     }
 
     public async Task MarkAllAsReadAsync()
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "UPDATE notifications SET is_read = 1 WHERE is_read = 0";

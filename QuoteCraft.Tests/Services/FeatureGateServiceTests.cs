@@ -11,6 +11,12 @@ public class FeatureGateServiceTests
     private readonly IClientRepository _clientRepo = Substitute.For<IClientRepository>();
     private readonly ISubscriptionService _subscriptionService = Substitute.For<ISubscriptionService>();
 
+    public FeatureGateServiceTests()
+    {
+        // The plan tests below describe a build with a Supabase project, where plans and billing exist.
+        _subscriptionService.IsAvailable.Returns(true);
+    }
+
     private FeatureGateService CreateService()
     {
         return new FeatureGateService(_quoteRepo, _clientRepo, _subscriptionService);
@@ -65,11 +71,11 @@ public class FeatureGateServiceTests
     }
 
     [Fact]
-    public void ProTier_HasCloudSync_IsTrue()
+    public void ProTier_HasCloudSync_IsFalse_SyncIsOffInThisVersion()
     {
         _subscriptionService.CurrentTier.Returns(SubscriptionTier.Pro);
         var svc = CreateService();
-        Assert.True(svc.HasCloudSync);
+        Assert.False(svc.HasCloudSync);
     }
 
     [Fact]
@@ -135,6 +141,51 @@ public class FeatureGateServiceTests
         var message = svc.GetUpgradeMessage("quotes");
         Assert.Contains("$15/mo", message);
         Assert.Contains("5", message);
+    }
+
+    // Local-only builds (no Supabase project): no plans, so no limits, no watermark and no cloud sync.
+
+    [Fact]
+    public void LocalOnly_HasNoPlans()
+    {
+        _subscriptionService.IsAvailable.Returns(false);
+        var svc = CreateService();
+        Assert.False(svc.HasPlans);
+    }
+
+    [Fact]
+    public async Task LocalOnly_CanCreateQuote_PastTheFreeLimit()
+    {
+        _subscriptionService.IsAvailable.Returns(false);
+        _subscriptionService.CurrentTier.Returns(SubscriptionTier.Free);
+        _quoteRepo.CountCreatedSinceAsync(Arg.Any<DateTimeOffset>()).Returns(50);
+        var svc = CreateService();
+
+        Assert.True(await svc.CanCreateQuoteAsync());
+        Assert.Equal(int.MaxValue, svc.MaxQuotesPerMonth);
+    }
+
+    [Fact]
+    public async Task LocalOnly_CanAddClient_PastTheFreeLimit()
+    {
+        _subscriptionService.IsAvailable.Returns(false);
+        _subscriptionService.CurrentTier.Returns(SubscriptionTier.Free);
+        _clientRepo.CountActiveAsync().Returns(50);
+        var svc = CreateService();
+
+        Assert.True(await svc.CanAddClientAsync());
+        Assert.Equal(int.MaxValue, svc.MaxClients);
+    }
+
+    [Fact]
+    public void LocalOnly_HasNoWatermark_AndNoCloudSync()
+    {
+        _subscriptionService.IsAvailable.Returns(false);
+        _subscriptionService.CurrentTier.Returns(SubscriptionTier.Free);
+        var svc = CreateService();
+
+        Assert.False(svc.HasPdfWatermark);
+        Assert.False(svc.HasCloudSync);
     }
 
     [Fact]

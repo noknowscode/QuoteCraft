@@ -21,7 +21,8 @@ public class QuoteEntity
     // Populated by joins/queries, not stored directly
     public List<LineItemEntity> LineItems { get; set; } = [];
 
+    // The rounding rules are in Helpers/Money: tax is rounded once, to the cent.
     public decimal Subtotal => LineItems.Sum(li => li.LineTotal);
-    public decimal TaxAmount => Subtotal * (TaxRate / 100m);
+    public decimal TaxAmount => Money.Tax(Subtotal, TaxRate);
     public decimal Total => Subtotal + TaxAmount;
 }

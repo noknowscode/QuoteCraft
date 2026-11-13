@@ -1,0 +1,31 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>stylized-sheets</title>
+<link rel="stylesheet" href="frames.css">
+<style>
+  /* Five of the seeded quotes as the app previews them (Light), dealt across a blueprint drafting table: Water Heater
+     Install, Drain Cleaning Service, Bathroom Remodel, Office Plumbing Fit-out, and Kitchen Renovation on top. The
+     sheets underneath are softened, as out of focus. Primary #2B4C7E into PrimaryContainer (Dark) #1E3A5F into
+     Background (Dark) #111827, blueprint lines in Primary (Dark) #93B5E1, a warm Secondary #F59E0B light on the top sheet. */
+  .stage { background:
+      radial-gradient(40% 60% at 52% 42%, rgba(147,181,225,.22) 0%, rgba(147,181,225,0) 70%),
+      linear-gradient(160deg, #2B4C7E 0%, #1E3A5F 50%, #111827 100%); --grain: .06; }
+  .blueprint { --cell: 22px; -webkit-mask-image: radial-gradient(75% 90% at 50% 45%, #000, transparent 95%); }
+  .sheet { position: absolute; width: var(--w); border-radius: 9px; overflow: hidden; transform-origin: 50% 50%;
+    transform: rotate(var(--r));
+    box-shadow: 0 0 0 1px rgba(10,25,41,.30), 0 2px 4px rgba(10,25,41,.30), 0 20px 36px -12px rgba(10,25,41,.60), 0 50px 80px -30px rgba(10,25,41,.70); }
+  .sheet img { width: 100%; height: auto; }
+  .soft img { filter: blur(var(--b, .8px)) brightness(.94); }
+  .s1 { --w: 400px; left: 26px;  top: 120px; --r: -14deg; --b: 1.2px; }
+  .s2 { --w: 400px; left: 214px; top: 40px;  --r: -6deg; --b: 1px; }
+  .s3 { --w: 400px; left: 774px; top: 150px; --r: 13deg; --b: 1.2px; }
+  .s4 { --w: 400px; left: 620px; top: 36px;  --r: 6deg; --b: 1px; }
+  .s5 { --w: 512px; left: 344px; top: 34px;  --r: -1.5deg; }
+</style></head>
+<body><div class="stage grain">
+  <div class="blueprint"></div>
+  <div class="sheet soft s1"><img src="cap/doc-water@3x.png"></div>
+  <div class="sheet soft s3"><img src="cap/doc-drain@3x.png"></div>
+  <div class="sheet soft s2"><img src="cap/doc-bathroom@3x.png"></div>
+  <div class="sheet soft s4"><img src="cap/doc-office@3x.png"></div>
+  <div class="sheet s5"><img src="cap/doc-kitchen@3x.png"></div>
+</div></body></html>

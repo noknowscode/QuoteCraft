@@ -1,10 +1,8 @@
 namespace QuoteCraft.Models;
 
+/// <summary>What raised a notification (stored by name). Expiry reminders are the only kind (PRD F17.2).</summary>
 public enum NotificationType
 {
-    QuoteViewed,
-    QuoteAccepted,
-    QuoteDeclined,
     QuoteExpiring
 }
 

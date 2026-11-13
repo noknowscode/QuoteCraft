@@ -1,0 +1,31 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>focus-preview-titled</title>
+<link rel="stylesheet" href="frames.css">
+<style>
+  /* Optional titled variant of focus-preview: the display name in the app's own face, DM Sans Bold (the wordmark's
+     "QC" weight in the rail), in OnPrimary #FFFFFF on the blueprint ground, over a short rule in the amber Secondary
+     #F59E0B, the line the app draws under its slate brand band. The only text in the set. */
+  .stage { background:
+      radial-gradient(42% 60% at 64% 40%, rgba(147,181,225,.22) 0%, rgba(147,181,225,0) 72%),
+      radial-gradient(60% 80% at 62% 30%, rgba(43,76,126,.85) 0%, rgba(43,76,126,0) 75%),
+      linear-gradient(160deg, #2B4C7E 0%, #1E3A5F 46%, #111827 100%); --grain: .06; }
+  .blueprint { --cell: 22px; --gx: -6px; --gy: 4px;
+    -webkit-mask-image: radial-gradient(70% 90% at 55% 45%, #000 0%, rgba(0,0,0,.55) 55%, transparent 100%); }
+  .sheet { position: absolute; left: 600px; top: 48px; width: 508px; transform-origin: 50% 0;
+    transform: perspective(1800px) rotateX(10deg) rotateZ(-6deg); }
+  .sheet .paper { position: relative; border-radius: 10px; overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(17,24,39,.25), 0 2px 3px rgba(17,24,39,.25), 0 22px 40px -10px rgba(10,25,41,.55), 0 60px 90px -30px rgba(10,25,41,.75); }
+  .sheet img { width: 100%; height: auto; }
+  .bar { position: absolute; left: 96px; top: 438px; width: 432px; border-radius: 12px; overflow: hidden; transform: rotateZ(-6deg);
+    box-shadow: 0 0 0 1px rgba(17,24,39,.20), 0 3px 6px rgba(17,24,39,.25), 0 24px 44px -12px rgba(10,25,41,.65); }
+  .bar img { width: 100%; height: auto; }
+  h1 { position: absolute; left: 92px; top: 112px; margin: 0; font: 700 76px/1 'DM Sans', sans-serif; letter-spacing: -0.025em; color: #FFFFFF; }
+  .rule { position: absolute; left: 96px; top: 214px; width: 120px; height: 6px; border-radius: 3px; background: #F59E0B; }
+</style></head>
+<body><div class="stage grain">
+  <div class="blueprint"></div>
+  <div class="sheet"><div class="paper"><img src="cap/doc-kitchen@3x.png"></div></div>
+  <div class="bar"><img src="cap/preview-bar@3x.png"></div>
+  <h1>QuoteCraft</h1>
+  <div class="rule"></div>
+</div></body></html>

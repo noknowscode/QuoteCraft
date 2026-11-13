@@ -1,0 +1,25 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>showcase-phones</title>
+<link rel="stylesheet" href="frames.css">
+<style>
+  /* Three phones on a blueprint ground: the quotes list (Dark), the quote preview with its slate band and amber Send
+     Quote (Light, centre, raised) and the catalog (Dark). Primary #2B4C7E into PrimaryContainer (Dark) #1E3A5F into
+     Background (Dark) #111827, blueprint lines in Primary (Dark) #93B5E1. */
+  .stage { background:
+      radial-gradient(45% 70% at 50% 45%, rgba(43,76,126,.9) 0%, rgba(43,76,126,0) 75%),
+      linear-gradient(165deg, #2B4C7E 0%, #1E3A5F 50%, #111827 100%); --grain: .06; }
+  .blueprint { --cell: 22px; -webkit-mask-image: radial-gradient(70% 90% at 50% 45%, #000, transparent 95%); }
+  .floor { position: absolute; left: 22%; right: 22%; bottom: 22px; height: 44px; border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(10,25,41,.55), rgba(10,25,41,0)); filter: blur(8px); }
+  .d { --bezel: 8px; }
+  .p1 { left: 228px; top: 82px; width: 236px; height: 502px; --r: 34px; }
+  .p2 { left: 476px; top: 34px; width: 248px; height: 528px; --r: 36px; z-index: 2; }
+  .p3 { left: 736px; top: 82px; width: 236px; height: 502px; --r: 34px; }
+</style></head>
+<body><div class="stage grain on-night">
+  <div class="blueprint"></div>
+  <div class="floor"></div>
+  <div class="device d p1"><div class="screen"><img src="cap/phone-quotes-dark@2x.png"></div></div>
+  <div class="device d p2"><div class="screen"><img src="cap/phone-preview-light@2x.png"></div></div>
+  <div class="device d p3"><div class="screen"><img src="cap/phone-catalog-dark@2x.png"></div></div>
+</div></body></html>

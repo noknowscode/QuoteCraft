@@ -27,6 +27,10 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
+    "QuoteCraft (WinAppSDK Packaged)": {
+      "commandName": "MsixPackage",
+      "compatibleTargetFramework": "windows"
+    },
     "QuoteCraft (Desktop)": {
       "commandName": "Project",
       "compatibleTargetFramework": "desktop"

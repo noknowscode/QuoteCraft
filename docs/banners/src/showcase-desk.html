@@ -1,0 +1,25 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>showcase-desk</title>
+<link rel="stylesheet" href="frames.css">
+<style>
+  /* House style: a desktop window with the Quotes page (Light, Kitchen Renovation open beside the list) and a pair of
+     phones overlapping its right edge: the quote preview (Dark) and the catalog (Light). Warm paper: Background
+     #F9FAFB with a SecondaryContainer #FEF3C7 wash and a PrimaryContainer #D6E4F0 wash, faint graph lines in Primary. */
+  .stage { background:
+      radial-gradient(60% 75% at 22% 25%, rgba(254,243,199,.95) 0%, rgba(254,243,199,0) 72%),
+      radial-gradient(55% 80% at 88% 80%, rgba(214,228,240,.95) 0%, rgba(214,228,240,0) 72%),
+      #F9FAFB; --grain: .05; }
+  .graph { --cell: 22px; --major: .07; --minor: .03; -webkit-mask-image: radial-gradient(80% 90% at 40% 50%, #000, transparent 90%); }
+  .floor { position: absolute; left: 70px; right: 60px; bottom: 26px; height: 50px; border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(43,76,126,.22), rgba(43,76,126,0)); filter: blur(8px); }
+  .win { left: 50px; top: 72px; width: 700px; --bar: 22px; }
+  .p1 { left: 736px; top: 150px; width: 214px; height: 455px; --bezel: 8px; --r: 32px; z-index: 2; }
+  .p2 { left: 920px; top: 58px; width: 214px; height: 455px; --bezel: 8px; --r: 32px; z-index: 1; }
+</style></head>
+<body><div class="stage grain">
+  <div class="graph"></div>
+  <div class="floor"></div>
+  <div class="win"><div class="bar"><i></i><i></i><i></i><b></b></div><img src="cap/desk-quotes-light@2x.png"></div>
+  <div class="device p2"><div class="screen"><img src="cap/phone-catalog-light@2x.png"></div></div>
+  <div class="device p1"><div class="screen"><img src="cap/phone-preview-dark@2x.png"></div></div>
+</div></body></html>

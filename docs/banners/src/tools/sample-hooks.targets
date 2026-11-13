@@ -1,0 +1,8 @@
+<Project>
+  <!-- Banner capture build only, outside the app's repository: compile QuoteCraft's own Debug sample-data hooks
+       (App.Verification.cs, Helpers/SampleData.cs, the qc-seed=sample argument) into an otherwise Release WebAssembly
+       publish, with Uno Studio off (NO_UNO_STUDIO, the app's own switch), so captures show the app's sample data. -->
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);DEBUG;NO_UNO_STUDIO</DefineConstants>
+  </PropertyGroup>
+</Project>

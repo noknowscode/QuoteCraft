@@ -1,0 +1,24 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>focus-editor</title>
+<link rel="stylesheet" href="frames.css">
+<style>
+  /* The quote editor (Dark, QC-2026-0001 Kitchen Renovation): Line Items with From Catalog and Add Item, the four
+     items with quantity, unit price, line total and their reorder arrows, the subtotal, 13 % tax and total, and Photos
+     with Add Photo on the amber container. A slab of the night page (Background (Dark) #111827) turned toward the
+     viewer on a blueprint ground: Primary #2B4C7E into PrimaryContainer (Dark) #1E3A5F, lines in Primary (Dark) #93B5E1. */
+  .stage { background:
+      radial-gradient(50% 70% at 50% 45%, rgba(147,181,225,.20) 0%, rgba(147,181,225,0) 75%),
+      linear-gradient(200deg, #2B4C7E 0%, #1E3A5F 55%, color-mix(in srgb, #1E3A5F 45%, #111827) 100%); --grain: .06; }
+  .blueprint { --cell: 22px; -webkit-mask-image: radial-gradient(75% 90% at 50% 50%, #000, transparent 95%); }
+  .floor { position: absolute; left: 330px; right: 330px; bottom: 6px; height: 60px; border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(10,25,41,.6), rgba(10,25,41,0)); filter: blur(10px); }
+  .panel { position: absolute; left: 312px; top: 30px; width: 576px; height: 566px; overflow: hidden; border-radius: 16px; background: #111827;
+    transform-origin: 50% 50%; transform: perspective(1700px) rotateY(-9deg) rotateX(5deg);
+    box-shadow: 0 0 0 1px rgba(229,231,235,.10), 0 2px 4px rgba(0,0,0,.3), 0 24px 48px -12px rgba(10,25,41,.7), 0 60px 100px -30px rgba(10,25,41,.85); }
+  .panel img { position: absolute; left: 6px; top: -240px; width: 570px; }
+</style></head>
+<body><div class="stage grain on-night">
+  <div class="blueprint"></div>
+  <div class="floor"></div>
+  <div class="panel"><img src="cap/editor-dark@3x.png"></div>
+</div></body></html>

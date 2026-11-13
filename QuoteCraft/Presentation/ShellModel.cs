@@ -2,20 +2,17 @@ namespace QuoteCraft.Presentation;
 
 public partial record ShellModel
 {
-    private readonly INavigator _navigator;
-    private readonly Services.IOnboardingService _onboarding;
     private readonly IBusinessProfileRepository _profileRepo;
+    private readonly CurrencyService _currency;
     private readonly ILogger<ShellModel> _logger;
 
     public ShellModel(
-        INavigator navigator,
-        Services.IOnboardingService onboarding,
         IBusinessProfileRepository profileRepo,
+        CurrencyService currency,
         ILogger<ShellModel> logger)
     {
-        _navigator = navigator;
-        _onboarding = onboarding;
         _profileRepo = profileRepo;
+        _currency = currency;
         _logger = logger;
 
         _ = InitAsync();
@@ -25,16 +22,8 @@ public partial record ShellModel
     {
         try
         {
-            // Load currency setting for the converter
-            var profile = await _profileRepo.GetAsync();
-            Helpers.CurrencyFormatConverter.CurrencyCode = profile.CurrencyCode;
-
-            // Check onboarding
-            var isComplete = await _onboarding.IsOnboardingCompleteAsync();
-            if (!isComplete)
-            {
-                await _navigator.NavigateRouteAsync(this, "Onboarding");
-            }
+            // The business's currency, for every amount on screen.
+            _currency.Code = (await _profileRepo.GetAsync()).CurrencyCode;
         }
         catch (Exception ex)
         {

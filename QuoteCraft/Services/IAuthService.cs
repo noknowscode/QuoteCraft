@@ -4,6 +4,9 @@ public record AuthState(bool IsAuthenticated, string? UserId, string? Email, str
 
 public interface IAuthService
 {
+    /// <summary>False when no Supabase project is configured: the app runs without accounts.</summary>
+    bool IsAvailable { get; }
+
     AuthState CurrentState { get; }
     event Action<AuthState>? AuthStateChanged;
 
@@ -12,5 +15,4 @@ public interface IAuthService
     Task<AuthState> SignInWithMagicLinkAsync(string email);
     Task SignOutAsync();
     Task<AuthState> RefreshSessionAsync();
-    Task<bool> IsSessionValidAsync();
 }

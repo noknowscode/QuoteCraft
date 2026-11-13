@@ -9,7 +9,9 @@
       d:DesignHeight="300"
       d:DesignWidth="400">
   <Border Background="{ThemeResource BackgroundBrush}">
+    <!-- Not a tab stop: Tab moves through the page it hosts -->
     <utu:ExtendedSplashScreen x:Name="Splash"
+                IsTabStop="False"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
                 HorizontalContentAlignment="Stretch"

@@ -9,6 +9,7 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using Microsoft.UI.Xaml.Media;
+using Uno.UI.Hosting;
 
 namespace QuoteCraft.Droid;
 
@@ -19,12 +20,18 @@ namespace QuoteCraft.Droid;
     HardwareAccelerated = true,
     Theme = "@style/Theme.App.Starting"
 )]
-public class Application : Microsoft.UI.Xaml.NativeApplication
+public class Application : Uno.UI.Runtime.Android.NativeApplication
 {
     public Application(IntPtr javaReference, JniHandleOwnership transfer)
-        : base(() => new App(), javaReference, transfer)
+        : base(javaReference, transfer)
     {
     }
 
+    // Uno 7: Android builds its host here, the counterpart of Main on the other heads.
+    protected override UnoPlatformHost CreateHost() =>
+        UnoPlatformHostBuilder.Create()
+            .App(() => new App())
+            .UseAndroid()
+            .Build();
 }
 

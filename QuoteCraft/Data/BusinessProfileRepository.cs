@@ -1,5 +1,4 @@
 using Microsoft.Data.Sqlite;
-using QuoteCraft.Models;
 
 namespace QuoteCraft.Data;
 
@@ -20,7 +19,7 @@ public class BusinessProfileRepository : IBusinessProfileRepository
     {
         if (_cache is not null) return _cache;
 
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT * FROM business_profile WHERE id = 'default'";
@@ -49,7 +48,6 @@ public class BusinessProfileRepository : IBusinessProfileRepository
             return _cache;
         }
 
-        // Return default profile if none exists
         _cache = new BusinessProfileEntity();
         return _cache;
     }
@@ -58,7 +56,7 @@ public class BusinessProfileRepository : IBusinessProfileRepository
     {
         _cache = null; // Invalidate cache
 
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         profile.UpdatedAt = DateTimeOffset.UtcNow;
 

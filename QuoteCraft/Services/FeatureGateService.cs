@@ -10,6 +10,12 @@ public enum SubscriptionTier
 public interface IFeatureGateService
 {
     SubscriptionTier CurrentTier { get; }
+
+    /// <summary>
+    /// True when plans apply: a Supabase project with billing is configured. Without one QuoteCraft runs locally,
+    /// with no plan limits and no upgrade prompts (docs/DECISIONS-production-readiness.md, D3).
+    /// </summary>
+    bool HasPlans { get; }
     Task<bool> CanCreateQuoteAsync();
     Task<bool> CanAddClientAsync();
     Task<int> GetQuotesUsedThisMonthAsync();
@@ -18,10 +24,6 @@ public interface IFeatureGateService
     int MaxClients { get; }
     bool HasPdfWatermark { get; }
     bool HasCloudSync { get; }
-    bool HasAllCatalogs { get; }
-    bool HasBranding { get; }
-    bool HasNotifications { get; }
-    bool HasAdvancedStatuses { get; }
     string GetUpgradeMessage(string feature);
 }
 
@@ -39,40 +41,30 @@ public class FeatureGateService : IFeatureGateService
         _quoteRepo = quoteRepo;
         _clientRepo = clientRepo;
         _subscriptionService = subscriptionService;
-
-        // Listen for tier changes from subscription service
-        _subscriptionService.TierChanged += tier => { /* tier is now live */ };
     }
 
     public SubscriptionTier CurrentTier => _subscriptionService.CurrentTier;
 
-    public int MaxQuotesPerMonth => CurrentTier switch
-    {
-        SubscriptionTier.Free => 5,
-        _ => int.MaxValue // Unlimited
-    };
+    public bool HasPlans => _subscriptionService.IsAvailable;
 
-    public int MaxClients => CurrentTier switch
-    {
-        SubscriptionTier.Free => 10,
-        _ => int.MaxValue
-    };
+    // Free-plan limits apply only where a paid plan can be bought; local-only builds have no plans.
+    private bool IsFreePlan => HasPlans && CurrentTier == SubscriptionTier.Free;
 
-    public bool HasPdfWatermark => CurrentTier == SubscriptionTier.Free;
+    public int MaxQuotesPerMonth => IsFreePlan ? 5 : int.MaxValue;
 
-    public bool HasCloudSync => CurrentTier >= SubscriptionTier.Pro;
+    public int MaxClients => IsFreePlan ? 10 : int.MaxValue;
 
-    public bool HasAllCatalogs => CurrentTier >= SubscriptionTier.Pro;
+    public bool HasPdfWatermark => IsFreePlan;
 
-    public bool HasBranding => CurrentTier >= SubscriptionTier.Pro;
-
-    public bool HasNotifications => CurrentTier >= SubscriptionTier.Pro;
-
-    public bool HasAdvancedStatuses => CurrentTier >= SubscriptionTier.Pro;
+    /// <summary>
+    /// Off for every plan in this version: sync would send quotes without their line items, and the catalog and
+    /// business profile not at all (docs/DECISIONS-production-readiness.md, D8). SyncService stays unstarted.
+    /// </summary>
+    public bool HasCloudSync => false;
 
     public async Task<bool> CanCreateQuoteAsync()
     {
-        if (CurrentTier >= SubscriptionTier.Pro)
+        if (!IsFreePlan)
             return true;
 
         var usedThisMonth = await GetQuotesUsedThisMonthAsync();
@@ -81,7 +73,7 @@ public class FeatureGateService : IFeatureGateService
 
     public async Task<bool> CanAddClientAsync()
     {
-        if (CurrentTier >= SubscriptionTier.Pro)
+        if (!IsFreePlan)
             return true;
 
         var count = await GetClientCountAsync();
@@ -106,7 +98,6 @@ public class FeatureGateService : IFeatureGateService
         "clients" => $"You've reached the {MaxClients} client limit. Upgrade to Pro for unlimited clients at $15/mo.",
         "branding" => "Remove the QuoteCraft watermark and add your logo. Upgrade to Pro at $15/mo.",
         "catalogs" => "Unlock all trade catalogs (Plumbing, Electrical, HVAC, Painting). Upgrade to Pro at $15/mo.",
-        "sync" => "Sync your quotes across all devices. Upgrade to Pro at $15/mo.",
         _ => "Upgrade to QuoteCraft Pro for the full experience at $15/mo."
     };
 }

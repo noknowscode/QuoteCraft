@@ -1,5 +1,4 @@
 using Microsoft.Data.Sqlite;
-using QuoteCraft.Models;
 
 namespace QuoteCraft.Data;
 
@@ -20,7 +19,7 @@ public class ClientRepository : IClientRepository
 
     public async Task<List<ClientEntity>> GetAllAsync()
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT * FROM clients WHERE is_deleted = 0 ORDER BY name";
@@ -36,7 +35,7 @@ public class ClientRepository : IClientRepository
 
     public async Task<ClientEntity?> GetByIdAsync(string id)
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT * FROM clients WHERE id = @id AND is_deleted = 0";
@@ -52,7 +51,7 @@ public class ClientRepository : IClientRepository
 
     public async Task SaveAsync(ClientEntity client)
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         client.UpdatedAt = DateTimeOffset.UtcNow;
 
@@ -80,14 +79,13 @@ public class ClientRepository : IClientRepository
 
     public async Task DeleteAsync(string id)
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         using var tx = conn.BeginTransaction();
         try
         {
             var now = DateTimeOffset.UtcNow.ToString("O");
 
-            // Soft-delete the client
             var cmd = conn.CreateCommand();
             cmd.Transaction = tx;
             cmd.CommandText = "UPDATE clients SET is_deleted = 1, updated_at = @updated_at WHERE id = @id";
@@ -114,7 +112,7 @@ public class ClientRepository : IClientRepository
 
     public async Task<int> CountActiveAsync()
     {
-        var conn = await _db.GetConnectionAsync();
+        await using var conn = await _db.OpenConnectionAsync();
 
         var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT COUNT(*) FROM clients WHERE is_deleted = 0";

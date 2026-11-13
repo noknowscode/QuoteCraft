@@ -5,8 +5,8 @@ namespace QuoteCraft.Helpers;
 /// </summary>
 public class ConnectivityHelper : IDisposable
 {
-    private readonly ILogger<ConnectivityHelper> _logger;
     private readonly HttpClient _http;
+    private readonly Data.Remote.SupabaseConfig _supabase;
     private Timer? _pollTimer;
     private bool _isOnline = true;
 
@@ -25,17 +25,21 @@ public class ConnectivityHelper : IDisposable
         }
     }
 
-    public ConnectivityHelper(HttpClient httpClient, ILogger<ConnectivityHelper> logger)
+    public ConnectivityHelper(HttpClient httpClient, Data.Remote.SupabaseConfig supabase)
     {
         _http = httpClient;
-        _logger = logger;
+        _supabase = supabase;
     }
 
     /// <summary>
-    /// Start periodic connectivity checks every 15 seconds.
+    /// Start periodic connectivity checks every 15 seconds. Connectivity only matters for sync, so a local-only build
+    /// (no Supabase project) never polls.
     /// </summary>
     public void StartMonitoring()
     {
+        if (!_supabase.IsConfigured)
+            return;
+
         _pollTimer?.Dispose();
         _pollTimer = new Timer(async _ => await CheckConnectivityAsync(), null, TimeSpan.Zero, TimeSpan.FromSeconds(15));
     }
@@ -48,14 +52,17 @@ public class ConnectivityHelper : IDisposable
 
     public async Task<bool> CheckConnectivityAsync()
     {
+        if (!_supabase.IsConfigured)
+            return IsOnline;
+
         try
         {
-            // Simple connectivity check - HEAD request to Supabase or a known endpoint
+            // Online means the Supabase project answers at all; any HTTP status will do.
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-            var response = await _http.SendAsync(
-                new HttpRequestMessage(HttpMethod.Head, "https://httpbin.org/status/200"),
+            using var response = await _http.SendAsync(
+                new HttpRequestMessage(HttpMethod.Head, _supabase.Url),
                 cts.Token);
-            IsOnline = response.IsSuccessStatusCode;
+            IsOnline = true;
         }
         catch
         {
