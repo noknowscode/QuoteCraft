@@ -490,3 +490,5 @@ solution-config.props
 
 # Loose screenshots at repo root (keep /screenshots folder)
 /screenshot*.png
+# Claude Code local settings
+.claude/settings.local.json
